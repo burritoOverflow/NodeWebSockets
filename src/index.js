@@ -22,6 +22,7 @@ io.on("connection", (socket) => {
 
   socket.on("clientChat", (message) => {
     console.log(message);
+    io.emit("chatMessage", message);
   });
 
   socket.on("disconnect", () => {
