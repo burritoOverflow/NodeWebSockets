@@ -1,0 +1,74 @@
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+}
+
+#main-container {
+  height: 65%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#submit-button {
+  margin-top: 1em;
+  border: 1px solid black;
+  border-radius: 30px;
+  padding: 0.3em;
+  background-color: #9147ff;
+  color: antiquewhite;
+  font-weight: 600;
+}
+
+#message-text {
+  height: 200px;
+  width: 200px;
+  text-align: unset;
+  display: block;
+  background: black;
+  color: antiquewhite;
+  border-radius: 10px;
+}
+
+#submit-button:hover {
+  color: black;
+  background-color: purple;
+}
+
+#submit-button:focus {
+  color: black;
+  background-color: purple;
+}
+
+#submit-button:hover,
+#message-text:hover {
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+
+#submit-button:focus,
+#message-text:focus {
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  outline: none;
+}
+
+.message {
+  border: 1px solid black;
+  border-radius: 20px;
+  margin: 10px;
+  padding: 1em;
+}
+
+.row {
+  width: auto;
+}
+
+.flex-item {
+  text-align: center;
+}
+
+#message-thread {
+  list-style: none;
+}

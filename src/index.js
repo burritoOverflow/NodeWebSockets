@@ -38,7 +38,9 @@ io.on("connection", (socket) => {
 });
 
 function sendConnectedClientCount() {
-  const messageStr = `There are currently ${wsClients.length} clients`;
+  const clientStr = wsClients.length > 1 ? "clients" : "client";
+  const areIs = wsClients.length > 1 ? "are" : "is";
+  const messageStr = `There ${areIs} currently ${wsClients.length} ${clientStr}`;
   io.emit("clientCount", messageStr);
 }
 

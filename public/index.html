@@ -4,16 +4,25 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./css/style.css" />
     <title>WebSocket Chat</title>
   </head>
   <body>
-    <h2>Chat Application</h2>
-    <p id="received-message"></p>
-    <input type="text" id="message-text" name="message" />
-    <button id="submit-button">Send Message</button>
-    <div>
-      <ul id="message-thread"></ul>
-    </div>
+    <main id="main-container">
+      <div class="row">
+        <h2 class="flex-item">Chat Application</h2>
+        <h4 id="received-message" class="flex-item"></h4>
+        <div>
+          <textarea
+            id="message-text"
+            name="message-area"
+            class="flex-item"
+          ></textarea>
+          <button id="submit-button" class="flex-item">Send Message</button>
+        </div>
+      </div>
+      <ul id="message-thread" class="flex-item"></ul>
+    </main>
     <script src="/socket.io/socket.io.js"></script>
     <script src="./js/chat.js"></script>
   </body>

@@ -29,7 +29,11 @@ msgInput.addEventListener("keypress", (e) => {
 // append individual messages to the list
 function addMsgToThread(message) {
   const li = document.createElement("li");
-  li.innerText = message;
+  li.classList.add("message");
+  const msgText = `${new Date(message.msgSendDate).toLocaleString()} ${
+    message.message
+  }`;
+  li.innerText = msgText;
   msgThread.appendChild(li);
 }
 
@@ -44,7 +48,8 @@ socket.on("chatMessage", (message) => {
 
 // send the message from the input element
 function sendMessage(message) {
-  socket.emit("clientChat", message);
+  const msgObj = { message: message, msgSendDate: +new Date() };
+  socket.emit("clientChat", msgObj);
   // remove text from the element
   msgInput.value = "";
 }
