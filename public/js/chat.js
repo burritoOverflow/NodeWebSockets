@@ -30,9 +30,9 @@ msgInput.addEventListener("keypress", (e) => {
 function addMsgToThread(message) {
   const li = document.createElement("li");
   li.classList.add("message");
-  const msgText = `${new Date(message.msgSendDate).toLocaleString()} ${
-    message.message
-  }`;
+  const msgText = `${new Date(message.msgSendDate)
+    .toLocaleString()
+    .replace(",", " at")} ${message.message}`;
   li.innerText = msgText;
   msgThread.appendChild(li);
 }

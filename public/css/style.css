@@ -1,6 +1,7 @@
 html,
 body {
   height: 100%;
+  background: #1f1f23;
 }
 body {
   margin: 0;
@@ -11,6 +12,13 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+#heading {
+  padding: 0.2em;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  background-color: whitesmoke;
 }
 
 #submit-button {
@@ -43,22 +51,33 @@ body {
   background-color: purple;
 }
 
+#message-text:hover,
+#message-text:focus {
+  border: 1px solid #9147ff;
+}
+
 #submit-button:hover,
 #message-text:hover {
-  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  box-shadow: rgba(150, 144, 144, 0.35) 0px 5px 15px;
 }
 
 #submit-button:focus,
 #message-text:focus {
-  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  box-shadow: rgba(199, 194, 194, 0.35) 0px 5px 15px;
   outline: none;
 }
 
 .message {
+  background-color: #9147ff;
+  color: whitesmoke;
   border: 1px solid black;
   border-radius: 20px;
   margin: 10px;
   padding: 1em;
+}
+
+.message:hover {
+  border: 1px solid whitesmoke;
 }
 
 .row {
