@@ -34,6 +34,26 @@ function addMsgToThread(message) {
     .toLocaleString()
     .replace(",", " at")} ${message.message}`;
   li.innerText = msgText;
+
+  li.addEventListener("mouseover", (e) => {
+    msgThread.style.backgroundColor = "black";
+    document.querySelectorAll(".message").forEach((msgEl) => {
+      if (msgEl !== li) {
+        msgEl.style.opacity = 0.6;
+        msgEl.classList.add("blurry-text");
+      }
+    });
+  });
+
+  li.addEventListener("mouseout", (e) => {
+    msgThread.style.backgroundColor = "#18181b";
+    document.querySelectorAll(".message").forEach((msgEl) => {
+      if (msgEl !== li) {
+        msgEl.style.opacity = 1.0;
+        msgEl.classList.remove("blurry-text");
+      }
+    });
+  });
   msgThread.appendChild(li);
 }
 
