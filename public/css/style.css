@@ -3,6 +3,7 @@ body {
   height: 100%;
   background: #1f1f23;
 }
+
 body {
   margin: 0;
 }
@@ -68,6 +69,7 @@ body {
 }
 
 .message {
+  transition: transform 0.3s ease-in-out;
   background-color: #9147ff;
   color: whitesmoke;
   border: 1px solid black;
@@ -78,10 +80,16 @@ body {
 
 .message:hover {
   border: 1px solid whitesmoke;
+  transform: translate(1px, -7px);
 }
 
 .row {
   width: auto;
+}
+
+.blurry-text {
+  color: transparent;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 }
 
 .flex-item {
@@ -89,5 +97,24 @@ body {
 }
 
 #message-thread {
+  border: 1px solid black;
+  border-radius: 50px;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+  margin-left: 2em;
+  background-color: #18181b;
+  scrollbar-width: none;
+  overflow-y: scroll;
+  height: 75%;
+  width: 25%;
   list-style: none;
+}
+
+#message-thread:hover {
+  border: 1.5px solid #9147ff;
+  box-shadow: rgba(199, 194, 194, 0.35) 9px 11px 20px;
+}
+
+#message-thread::-webkit-scrollbar {
+  display: none;
 }
