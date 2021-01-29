@@ -16,6 +16,9 @@ app.use(express.static(pubDirPath));
 const wsClients = [];
 
 function appendToLog(logMsg) {
+  const dateStr = new Date().toLocaleString();
+  logMsg = `${dateStr} ${logMsg}`;
+
   fs.appendFile("websocket.log", logMsg, (err) => {
     if (err) {
       console.error(err);

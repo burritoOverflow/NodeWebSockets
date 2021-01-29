@@ -31,7 +31,7 @@ a {
   margin-top: 1em;
   border: 1px solid black;
   border-radius: 30px;
-  padding: 0.3em;
+  padding: 0.9em;
   background-color: #9147ff;
   color: antiquewhite;
   font-weight: 600;
@@ -73,10 +73,18 @@ a {
   outline: none;
 }
 
-.message {
-  transition: transform 0.3s ease-in-out;
+.message:nth-child(odd) {
   background-color: #9147ff;
   color: whitesmoke;
+}
+
+.message:nth-child(even) {
+  background-color: whitesmoke;
+  color: #18181b;
+}
+
+.message {
+  transition: transform 0.3s ease-in-out;
   border: 1px solid black;
   border-radius: 20px;
   margin: 10px;
