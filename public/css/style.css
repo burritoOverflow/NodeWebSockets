@@ -73,12 +73,12 @@ a {
   outline: none;
 }
 
-.message:nth-child(odd) {
+#message-thread > li:nth-child(odd) {
   background-color: #9147ff;
   color: whitesmoke;
 }
 
-.message:nth-child(even) {
+#message-thread > li:nth-child(even) {
   background-color: whitesmoke;
   color: #18181b;
 }
@@ -101,7 +101,8 @@ a {
 }
 
 .blurry-text {
-  color: transparent;
+  opacity: 0.3 !important;
+  color: transparent !important;
   text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
 }
 

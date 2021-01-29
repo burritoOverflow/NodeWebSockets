@@ -73,7 +73,6 @@ function addMsgToThread(message) {
     msgThread.style.backgroundColor = "black";
     document.querySelectorAll(".message").forEach((msgEl) => {
       if (msgEl !== li) {
-        msgEl.style.opacity = 0.6;
         msgEl.classList.add("blurry-text");
       }
     });
