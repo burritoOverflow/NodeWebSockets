@@ -30,11 +30,57 @@ msgInput.addEventListener("keypress", (e) => {
 function addMsgToThread(message) {
   const li = document.createElement("li");
   li.classList.add("message");
-  const msgText = `${new Date(message.msgSendDate)
-    .toLocaleString()
-    .replace(",", " at")} ${message.message}`;
-  li.innerText = msgText;
+
+  const msgTokens = message.message.split(" ");
+
+  let containsURL = false;
+  let urlIdxs = [];
+
+  let anchorElements = [];
+
+  msgTokens.forEach((token, idx) => {
+    if (isValidHttpUrl(token)) {
+      urlIdxs.push(idx);
+      containsURL = true;
+    }
+  });
+
+  if (containsURL) {
+    li.innerText = `${new Date(message.msgSendDate)
+      .toLocaleString()
+      .replace(",", " at")} `;
+
+    msgTokens.forEach((token, idx) => {
+      if (urlIdxs.includes(idx)) {
+        const anchorEl = document.createElement("a");
+        anchorEl.setAttribute("href", token);
+        anchorEl.innerText = token;
+        anchorElements.push(anchorEl);
+
+        li.appendChild(anchorEl);
+      } else {
+        li.innerText += token;
+      }
+    });
+  } else {
+    const msgText = `${new Date(message.msgSendDate)
+      .toLocaleString()
+      .replace(",", " at")} ${message.message}`;
+    li.innerText = msgText;
+  }
+
   msgThread.appendChild(li);
+}
+
+// determine if valid http url
+function isValidHttpUrl(string) {
+  let url;
+  try {
+    url = new URL(string);
+  } catch (_) {
+    return false;
+  }
+  return url.protocol === "http:" || url.protocol === "https:";
 }
 
 // receive the client count when the server updates
