@@ -8,6 +8,11 @@ body {
   margin: 0;
 }
 
+a {
+  color: white;
+  font-weight: bolder;
+}
+
 #main-container {
   height: 65%;
   display: flex;

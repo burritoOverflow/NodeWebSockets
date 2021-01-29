@@ -59,7 +59,7 @@ function addMsgToThread(message) {
 
         li.appendChild(anchorEl);
       } else {
-        li.innerText += token;
+        li.innerText += token + " ";
       }
     });
   } else {
