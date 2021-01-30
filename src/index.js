@@ -50,14 +50,22 @@ io.on("connection", (socket) => {
 
   // a client has send lat lng from geolocation api
   socket.on("userLocation", (latLngObj) => {
-    appendToLog(`Client Coords: ${JSON.stringify(latLngObj)}\n`);
+    appendToLog(
+      `${getIpAddrPortStr(socket)} Client Coords: ${JSON.stringify(
+        latLngObj
+      )}\n`
+    );
   });
 
   socket.on("disconnect", () => {
     // remove client
     const idx = wsClients.indexOf(socket);
     wsClients.splice(idx, 1);
-    appendToLog(`Client removed. ${wsClients.length} clients remaining\n`);
+    appendToLog(
+      `Client removed: ${getIpAddrPortStr(socket)}. ${
+        wsClients.length
+      } clients remaining\n`
+    );
     // update clients UI to reflect disconnect
     sendConnectedClientCount();
 
