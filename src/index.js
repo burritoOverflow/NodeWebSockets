@@ -30,6 +30,10 @@ io.on("connection", (socket) => {
   wsClients.push(socket);
   appendToLog(`New WebSocket connection ${wsClients.length} clients\n`);
   sendConnectedClientCount();
+
+  // broadcast the 'user joined message'
+  socket.broadcast.emit("newUserMessage", "A new user has joined");
+
   socket.on("clientChat", (message) => {
     appendToLog(`${JSON.stringify(message)}\n`);
     io.emit("chatMessage", message);
@@ -45,6 +49,7 @@ io.on("connection", (socket) => {
   });
 });
 
+// display the number of clients currently connected
 function sendConnectedClientCount() {
   const clientStr = wsClients.length > 1 ? "clients" : "client";
   const areIs = wsClients.length > 1 ? "are" : "is";

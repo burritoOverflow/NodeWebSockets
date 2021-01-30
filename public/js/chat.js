@@ -111,6 +111,16 @@ socket.on("chatMessage", (message) => {
   addMsgToThread(message);
 });
 
+// recvs a broadcast when a connection is detected server-side.
+// add this message in a seperate fashion
+socket.on("newUserMessage", (message) => {
+  const snackbar = document.getElementById("snackbar");
+  snackbar.classList.add("show");
+  setTimeout(() => {
+    snackbar.classList.remove("show");
+  }, 2000);
+});
+
 // send the message from the input element
 function sendMessage(message) {
   const msgObj = { message: message, msgSendDate: +new Date() };
