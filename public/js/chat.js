@@ -2,6 +2,7 @@ const socket = io();
 
 const msgInput = document.getElementById("message-text");
 const msgBtn = document.getElementById("submit-button");
+const sendLocButton = document.getElementById("share-location-button");
 const clientCountMsg = document.getElementById("received-message");
 const msgThread = document.getElementById("message-thread");
 
@@ -13,6 +14,23 @@ msgBtn.addEventListener("click", () => {
   } else {
     sendMessage(msgStr);
   }
+});
+
+sendLocButton.addEventListener("click", () => {
+  if (!navigator.geolocation) {
+    // no geolocation available
+    return alert("geolocation is not available");
+  }
+
+  navigator.geolocation.getCurrentPosition((position) => {
+    console.log(position);
+    const { latitude, longitude } = position.coords;
+    const latLng = {
+      latitude: latitude,
+      longitude: longitude,
+    };
+    socket.emit("userLocation", latLng);
+  });
 });
 
 // allow for enter key in the text input to send a message
@@ -102,6 +120,15 @@ function isValidHttpUrl(string) {
   return url.protocol === "http:" || url.protocol === "https:";
 }
 
+function showUserToast(message) {
+  const snackbar = document.getElementById("snackbar");
+  snackbar.innerText = message;
+  snackbar.classList.add("show");
+  setTimeout(() => {
+    snackbar.classList.remove("show");
+  }, 2000);
+}
+
 // receive the client count when the server updates
 socket.on("clientCount", (message) => {
   clientCountMsg.innerText = message;
@@ -114,11 +141,12 @@ socket.on("chatMessage", (message) => {
 // recvs a broadcast when a connection is detected server-side.
 // add this message in a seperate fashion
 socket.on("newUserMessage", (message) => {
-  const snackbar = document.getElementById("snackbar");
-  snackbar.classList.add("show");
-  setTimeout(() => {
-    snackbar.classList.remove("show");
-  }, 2000);
+  showUserToast("A New User Has Joined The Chat");
+});
+
+// display the toast when a client leaves
+socket.on("userLeft", () => {
+  showUserToast("A user has left the chat");
 });
 
 // send the message from the input element

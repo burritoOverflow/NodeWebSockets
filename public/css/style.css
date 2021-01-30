@@ -27,16 +27,6 @@ a {
   background-color: whitesmoke;
 }
 
-#submit-button {
-  margin-top: 1em;
-  border: 1px solid black;
-  border-radius: 30px;
-  padding: 0.9em;
-  background-color: #9147ff;
-  color: antiquewhite;
-  font-weight: 600;
-}
-
 #message-text {
   height: 200px;
   width: 200px;
@@ -45,6 +35,31 @@ a {
   background: black;
   color: antiquewhite;
   border-radius: 10px;
+}
+
+#share-location-button {
+  margin-top: 1em;
+  border: none;
+  border-radius: 30px;
+  padding: 0.9em;
+  background-color: grey;
+  color: black;
+  font-weight: 600;
+}
+
+#share-location-button:hover {
+  color: whitesmoke;
+  background-color: black;
+}
+
+#submit-button {
+  margin-top: 1em;
+  border: 1px solid black;
+  border-radius: 30px;
+  padding: 0.9em;
+  background-color: #9147ff;
+  color: antiquewhite;
+  font-weight: 600;
 }
 
 #submit-button:hover {
@@ -62,13 +77,21 @@ a {
   border: 1px solid #9147ff;
 }
 
+#submit-button,
+#share-location-button {
+  font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
+  font-size: 0.8pc;
+}
+
 #submit-button:hover,
-#message-text:hover {
+#message-text:hover,
+#share-location-button:hover {
   box-shadow: rgba(150, 144, 144, 0.35) 0px 5px 15px;
 }
 
 #submit-button:focus,
-#message-text:focus {
+#message-text:focus,
+#share-location-button:focus {
   box-shadow: rgba(199, 194, 194, 0.35) 0px 5px 15px;
   outline: none;
 }

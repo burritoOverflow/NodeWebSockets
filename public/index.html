@@ -22,11 +22,14 @@
             class="flex-item"
           ></textarea>
           <button id="submit-button" class="flex-item">Send Message</button>
+          <button id="share-location-button" class="flex-item">
+            Send location
+          </button>
         </div>
       </div>
       <ul id="message-thread" class="flex-item"></ul>
     </main>
-    <div id="snackbar">A New User Has Joined The Chat</div>
+    <div id="snackbar"></div>
     <script src="/socket.io/socket.io.js"></script>
     <script src="./js/chat.js"></script>
   </body>
