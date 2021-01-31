@@ -44,7 +44,10 @@ msgInput.addEventListener("keypress", (e) => {
   }
 });
 
-// append individual messages to the list
+/**
+ * append individual messages to the message thread
+ * @param {*} message
+ */
 function addMsgToThread(message) {
   const li = document.createElement("li");
   li.classList.add("message");
@@ -110,7 +113,10 @@ function addMsgToThread(message) {
   msgThread.appendChild(li);
 }
 
-// determine if valid http url
+/**
+ * determine if valid http(s) url
+ * @param {*} string
+ */
 function isValidHttpUrl(string) {
   let url;
   try {
@@ -121,6 +127,10 @@ function isValidHttpUrl(string) {
   return url.protocol === "http:" || url.protocol === "https:";
 }
 
+/**
+ * Show the user a toast containing the string argument
+ * @param {*} message - the string contents of the toast
+ */
 function showUserToast(message) {
   const snackbar = document.getElementById("snackbar");
   snackbar.innerText = message;
@@ -168,7 +178,10 @@ socket.on("userLeft", () => {
   showUserToast("A user has left the chat");
 });
 
-// send the message from the input element
+/**
+ * Emit the message to connected clients
+ * @param {*} message - The string contents from the input element
+ */
 function sendMessage(message) {
   const msgObj = { message: message, msgSendDate: +new Date() };
   socket.emit("clientChat", msgObj);
