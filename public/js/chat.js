@@ -140,6 +140,25 @@ socket.on("chatMessage", (message) => {
   addMsgToThread(message);
 });
 
+socket.on("tweak", (messageObj) => {
+  console.log(messageObj);
+  const { type } = messageObj;
+  switch (type) {
+    case "bright":
+      document.body.classList.add("bright");
+      document.getElementById("message-thread").classList.add("bright");
+      document.getElementById("message-text").classList.add("bright");
+      break;
+    case "dark":
+      document.body.classList.remove("bright");
+      document.getElementById("message-thread").classList.remove("bright");
+      document.getElementById("message-text").classList.remove("bright");
+      break;
+    default:
+      break;
+  }
+});
+
 // recvs a broadcast when a connection is detected server-side.
 // add this message in a seperate fashion
 socket.on("newUserMessage", (message) => {

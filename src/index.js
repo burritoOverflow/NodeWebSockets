@@ -26,6 +26,25 @@ function appendToLog(logMsg) {
   });
 }
 
+// given one of the reserved messages, perform the corresponding action
+function tweaksMessage(messageObj) {
+  const { message } = messageObj;
+  switch (message) {
+    case "/bright":
+      io.emit("tweak", {
+        type: "bright",
+      });
+      break;
+    case "/dark":
+      io.emit("tweak", {
+        type: "dark",
+      });
+      break;
+    default:
+      break;
+  }
+}
+
 // parse the socket's ip address and port for addition to logs
 function getIpAddrPortStr(socket) {
   return `${socket.handshake.address}`;
@@ -43,8 +62,10 @@ io.on("connection", (socket) => {
   // broadcast the 'user joined message'
   socket.broadcast.emit("newUserMessage", "A new user has joined");
 
+  // on client chat
   socket.on("clientChat", (message) => {
     appendToLog(`${JSON.stringify(message)}\n`);
+    tweaksMessage(message);
     io.emit("chatMessage", message);
   });
 

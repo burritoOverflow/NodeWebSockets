@@ -13,6 +13,11 @@ a {
   font-weight: bolder;
 }
 
+.bright {
+  background-color: white !important;
+  color: black !important;
+}
+
 #main-container {
   height: 65%;
   display: flex;
