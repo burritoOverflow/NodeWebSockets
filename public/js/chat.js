@@ -30,6 +30,7 @@ sendLocButton.addEventListener("click", () => {
       longitude: longitude,
     };
     socket.emit("userLocation", latLng);
+    showUserToast("Location Shared");
   });
 });
 
@@ -72,6 +73,7 @@ function addMsgToThread(message) {
       if (urlIdxs.includes(idx)) {
         const anchorEl = document.createElement("a");
         anchorEl.setAttribute("href", token);
+        anchorEl.setAttribute("target", "_blank");
         anchorEl.innerText = token;
         anchorElements.push(anchorEl);
 
