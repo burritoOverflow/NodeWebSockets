@@ -65,7 +65,10 @@ io.on("connection", (socket) => {
   // on client chat
   socket.on("clientChat", (message) => {
     appendToLog(`${JSON.stringify(message)}\n`);
-    tweaksMessage(message);
+    // check if the leading character is a backslash
+    if (message.message[0] === "/") {
+      tweaksMessage(message);
+    }
     io.emit("chatMessage", message);
   });
 

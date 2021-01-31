@@ -23,7 +23,6 @@ sendLocButton.addEventListener("click", () => {
   }
 
   navigator.geolocation.getCurrentPosition((position) => {
-    console.log(position);
     const { latitude, longitude } = position.coords;
     const latLng = {
       latitude: latitude,
@@ -141,7 +140,6 @@ socket.on("chatMessage", (message) => {
 });
 
 socket.on("tweak", (messageObj) => {
-  console.log(messageObj);
   const { type } = messageObj;
   switch (type) {
     case "bright":
