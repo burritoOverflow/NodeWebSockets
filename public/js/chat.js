@@ -28,8 +28,9 @@ sendLocButton.addEventListener("click", () => {
       latitude: latitude,
       longitude: longitude,
     };
-    socket.emit("userLocation", latLng);
-    showUserToast("Location Shared");
+    socket.emit("userLocation", latLng, (serverAckMessage) => {
+      showUserToast(serverAckMessage);
+    });
   });
 });
 
@@ -184,7 +185,9 @@ socket.on("userLeft", () => {
  */
 function sendMessage(message) {
   const msgObj = { message: message, msgSendDate: +new Date() };
-  socket.emit("clientChat", msgObj);
+  socket.emit("clientChat", msgObj, (serverMsg) => {
+    showUserToast(serverMsg);
+  });
   // remove text from the element
   msgInput.value = "";
 }

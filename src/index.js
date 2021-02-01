@@ -1,9 +1,10 @@
-const express = require("express");
 const path = require("path");
-
-const http = require("http");
-const socketIo = require("socket.io");
 const fs = require("fs");
+const http = require("http");
+
+const express = require("express");
+const socketIo = require("socket.io");
+const Filter = require("bad-words");
 
 const app = express();
 const server = http.createServer(app);
@@ -15,6 +16,10 @@ const pubDirPath = path.join(__dirname, "..", "public");
 app.use(express.static(pubDirPath));
 const wsClients = [];
 
+/**
+ * Append a given log message to the log file
+ * @param {*} logMsg
+ */
 function appendToLog(logMsg) {
   const dateStr = new Date().toLocaleString();
   logMsg = `${dateStr} ${logMsg}`;
@@ -26,7 +31,10 @@ function appendToLog(logMsg) {
   });
 }
 
-// given one of the reserved messages, perform the corresponding action
+/**
+ * given one of the reserved messages, perform the corresponding action
+ * @param {*} messageObj
+ */
 function tweaksMessage(messageObj) {
   const { message } = messageObj;
   switch (message) {
@@ -45,7 +53,10 @@ function tweaksMessage(messageObj) {
   }
 }
 
-// parse the socket's ip address and port for addition to logs
+/**
+ * parse the socket's ip address and port for addition to logs
+ * @param {*} socket
+ */
 function getIpAddrPortStr(socket) {
   return `${socket.handshake.address}`;
 }
@@ -63,17 +74,27 @@ io.on("connection", (socket) => {
   socket.broadcast.emit("newUserMessage", "A new user has joined");
 
   // on client chat
-  socket.on("clientChat", (message) => {
-    appendToLog(`${JSON.stringify(message)}\n`);
-    // check if the leading character is a backslash
-    if (message.message[0] === "/") {
-      tweaksMessage(message);
+  socket.on("clientChat", (msgObj, callback) => {
+    const filter = new Filter();
+    appendToLog(`${JSON.stringify(msgObj)}\n`);
+
+    const { message } = msgObj;
+    if (filter.isProfane(message)) {
+      appendToLog(`Profanity detected: '${message}'`);
+      return callback("Watch your language");
     }
-    io.emit("chatMessage", message);
+
+    // check if the leading character is a backslash
+    if (message === "/") {
+      tweaksMessage(msgObj);
+    }
+
+    io.emit("chatMessage", msgObj);
   });
 
   // a client has send lat lng from geolocation api
-  socket.on("userLocation", (latLngObj) => {
+  socket.on("userLocation", (latLngObj, callback) => {
+    callback("Location Shared Successfully");
     appendToLog(
       `${getIpAddrPortStr(socket)} Client Coords: ${JSON.stringify(
         latLngObj
@@ -98,7 +119,10 @@ io.on("connection", (socket) => {
   });
 });
 
-// display the number of clients currently connected
+/**
+ * display the number of clients currently connected.
+ * Emit this count to all connected clients
+ */
 function sendConnectedClientCount() {
   const clientStr = wsClients.length > 1 ? "clients" : "client";
   const areIs = wsClients.length > 1 ? "are" : "is";
