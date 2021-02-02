@@ -136,11 +136,13 @@ a {
 }
 
 #message-thread > li:nth-child(odd) {
+  margin-left: 6%;
   background-color: #9147ff;
   color: whitesmoke;
 }
 
 #message-thread > li:nth-child(even) {
+  margin-left: 13%;
   background-color: whitesmoke;
   color: #18181b;
 }
@@ -173,6 +175,7 @@ a {
 }
 
 .message {
+  width: 54%;
   font-size: large;
   transition: transform 0.3s ease-in-out;
   border: 1px solid black;
@@ -239,7 +242,7 @@ a {
   scrollbar-width: none;
   overflow-y: scroll;
   height: 75%;
-  width: 25%;
+  width: 43%;
   list-style: none;
 }
 
