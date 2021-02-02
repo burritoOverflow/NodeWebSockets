@@ -16,7 +16,25 @@ msgBtn.addEventListener("click", () => {
   }
 });
 
+/**
+ * Parse the query string parameters for the room and the user name
+ * Return an object containing those
+ * @param {string} querystring
+ */
+function parseQSParams(querystring) {
+  const queryStr = location.search;
+  const qsParameters = queryStr.split("&");
+  return {
+    username: qsParameters[0].split("=")[1],
+    room: qsParameters[1].split("=")[1],
+  };
+}
+
+// event handler for the send location button
 sendLocButton.addEventListener("click", () => {
+  sendLocButton.disabled = true;
+  sendLocButton.classList.add("blurry-text");
+
   if (!navigator.geolocation) {
     // no geolocation available
     return alert("geolocation is not available");
@@ -30,6 +48,7 @@ sendLocButton.addEventListener("click", () => {
     };
     socket.emit("userLocation", latLng, (serverAckMessage) => {
       showUserToast(serverAckMessage);
+      sendLocButton.enabled = true;
     });
   });
 });
@@ -67,11 +86,22 @@ function addMsgToThread(message) {
     }
   });
 
-  if (containsURL) {
-    li.innerText = `${new Date(message.msgSendDate)
-      .toLocaleString()
-      .replace(",", " at")} `;
+  // create the spans for the user name the date of the message
+  const userNameSpan = document.createElement("span");
+  userNameSpan.innerText = `${message.username} `;
+  userNameSpan.classList.add("username-span");
 
+  const dateSpan = document.createElement("span");
+  dateSpan.innerText = ` on ${new Date(message.msgSendDate)
+    .toLocaleString()
+    .replace(",", " at")} `;
+  dateSpan.classList.add("date-span");
+
+  li.appendChild(userNameSpan);
+  li.appendChild(dateSpan);
+
+  // if the message sent contains a url
+  if (containsURL) {
     msgTokens.forEach((token, idx) => {
       if (urlIdxs.includes(idx)) {
         const anchorEl = document.createElement("a");
@@ -86,12 +116,15 @@ function addMsgToThread(message) {
       }
     });
   } else {
-    const msgText = `${new Date(message.msgSendDate)
-      .toLocaleString()
-      .replace(",", " at")} ${message.message}`;
-    li.innerText = msgText;
+    // in the event a token string is not a URL, we'll
+    // create an additional span for the actual string message
+    const msgSpan = document.createElement("span");
+    msgSpan.classList.add("message-element-span");
+    msgSpan.innerText = `${message.message}`;
+    li.appendChild(msgSpan);
   }
 
+  // dynamically change the style on hover events
   li.addEventListener("mouseover", (e) => {
     msgThread.style.backgroundColor = "black";
     document.querySelectorAll(".message").forEach((msgEl) => {
@@ -143,10 +176,13 @@ function showUserToast(message) {
 
 // receive the client count when the server updates
 socket.on("clientCount", (message) => {
-  clientCountMsg.innerText = message;
+  message = Number(message);
+  clientCountMsg.innerText =
+    message > 1 ? `${message} users currently` : "You are the only user";
 });
 
 socket.on("chatMessage", (message) => {
+  console.log(message);
   addMsgToThread(message);
 });
 
@@ -171,12 +207,12 @@ socket.on("tweak", (messageObj) => {
 // recvs a broadcast when a connection is detected server-side.
 // add this message in a seperate fashion
 socket.on("newUserMessage", (message) => {
-  showUserToast("A New User Has Joined The Chat");
+  showUserToast(message);
 });
 
 // display the toast when a client leaves
-socket.on("userLeft", () => {
-  showUserToast("A user has left the chat");
+socket.on("userLeft", (message) => {
+  showUserToast(message);
 });
 
 /**
@@ -191,3 +227,15 @@ function sendMessage(message) {
   // remove text from the element
   msgInput.value = "";
 }
+
+// emit a join event to the server with the username and room
+socket.emit("join", parseQSParams(), (error) => {
+  const { room } = parseQSParams();
+  if (error) {
+    location.href = "/";
+    // TODO handle the toast on login, perhaps
+    showUserToast(`Failed to join ${room}`);
+  } else {
+    showUserToast(`You joined ${room}!`);
+  }
+});

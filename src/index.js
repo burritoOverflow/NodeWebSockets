@@ -1,7 +1,12 @@
+// built-in modules
 const path = require("path");
 const fs = require("fs");
 const http = require("http");
 
+// external user-defined
+const { Users } = require("./utils/Users");
+
+// external deps
 const express = require("express");
 const socketIo = require("socket.io");
 const Filter = require("bad-words");
@@ -14,14 +19,16 @@ const port = process.env.PORT || 3000;
 const pubDirPath = path.join(__dirname, "..", "public");
 
 app.use(express.static(pubDirPath));
-const wsClients = [];
+
+const allUsers = new Users();
 
 /**
  * Append a given log message to the log file
- * @param {*} logMsg
+ * @param {string} logMsg
  */
 function appendToLog(logMsg) {
   const dateStr = new Date().toLocaleString();
+  // prepend the current date string
   logMsg = `${dateStr} ${logMsg}`;
 
   fs.appendFile("websocket.log", logMsg, (err) => {
@@ -34,17 +41,18 @@ function appendToLog(logMsg) {
 /**
  * given one of the reserved messages, perform the corresponding action
  * @param {*} messageObj
+ * @param {string} - the room to send the message to
  */
-function tweaksMessage(messageObj) {
+function tweaksMessage(messageObj, room) {
   const { message } = messageObj;
   switch (message) {
     case "/bright":
-      io.emit("tweak", {
+      io.to(room).emit("tweak", {
         type: "bright",
       });
       break;
     case "/dark":
-      io.emit("tweak", {
+      io.to(room).emit("tweak", {
         type: "dark",
       });
       break;
@@ -61,35 +69,60 @@ function getIpAddrPortStr(socket) {
   return `${socket.handshake.address}`;
 }
 
+// registered event handlers for sockets
 io.on("connection", (socket) => {
-  wsClients.push(socket);
   appendToLog(
     `New WebSocket connection from ${getIpAddrPortStr(socket)} ${
-      wsClients.length
+      allUsers.users.length
     } clients\n`
   );
-  sendConnectedClientCount();
 
-  // broadcast the 'user joined message'
-  socket.broadcast.emit("newUserMessage", "A new user has joined");
+  // listener for a client joining
+  socket.on("join", ({ username, room }, callback) => {
+    const { error, user } = allUsers.addUser({ id: socket.id, username, room });
 
-  // on client chat
+    // in the event the user cannot be added, inform them and halt execution
+    if (error) {
+      return callback(error);
+    }
+
+    // join the room specified
+    socket.join(room);
+
+    // broadcast the 'user joined message' to the room if user added successfully
+    socket.broadcast
+      .to(room)
+      .emit("newUserMessage", `User ${username} has joined!`);
+
+    sendConnectedClientCount(room);
+
+    // invoke the user's callback without error on successful join
+    callback();
+  });
+
+  // on client chat event - emitted when a user sends a message
   socket.on("clientChat", (msgObj, callback) => {
     const filter = new Filter();
     appendToLog(`${JSON.stringify(msgObj)}\n`);
 
     const { message } = msgObj;
+    // determine if the message is inappropriate
     if (filter.isProfane(message)) {
       appendToLog(`Profanity detected: '${message}'`);
       return callback("Watch your language");
     }
 
+    // if not, send the message to the user's room
+    const socketUser = allUsers.getUser(socket.id);
+
     // check if the leading character is a backslash
-    if (message === "/") {
-      tweaksMessage(msgObj);
+    if (message[0] === "/") {
+      tweaksMessage(msgObj, socketUser.room);
     }
 
-    io.emit("chatMessage", msgObj);
+    // add the user's name to the message object
+    msgObj["username"] = socketUser.username;
+    io.to(socketUser.room).emit("chatMessage", msgObj);
   });
 
   // a client has send lat lng from geolocation api
@@ -102,32 +135,34 @@ io.on("connection", (socket) => {
     );
   });
 
+  // fires when an individual socket (client) disconnects
   socket.on("disconnect", () => {
-    // remove client
-    const idx = wsClients.indexOf(socket);
-    wsClients.splice(idx, 1);
-    appendToLog(
-      `Client removed: ${getIpAddrPortStr(socket)}. ${
-        wsClients.length
-      } clients remaining\n`
-    );
-    // update clients UI to reflect disconnect
-    sendConnectedClientCount();
+    const user = allUsers.removeUserById(socket.id);
 
-    // show the 'user left' toast on the client
-    io.emit("userLeft", "A user has left the chat.");
+    // possibility exists that a user may never have joined a room,
+    // but the join event fires initially
+    if (user) {
+      // show the 'user left' toast on the client
+      io.to(user.room).emit("userLeft", `${user.username} has left the chat.`);
+      appendToLog(
+        `Client removed: ${getIpAddrPortStr(socket)}. ${
+          allUsers.getUsersInRoom(user.room).length
+        } clients remaining in ${user.room}\n`
+      );
+      // update clients UI to reflect disconnect
+      sendConnectedClientCount(user.room);
+    }
   });
 });
 
 /**
- * display the number of clients currently connected.
+ * display the number of clients currently connected in the room.
  * Emit this count to all connected clients
+ * @param room - the client's room
  */
-function sendConnectedClientCount() {
-  const clientStr = wsClients.length > 1 ? "clients" : "client";
-  const areIs = wsClients.length > 1 ? "are" : "is";
-  const messageStr = `There ${areIs} currently ${wsClients.length} ${clientStr}`;
-  io.emit("clientCount", messageStr);
+function sendConnectedClientCount(room) {
+  const usersInRoom = allUsers.getUsersInRoom(room).length;
+  io.to(room).emit("clientCount", usersInRoom);
 }
 
 server.listen(port, () => console.log(`Server running on port ${port}`));

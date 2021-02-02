@@ -8,6 +8,11 @@ body {
   margin: 0;
 }
 
+label {
+  text-align: center;
+  color: antiquewhite;
+}
+
 a {
   color: white;
   font-weight: bolder;
@@ -18,11 +23,30 @@ a {
   color: black !important;
 }
 
+.join-input {
+  padding: 1em;
+  margin: 1em;
+  display: block;
+  border: 0.5px solid purple;
+  border-radius: 50px;
+}
+
+.join-input:focus {
+  outline: none;
+  font-size: medium;
+  font-weight: bold;
+}
+
 #main-container {
   height: 65%;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+#main-header {
+  padding-left: 0.3em;
+  display: inline;
 }
 
 #heading {
@@ -112,7 +136,35 @@ a {
   color: #18181b;
 }
 
+#message-thread > li:nth-child(odd) > .username-span {
+  text-align: center;
+  border: 1px solid black;
+  border-radius: 30px;
+  background-color: whitesmoke;
+}
+
+#message-thread > li:nth-child(even) > .username-span {
+  text-align: center;
+  border: 1px solid black;
+  border-radius: 30px;
+  background-color: #9147ff;
+}
+
+#message-thread > li:nth-child(odd) > .message-element-span {
+  text-align: center;
+  border-radius: 30px;
+  background-color: whitesmoke;
+  color: #18181b;
+}
+
+#message-thread > li:nth-child(even) > .message-element-span {
+  text-align: center;
+  border-radius: 30px;
+  background-color: #9147ff;
+}
+
 .message {
+  font-size: large;
   transition: transform 0.3s ease-in-out;
   border: 1px solid black;
   border-radius: 20px;
@@ -123,6 +175,27 @@ a {
 .message:hover {
   border: 1px solid whitesmoke;
   transform: translate(1px, -7px);
+}
+
+.message-element-span {
+  width: 79%;
+  overflow: hidden;
+  display: block;
+  padding-left: 1em;
+  padding-right: 1em;
+}
+
+.username-span {
+  color: #18181b;
+  display: block;
+  font-weight: bolder;
+}
+
+.date-span {
+  text-align: left;
+  color: #18181b;
+  font-weight: bold;
+  size: 1em;
 }
 
 .row {

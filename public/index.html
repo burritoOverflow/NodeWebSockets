@@ -5,32 +5,30 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="./css/style.css" />
-    <link rel="stylesheet" href="./css/snackbar.css" />
-    <title>WebSocket Chat</title>
+    <title>Join a Chat Room!</title>
   </head>
   <body>
     <main id="main-container">
-      <div class="row">
-        <div id="heading">
-          <h2 class="flex-item">Chat Application</h2>
-          <h4 id="received-message" class="flex-item"></h4>
+      <form action="/chat.html">
+        <div class="row">
+          <label for="userName">Display Name: </label>
+          <input
+            class="flex-item join-input"
+            type="text"
+            name="username"
+            required
+          />
+          <label for="room-name">Room:</label>
+          <input
+            class="flex-item join-input"
+            type="text"
+            name="room"
+            placeholder="Main"
+            required
+          />
+          <button id="submit-button">Join!</button>
         </div>
-        <div>
-          <textarea
-            id="message-text"
-            name="message-area"
-            class="flex-item"
-          ></textarea>
-          <button id="submit-button" class="flex-item">Send Message</button>
-          <button id="share-location-button" class="flex-item">
-            Send location
-          </button>
-        </div>
-      </div>
-      <ul id="message-thread" class="flex-item"></ul>
+      </form>
     </main>
-    <div id="snackbar"></div>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="./js/chat.js"></script>
   </body>
 </html>
