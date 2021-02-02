@@ -10,7 +10,7 @@
     <title>WebSocket Chat</title>
   </head>
   <body>
-    <main id="main-container">
+    <main id="main-container" class="moving">
       <div class="row">
         <div id="heading" class="console-container">
           <h1 id="main-header" class="flex-item"></h1>
@@ -23,7 +23,9 @@
             name="message-area"
             class="flex-item"
           ></textarea>
-          <button id="submit-button" class="flex-item">Send Message</button>
+          <button id="submit-button" class="flex-item moving">
+            Send Message
+          </button>
           <button id="share-location-button" class="flex-item">
             Send location
           </button>

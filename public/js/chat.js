@@ -97,6 +97,7 @@ function addMsgToThread(message) {
     .replace(",", " at")} `;
   dateSpan.classList.add("date-span");
 
+  li.innerText = "From ";
   li.appendChild(userNameSpan);
   li.appendChild(dateSpan);
 
@@ -182,10 +183,10 @@ socket.on("clientCount", (message) => {
 });
 
 socket.on("chatMessage", (message) => {
-  console.log(message);
   addMsgToThread(message);
 });
 
+// server emits tweak event when a special message is detected
 socket.on("tweak", (messageObj) => {
   const { type } = messageObj;
   switch (type) {
@@ -199,6 +200,9 @@ socket.on("tweak", (messageObj) => {
       document.getElementById("message-thread").classList.remove("bright");
       document.getElementById("message-text").classList.remove("bright");
       break;
+    case "slidedown":
+      document.getElementById("message-thread").classList.add("slide-down");
+      document.getElementById("message-text").classList.add("slide-down");
     default:
       break;
   }

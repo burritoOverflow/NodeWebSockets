@@ -39,26 +39,57 @@ function appendToLog(logMsg) {
 }
 
 /**
+ *
+ * @param {string} message - the message (multiple strings, typically)
+ * to determine if the message contains a tweak.
+ */
+function determineIfMsgContainsTweak(message) {
+  const msgTokens = message.split(" ");
+  let hasTweakMsg = false;
+  let msgTokenIdx = -1;
+
+  msgTokens.forEach((token, idx) => {
+    if (token[0] === "/") {
+      hasTweakMsg = true;
+      msgTokenIdx = idx;
+    }
+  });
+
+  return {
+    hasTweakMsg: hasTweakMsg,
+    idx: msgTokenIdx,
+  };
+}
+
+/**
  * given one of the reserved messages, perform the corresponding action
  * @param {*} messageObj
  * @param {string} - the room to send the message to
  */
 function tweaksMessage(messageObj, room) {
   const { message } = messageObj;
+  let validTweakMessage = undefined;
   switch (message) {
     case "/bright":
+    case "/light":
       io.to(room).emit("tweak", {
         type: "bright",
       });
+      validTweakMessage = "Bright Mode Activated";
       break;
     case "/dark":
       io.to(room).emit("tweak", {
         type: "dark",
       });
+      validTweakMessage = "Dark Mode Activated";
       break;
+    case "/slidedown":
+      io.to(room).emit("tweak", { type: "slidedown" });
+      validTweakMessage = "I'm MELTING";
     default:
       break;
   }
+  return validTweakMessage;
 }
 
 /**
@@ -116,12 +147,24 @@ io.on("connection", (socket) => {
     const socketUser = allUsers.getUser(socket.id);
 
     // check if the leading character is a backslash
-    if (message[0] === "/") {
-      tweaksMessage(msgObj, socketUser.room);
+    const tweakMsgObj = determineIfMsgContainsTweak(message);
+
+    if (tweakMsgObj["hasTweakMsg"]) {
+      // valid tweaks message changes the message to deliver
+      const msgTokenIdx = tweakMsgObj["idx"];
+      const validTweak = tweaksMessage(
+        { message: message.split(" ")[msgTokenIdx] },
+        socketUser.room
+      );
+      if (validTweak) {
+        msgObj["message"] = validTweak;
+      }
     }
 
     // add the user's name to the message object
     msgObj["username"] = socketUser.username;
+
+    // emit the message
     io.to(socketUser.room).emit("chatMessage", msgObj);
   });
 
