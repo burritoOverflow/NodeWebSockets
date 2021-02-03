@@ -20,6 +20,11 @@ const pubDirPath = path.join(__dirname, "..", "public");
 
 app.use(express.static(pubDirPath));
 
+// api route for the current rooms
+app.get("/rooms", (req, res) => {
+  res.json(allUsers.getAllOccupiedRoomsAndCount());
+});
+
 const allUsers = new Users();
 
 /**

@@ -87,6 +87,25 @@ class Users {
     });
     return usersInRoom;
   }
+
+  /**
+   * Create and return an object that contains each currently active room and
+   * the number of participants in the room
+   */
+  getAllOccupiedRoomsAndCount() {
+    const roomsObj = {};
+    if (this.users.length > 0) {
+      this.users.forEach((user) => {
+        const roomName = user.room;
+        if (!roomsObj[roomName]) {
+          roomsObj[roomName] = 1;
+        } else {
+          roomsObj[roomName]++;
+        }
+      });
+    }
+    return roomsObj;
+  }
 }
 
 module.exports = {

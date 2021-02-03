@@ -258,6 +258,11 @@ a {
 .moving {
   animation: moveAround 2s infinite;
 }
+.room-counter {
+  font-size: larger;
+  text-align: center;
+  color: antiquewhite;
+}
 
 @keyframes slideInFromLeft {
   0% {
