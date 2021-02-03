@@ -201,12 +201,12 @@ io.on("connection", (socket) => {
       sendConnectedClientCount(user.room);
     }
   });
-});
+}); // end socket io block
 
 /**
  * display the number of clients currently connected in the room.
- * Emit this count to all connected clients
- * @param room - the client's room
+ * Emit this count to all connected clients in the same room
+ * @param room - the room
  */
 function sendConnectedClientCount(room) {
   const usersInRoom = allUsers.getUsersInRoom(room).length;

@@ -1,3 +1,7 @@
+/**
+ * Fetch data from the 'rooms' route and
+ * display it on the main page: {count} in {room}
+ */
 (() => {
   fetch("/rooms")
     .then(function (response) {
@@ -8,16 +12,14 @@
       return response.json();
     })
     .then(function (jsonResp) {
-      // Do stuff with the JSON
-      console.log(jsonResp);
-
-      // empty object
+      // empty object (no rooms occupied), nothing to do
       if (
         Object.keys(jsonResp).length === 0 &&
         jsonResp.constructor === Object
       ) {
         return;
       }
+
       const roomCountDiv = document.getElementById("room-count");
       roomCountDiv.innerText = "Participants:";
 
@@ -29,6 +31,6 @@
       });
     })
     .catch(function (error) {
-      console.log("Looks like there was a problem: \n", error);
+      console.error("Error fetching data", error);
     });
 })();

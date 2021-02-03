@@ -47,7 +47,7 @@ class Users {
   } // end addUser
 
   /**
-   * Remoive the user with the provided id
+   * Remove the user with the provided id
    * @param {number} id
    */
   removeUserById(id) {
