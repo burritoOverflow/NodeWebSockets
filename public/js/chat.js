@@ -1,3 +1,4 @@
+// takes a url arg if not connecting to the same server serving the script
 const socket = io();
 
 const msgInput = document.getElementById("message-text");
@@ -79,6 +80,7 @@ function addMsgToThread(message) {
 
   let anchorElements = [];
 
+  // check if a single string in the message is a valid HTTP(S) url
   msgTokens.forEach((token, idx) => {
     if (isValidHttpUrl(token)) {
       urlIdxs.push(idx);
@@ -97,6 +99,7 @@ function addMsgToThread(message) {
     .replace(",", " at")} `;
   dateSpan.classList.add("date-span");
 
+  // prepend the text on the list element
   li.innerText = "From ";
   li.appendChild(userNameSpan);
   li.appendChild(dateSpan);
@@ -146,6 +149,11 @@ function addMsgToThread(message) {
   });
 
   msgThread.appendChild(li);
+  const messages = document.getElementsByClassName("message");
+  messages[messages.length - 1].scrollIntoView({
+    block: "end",
+    behavior: "smooth",
+  });
 }
 
 /**
