@@ -90,17 +90,31 @@ function addMsgToThread(message) {
 
   // create the spans for the user name the date of the message
   const userNameSpan = document.createElement("span");
-  userNameSpan.innerText = `${message.username} `;
+
+  // check if the user is seeing their own sent message
+  const usersOwnMessage = message.username === localStorage.getItem("username");
+
+  // UI should reflect a user seeing their own message differently
+  if (usersOwnMessage) {
+    userNameSpan.innerText = "You ";
+  } else {
+    userNameSpan.innerText = `${message.username} `;
+  }
   userNameSpan.classList.add("username-span");
 
+  // parse the timestamp in the message and display
+  // as a formatted string
   const dateSpan = document.createElement("span");
   dateSpan.innerText = ` on ${new Date(message.msgSendDate)
     .toLocaleString()
     .replace(",", " at")} `;
   dateSpan.classList.add("date-span");
 
-  // prepend the text on the list element
-  li.innerText = "From ";
+  // prepend the text on the list element, only if other user's message
+  if (!usersOwnMessage) {
+    li.innerText = "From ";
+  }
+
   li.appendChild(userNameSpan);
   li.appendChild(dateSpan);
 
@@ -154,6 +168,11 @@ function addMsgToThread(message) {
     block: "end",
     behavior: "smooth",
   });
+
+  // show a user a notification
+  if (!usersOwnMessage) {
+    displayNotification(`${message.username} said ${message.message}`);
+  }
 }
 
 /**
@@ -183,6 +202,25 @@ function showUserToast(message) {
   }, 2000);
 }
 
+/**
+ *
+ * @param {*} message - the message to show in the notification
+ */
+function displayNotification(message) {
+  if (!("Notification" in window)) {
+    // we'll just fail gracefully
+    return;
+  } else if (Notification.permission === "granted") {
+    const notification = new Notification(message);
+  } else if (Notification.permission !== "denied") {
+    Notification.requestPermission().then((permission) => {
+      if (permission === "granted") {
+        const notification = new Notification(message);
+      }
+    });
+  }
+}
+
 // receive the client count when the server updates
 socket.on("clientCount", (message) => {
   message = Number(message);
@@ -190,6 +228,7 @@ socket.on("clientCount", (message) => {
     message > 1 ? `${message} users currently` : "You are the only user";
 });
 
+// event listener for incoming events
 socket.on("chatMessage", (message) => {
   addMsgToThread(message);
 });
@@ -219,12 +258,21 @@ socket.on("tweak", (messageObj) => {
 // recvs a broadcast when a connection is detected server-side.
 // add this message in a seperate fashion
 socket.on("newUserMessage", (message) => {
-  showUserToast(message);
+  if (document.hidden) {
+    displayNotification(message);
+  } else {
+    showUserToast(message);
+  }
 });
 
-// display the toast when a client leaves
+// display the toast when a client leaves, if the page
+// is visible, else we'll use a notification
 socket.on("userLeft", (message) => {
-  showUserToast(message);
+  if (document.hidden) {
+    displayNotification(message);
+  } else {
+    showUserToast(message);
+  }
 });
 
 /**
@@ -233,21 +281,27 @@ socket.on("userLeft", (message) => {
  */
 function sendMessage(message) {
   const msgObj = { message: message, msgSendDate: +new Date() };
+  // callback is invoked when profanity is detected
   socket.emit("clientChat", msgObj, (serverMsg) => {
     showUserToast(serverMsg);
   });
-  // remove text from the element
+  // remove text from the input text-element
   msgInput.value = "";
 }
 
 // emit a join event to the server with the username and room
+// we'll also store the User's name in localstorage, and should change the DOM
+// elements to reflect that
 socket.emit("join", parseQSParams(), (error) => {
-  const { room } = parseQSParams();
+  const { username, room } = parseQSParams();
   if (error) {
     location.href = "/";
     // TODO handle the toast on login, perhaps
     showUserToast(`Failed to join ${room}`);
   } else {
     showUserToast(`You joined ${room}!`);
+    // NOTE: this will blow away the previous username stored
+    // this probably isn't a problem, but it's best to check
+    localStorage.setItem("username", username);
   }
 });

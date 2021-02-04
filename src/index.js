@@ -91,6 +91,7 @@ function tweaksMessage(messageObj, room) {
     case "/slidedown":
       io.to(room).emit("tweak", { type: "slidedown" });
       validTweakMessage = "I'm MELTING";
+      break;
     default:
       break;
   }
