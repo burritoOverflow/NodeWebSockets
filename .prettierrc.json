@@ -1,11 +1,7 @@
 
 {
-    "extends": ["airbnb-base", "plugin:prettier/recommended"],
-    "plugins": ["prettier"],
-    "parserOptions": {
-      "ecmaVersion": 2018
-    },
-    "rules": {
-      "prettier/prettier": "error"
-    }
+  "trailingComma": "all",
+  "tabWidth": 2,
+  "semi": true,
+  "singleQuote": true
   }

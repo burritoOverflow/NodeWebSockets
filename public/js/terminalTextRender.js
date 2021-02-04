@@ -1,3 +1,4 @@
+/* eslint-disable no-plusplus */
 /**
  * IIFE for the typewriter/terminal typing effect on the element showing
  * room name
@@ -5,7 +6,9 @@
 (() => {
   let counter = 0;
   // get the room from the query string parameters
-  const message = `Welcome to ${location.search.split('&')[1].split('=')[1]}`;
+  const message = `Welcome to ${
+    window.location.search.split('&')[1].split('=')[1]
+  }`;
   const typeWriterEl = document.getElementById('main-header');
   const inputTextArea = document.getElementById('message-text');
 

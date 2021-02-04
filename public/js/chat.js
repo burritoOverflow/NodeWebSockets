@@ -1,4 +1,5 @@
 // takes a url arg if not connecting to the same server serving the script
+// eslint-disable-next-line no-undef
 const socket = io();
 
 const msgInput = document.getElementById('message-text');
@@ -7,24 +8,84 @@ const sendLocButton = document.getElementById('share-location-button');
 const clientCountMsg = document.getElementById('received-message');
 const msgThread = document.getElementById('message-thread');
 
+/**
+ * Show the user a toast containing the string argument
+ * @param {*} message - the string contents of the toast
+ */
+function showUserToast(message) {
+  const snackbar = document.getElementById('snackbar');
+  snackbar.innerText = message;
+  snackbar.classList.add('show');
+  setTimeout(() => {
+    snackbar.classList.remove('show');
+  }, 2000);
+}
+
+/**
+ * @param {*} message - the message to show in the notification
+ */
+function displayNotification(message) {
+  if (!('Notification' in window)) {
+    // we'll just fail gracefully
+    return;
+  }
+
+  if (Notification.permission === 'granted') {
+    const notification = new Notification(message);
+  } else if (Notification.permission !== 'denied') {
+    Notification.requestPermission().then((permission) => {
+      if (permission === 'granted') {
+        const notification = new Notification(message);
+      }
+    });
+  }
+}
+
+/**
+ * Emit the message to connected clients
+ * @param {*} message - The string contents from the input element
+ */
+function sendMessage(message) {
+  const msgObj = { message, msgSendDate: +new Date() };
+  // callback is invoked when profanity is detected
+  socket.emit('clientChat', msgObj, (serverMsg) => {
+    showUserToast(serverMsg);
+  });
+  // remove text from the input text-element
+  msgInput.value = '';
+}
+
+/**
+ * determine if valid http(s) url
+ * @param {*} string
+ * @return {boolean} - true if valid
+ */
+function isValidHttpUrl(string) {
+  let url;
+  try {
+    url = new URL(string);
+  } catch (_) {
+    return false;
+  }
+  return url.protocol === 'http:' || url.protocol === 'https:';
+}
+
 msgBtn.addEventListener('click', () => {
   // make sure a message is present
   const msgStr = msgInput.value.trim();
-  if (msgStr == '') {
+  if (msgStr === '') {
     return;
-  } else {
-    sendMessage(msgStr);
   }
+  sendMessage(msgStr);
 });
 
 /**
  * Parse the query string parameters for the room and the user name
  * Return an object containing those
- * @param {string} querystring
  * @return {Object} - object containing username and room
  */
-function parseQSParams(querystring) {
-  const queryStr = location.search;
+function parseQSParams() {
+  const queryStr = window.location.search;
   const qsParameters = queryStr.split('&');
   return {
     username: qsParameters[0].split('=')[1],
@@ -38,15 +99,14 @@ sendLocButton.addEventListener('click', () => {
   sendLocButton.classList.add('blurry-text');
 
   if (!navigator.geolocation) {
-    // no geolocation available
-    return alert('geolocation is not available');
+    return;
   }
 
   navigator.geolocation.getCurrentPosition((position) => {
-    const {latitude, longitude} = position.coords;
+    const { latitude, longitude } = position.coords;
     const latLng = {
-      latitude: latitude,
-      longitude: longitude,
+      latitude,
+      longitude,
     };
     socket.emit('userLocation', latLng, (serverAckMessage) => {
       showUserToast(serverAckMessage);
@@ -57,7 +117,7 @@ sendLocButton.addEventListener('click', () => {
 
 // allow for enter key in the text input to send a message
 msgInput.addEventListener('keypress', (e) => {
-  const key = e.key;
+  const { key } = e;
   if (key === 'Enter') {
     const msgStr = msgInput.value.trim();
     if (msgStr !== '') {
@@ -107,8 +167,8 @@ function addMsgToThread(message) {
   // as a formatted string
   const dateSpan = document.createElement('span');
   dateSpan.innerText = ` on ${new Date(message.msgSendDate)
-      .toLocaleString()
-      .replace(',', ' at')} `;
+    .toLocaleString()
+    .replace(',', ' at')} `;
   dateSpan.classList.add('date-span');
 
   // prepend the text on the list element, only if other user's message
@@ -131,7 +191,9 @@ function addMsgToThread(message) {
 
         li.appendChild(anchorEl);
       } else {
-        li.innerText += token + ' ';
+        // prettier-ignore
+        // eslint-disable-next-line template-curly-spacing, no-multi-spaces
+        li.innerText += `${token  } `;
       }
     });
   } else {
@@ -144,7 +206,7 @@ function addMsgToThread(message) {
   }
 
   // dynamically change the style on hover events
-  li.addEventListener('mouseover', (e) => {
+  li.addEventListener('mouseover', () => {
     msgThread.style.backgroundColor = 'black';
     document.querySelectorAll('.message').forEach((msgEl) => {
       if (msgEl !== li) {
@@ -153,10 +215,11 @@ function addMsgToThread(message) {
     });
   });
 
-  li.addEventListener('mouseout', (e) => {
+  li.addEventListener('mouseout', () => {
     msgThread.style.backgroundColor = '#18181b';
     document.querySelectorAll('.message').forEach((msgEl) => {
       if (msgEl !== li) {
+        // eslint-disable-next-line no-param-reassign
         msgEl.style.opacity = 1.0;
         msgEl.classList.remove('blurry-text');
       }
@@ -176,57 +239,11 @@ function addMsgToThread(message) {
   }
 }
 
-/**
- * determine if valid http(s) url
- * @param {*} string
- * @return {boolean} - true if valid
- */
-function isValidHttpUrl(string) {
-  let url;
-  try {
-    url = new URL(string);
-  } catch (_) {
-    return false;
-  }
-  return url.protocol === 'http:' || url.protocol === 'https:';
-}
-
-/**
- * Show the user a toast containing the string argument
- * @param {*} message - the string contents of the toast
- */
-function showUserToast(message) {
-  const snackbar = document.getElementById('snackbar');
-  snackbar.innerText = message;
-  snackbar.classList.add('show');
-  setTimeout(() => {
-    snackbar.classList.remove('show');
-  }, 2000);
-}
-
-/**
- * @param {*} message - the message to show in the notification
- */
-function displayNotification(message) {
-  if (!('Notification' in window)) {
-    // we'll just fail gracefully
-    return;
-  } else if (Notification.permission === 'granted') {
-    const notification = new Notification(message);
-  } else if (Notification.permission !== 'denied') {
-    Notification.requestPermission().then((permission) => {
-      if (permission === 'granted') {
-        const notification = new Notification(message);
-      }
-    });
-  }
-}
-
 // receive the client count when the server updates
 socket.on('clientCount', (message) => {
-  message = Number(message);
+  const msgNum = Number(message);
   clientCountMsg.innerText =
-    message > 1 ? `${message} users currently` : 'You are the only user';
+    message > 1 ? `${msgNum} users currently` : 'You are the only user';
 });
 
 // event listener for incoming events
@@ -236,7 +253,7 @@ socket.on('chatMessage', (message) => {
 
 // server emits tweak event when a special message is detected
 socket.on('tweak', (messageObj) => {
-  const {type} = messageObj;
+  const { type } = messageObj;
   switch (type) {
     case 'bright':
       document.body.classList.add('bright');
@@ -251,6 +268,7 @@ socket.on('tweak', (messageObj) => {
     case 'slidedown':
       document.getElementById('message-thread').classList.add('slide-down');
       document.getElementById('message-text').classList.add('slide-down');
+      break;
     default:
       break;
   }
@@ -276,27 +294,13 @@ socket.on('userLeft', (message) => {
   }
 });
 
-/**
- * Emit the message to connected clients
- * @param {*} message - The string contents from the input element
- */
-function sendMessage(message) {
-  const msgObj = {message: message, msgSendDate: +new Date()};
-  // callback is invoked when profanity is detected
-  socket.emit('clientChat', msgObj, (serverMsg) => {
-    showUserToast(serverMsg);
-  });
-  // remove text from the input text-element
-  msgInput.value = '';
-}
-
 // emit a join event to the server with the username and room
 // we'll also store the User's name in localstorage, and should change the DOM
 // elements to reflect that
 socket.emit('join', parseQSParams(), (error) => {
-  const {username, room} = parseQSParams();
+  const { username, room } = parseQSParams();
   if (error) {
-    location.href = '/';
+    window.location.href = '/';
     // TODO handle the toast on login, perhaps
     showUserToast(`Failed to join ${room}`);
   } else {
