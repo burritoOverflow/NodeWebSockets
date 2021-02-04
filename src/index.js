@@ -1,27 +1,27 @@
 // built-in modules
-const path = require("path");
-const fs = require("fs");
-const http = require("http");
+const path = require('path');
+const fs = require('fs');
+const http = require('http');
 
 // external user-defined
-const { Users } = require("./utils/Users");
+const {Users} = require('./utils/Users');
 
 // external deps
-const express = require("express");
-const socketIo = require("socket.io");
-const Filter = require("bad-words");
+const express = require('express');
+const socketIo = require('socket.io');
+const Filter = require('bad-words');
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
 const port = process.env.PORT || 3000;
-const pubDirPath = path.join(__dirname, "..", "public");
+const pubDirPath = path.join(__dirname, '..', 'public');
 
 app.use(express.static(pubDirPath));
 
 // api route for the current rooms
-app.get("/rooms", (req, res) => {
+app.get('/rooms', (req, res) => {
   res.json(allUsers.getAllOccupiedRoomsAndCount());
 });
 
@@ -36,7 +36,7 @@ function appendToLog(logMsg) {
   // prepend the current date string
   logMsg = `${dateStr} ${logMsg}`;
 
-  fs.appendFile("websocket.log", logMsg, (err) => {
+  fs.appendFile('websocket.log', logMsg, (err) => {
     if (err) {
       console.error(err);
     }
@@ -47,14 +47,15 @@ function appendToLog(logMsg) {
  *
  * @param {string} message - the message (multiple strings, typically)
  * to determine if the message contains a tweak.
+ * @return {*} - object containing the index of the tweak msg (if applicable)
  */
 function determineIfMsgContainsTweak(message) {
-  const msgTokens = message.split(" ");
+  const msgTokens = message.split(' ');
   let hasTweakMsg = false;
   let msgTokenIdx = -1;
 
   msgTokens.forEach((token, idx) => {
-    if (token[0] === "/") {
+    if (token[0] === '/') {
       hasTweakMsg = true;
       msgTokenIdx = idx;
     }
@@ -69,28 +70,29 @@ function determineIfMsgContainsTweak(message) {
 /**
  * given one of the reserved messages, perform the corresponding action
  * @param {*} messageObj
- * @param {string} - the room to send the message to
+ * @param {string} room - the room to send the message to
+ * @return {boolean}- boolean indicating if the message was a valid tweak
  */
 function tweaksMessage(messageObj, room) {
-  const { message } = messageObj;
+  const {message} = messageObj;
   let validTweakMessage = undefined;
   switch (message) {
-    case "/bright":
-    case "/light":
-      io.to(room).emit("tweak", {
-        type: "bright",
+    case '/bright':
+    case '/light':
+      io.to(room).emit('tweak', {
+        type: 'bright',
       });
-      validTweakMessage = "Bright Mode Activated";
+      validTweakMessage = 'Bright Mode Activated';
       break;
-    case "/dark":
-      io.to(room).emit("tweak", {
-        type: "dark",
+    case '/dark':
+      io.to(room).emit('tweak', {
+        type: 'dark',
       });
-      validTweakMessage = "Dark Mode Activated";
+      validTweakMessage = 'Dark Mode Activated';
       break;
-    case "/slidedown":
-      io.to(room).emit("tweak", { type: "slidedown" });
-      validTweakMessage = "I'm MELTING";
+    case '/slidedown':
+      io.to(room).emit('tweak', {type: 'slidedown'});
+      validTweakMessage = 'I\'m MELTING';
       break;
     default:
       break;
@@ -101,22 +103,23 @@ function tweaksMessage(messageObj, room) {
 /**
  * parse the socket's ip address and port for addition to logs
  * @param {*} socket
+ * @return  {string} - template literal ip addr
  */
 function getIpAddrPortStr(socket) {
   return `${socket.handshake.address}`;
 }
 
 // registered event handlers for sockets
-io.on("connection", (socket) => {
+io.on('connection', (socket) => {
   appendToLog(
-    `New WebSocket connection from ${getIpAddrPortStr(socket)} ${
-      allUsers.users.length
-    } clients\n`
+      `New WebSocket connection from ${getIpAddrPortStr(socket)} ${
+        allUsers.users.length
+      } clients\n`,
   );
 
   // listener for a client joining
-  socket.on("join", ({ username, room }, callback) => {
-    const { error, user } = allUsers.addUser({ id: socket.id, username, room });
+  socket.on('join', ({username, room}, callback) => {
+    const {error} = allUsers.addUser({id: socket.id, username, room});
 
     // in the event the user cannot be added, inform them and halt execution
     if (error) {
@@ -126,10 +129,11 @@ io.on("connection", (socket) => {
     // join the room specified
     socket.join(room);
 
-    // broadcast the 'user joined message' to the room if user added successfully
+    // broadcast the 'user joined message' to the room if user added
+    // successfully
     socket.broadcast
-      .to(room)
-      .emit("newUserMessage", `User ${username} has joined!`);
+        .to(room)
+        .emit('newUserMessage', `User ${username} has joined!`);
 
     sendConnectedClientCount(room);
 
@@ -138,15 +142,15 @@ io.on("connection", (socket) => {
   });
 
   // on client chat event - emitted when a user sends a message
-  socket.on("clientChat", (msgObj, callback) => {
+  socket.on('clientChat', (msgObj, callback) => {
     const filter = new Filter();
     appendToLog(`${JSON.stringify(msgObj)}\n`);
 
-    const { message } = msgObj;
+    const {message} = msgObj;
     // determine if the message is inappropriate
     if (filter.isProfane(message)) {
       appendToLog(`Profanity detected: '${message}'`);
-      return callback("Watch your language");
+      return callback('Watch your language');
     }
 
     // if not, send the message to the user's room
@@ -155,48 +159,48 @@ io.on("connection", (socket) => {
     // check if the leading character is a backslash
     const tweakMsgObj = determineIfMsgContainsTweak(message);
 
-    if (tweakMsgObj["hasTweakMsg"]) {
+    if (tweakMsgObj['hasTweakMsg']) {
       // valid tweaks message changes the message to deliver
-      const msgTokenIdx = tweakMsgObj["idx"];
+      const msgTokenIdx = tweakMsgObj['idx'];
       const validTweak = tweaksMessage(
-        { message: message.split(" ")[msgTokenIdx] },
-        socketUser.room
+          {message: message.split(' ')[msgTokenIdx]},
+          socketUser.room,
       );
       if (validTweak) {
-        msgObj["message"] = validTweak;
+        msgObj['message'] = validTweak;
       }
     }
 
     // add the user's name to the message object
-    msgObj["username"] = socketUser.username;
+    msgObj['username'] = socketUser.username;
 
     // emit the message
-    io.to(socketUser.room).emit("chatMessage", msgObj);
+    io.to(socketUser.room).emit('chatMessage', msgObj);
   });
 
   // a client has send lat lng from geolocation api
-  socket.on("userLocation", (latLngObj, callback) => {
-    callback("Location Shared Successfully");
+  socket.on('userLocation', (latLngObj, callback) => {
+    callback('Location Shared Successfully');
     appendToLog(
-      `${getIpAddrPortStr(socket)} Client Coords: ${JSON.stringify(
-        latLngObj
-      )}\n`
+        `${getIpAddrPortStr(socket)} Client Coords: ${JSON.stringify(
+            latLngObj,
+        )}\n`,
     );
   });
 
   // fires when an individual socket (client) disconnects
-  socket.on("disconnect", () => {
+  socket.on('disconnect', () => {
     const user = allUsers.removeUserById(socket.id);
 
     // possibility exists that a user may never have joined a room,
     // but the join event fires initially
     if (user) {
       // show the 'user left' toast on the client
-      io.to(user.room).emit("userLeft", `${user.username} has left the chat.`);
+      io.to(user.room).emit('userLeft', `${user.username} has left the chat.`);
       appendToLog(
-        `Client removed: ${getIpAddrPortStr(socket)}. ${
-          allUsers.getUsersInRoom(user.room).length
-        } clients remaining in ${user.room}\n`
+          `Client removed: ${getIpAddrPortStr(socket)}. ${
+            allUsers.getUsersInRoom(user.room).length
+          } clients remaining in ${user.room}\n`,
       );
       // update clients UI to reflect disconnect
       sendConnectedClientCount(user.room);
@@ -207,11 +211,11 @@ io.on("connection", (socket) => {
 /**
  * display the number of clients currently connected in the room.
  * Emit this count to all connected clients in the same room
- * @param room - the room
+ * @param {string} room - string of the room
  */
 function sendConnectedClientCount(room) {
   const usersInRoom = allUsers.getUsersInRoom(room).length;
-  io.to(room).emit("clientCount", usersInRoom);
+  io.to(room).emit('clientCount', usersInRoom);
 }
 
 server.listen(port, () => console.log(`Server running on port ${port}`));

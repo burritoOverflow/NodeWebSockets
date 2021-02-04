@@ -14,13 +14,13 @@ class Users {
    */
   addUser({ id, username, room }) {
     // tidy up the username, replace query string + w/ underscores
-    username = username.trim().toLowerCase().replace("+", "_");
+    username = username.trim().toLowerCase().replace('+', '_');
     room = room.trim().toLowerCase();
 
     // validate the attempted user data
     if (!username || !room) {
       return {
-        error: "Username and room are required.",
+        error: 'Username and room are required.',
       };
     }
 
