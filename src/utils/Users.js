@@ -10,9 +10,9 @@ class Users {
    * @param {Object.<number, string, string>} userObj - contains the socketio id, the
    * user's display name, and the room the user is associated with. All usernames are
    * case sensitive
-   * @returns the created new user object, or an object containing an error
+   * @return the created new user object, or an object containing an error
    */
-  addUser({ id, username, room }) {
+  addUser({id, username, room}) {
     // tidy up the username, replace query string + w/ underscores
     username = username.trim().toLowerCase().replace('+', '_');
     room = room.trim().toLowerCase();
@@ -40,7 +40,7 @@ class Users {
     }
 
     // Store the valid user
-    const user = { id, username, room };
+    const user = {id, username, room};
     this.users.push(user);
 
     return user;

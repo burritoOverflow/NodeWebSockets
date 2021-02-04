@@ -205,7 +205,6 @@ function showUserToast(message) {
 }
 
 /**
- *
  * @param {*} message - the message to show in the notification
  */
 function displayNotification(message) {
