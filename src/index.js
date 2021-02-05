@@ -79,6 +79,18 @@ function sendConnectedClientCount(room) {
 }
 
 /**
+ *
+ * @param {string} room - the room to broadcast the user list to
+ * @return array of all the usernames in the room
+ */
+function getAllUsernamesInRoom(room) {
+  return allUsers
+    .getUsersInRoom(room)
+    // eslint-disable-next-line no-sequences
+    .reduce((usernames, user) => (usernames.push(user.username), usernames), []);
+}
+
+/**
  * Send a list of the usernames in the room
  * @param {string} room - the room to send the client list to
  */
@@ -129,17 +141,6 @@ function tweaksMessage(messageObj, room) {
  */
 function getIpAddrPortStr(socket) {
   return `${socket.handshake.address}`;
-}
-
-/**
- *
- * @param {string} room - the room to broadcast the user list to
- * @return array of all the usernames in the room
- */
-function getAllUsernamesInRoom(room) {
-  return allUsers
-    .getUsersInRoom(room)
-    .reduce((usernames, user) => (usernames.push(user.username), usernames), []);
 }
 
 // registered event handlers for sockets

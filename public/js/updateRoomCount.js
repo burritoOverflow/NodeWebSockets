@@ -15,8 +15,8 @@
     .then((jsonResp) => {
       // empty object (no rooms occupied), nothing to do
       if (
-        Object.keys(jsonResp).length === 0 &&
-        jsonResp.constructor === Object
+        Object.keys(jsonResp).length === 0
+        && jsonResp.constructor === Object
       ) {
         return;
       }
