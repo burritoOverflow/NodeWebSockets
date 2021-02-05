@@ -1,41 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="./css/style.css" />
-    <link rel="stylesheet" href="./css/snackbar.css" />
-    <link rel="stylesheet" href="./css/terminalTextRender.css" />
-    <title>WebSocket Chat</title>
-  </head>
-  <body>
-    <main id="main-container" class="moving">
-      <div class="row">
-        <div id="heading" class="console-container">
-          <h1 id="main-header" class="flex-item"></h1>
-          <span class="console-underscore" id="console-cursor">&#95;&#95;</span>
-          <h4 id="received-message" class="flex-item"></h4>
-        </div>
-        <div>
-          <textarea
-            id="message-text"
-            name="message-area"
-            class="flex-item"
-          ></textarea>
-          <button id="submit-button" class="flex-item moving">
-            Send Message
-          </button>
-          <button id="share-location-button" class="flex-item">
-            Send location
-          </button>
-        </div>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="./css/style.css" />
+  <link rel="stylesheet" href="./css/snackbar.css" />
+  <link rel="stylesheet" href="./css/terminalTextRender.css" />
+  <title>WebSocket Chat</title>
+</head>
+
+<body>
+  <main id="main-container" class="moving">
+    <div id="heading" class="console-container">
+      <h1 id="main-header"></h1>
+      <span class="console-underscore" id="console-cursor">&#95;&#95;</span>
+      <h4 id="received-message"></h4>
+    </div>
+    <div id="parent-message-text">
+      <div id="child-message-text">
+        <textarea id="message-text" name="message-area"></textarea>
       </div>
-      <ul id="message-thread" class="flex-item"></ul>
-    </main>
-    <div id="snackbar"></div>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="./js/chat.js"></script>
-    <script src="./js/terminalTextRender.js"></script>
-  </body>
+    </div>
+    <div id="button-div">
+      <button id="submit-button" class="moving">
+        Send Message
+      </button>
+      <button id="share-location-button">
+        Send location
+      </button>
+    </div>
+    <ul id="message-thread"></ul>
+  </main>
+  <div id="snackbar"></div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="./js/chat.js"></script>
+  <script src="./js/terminalTextRender.js"></script>
+</body>
+
 </html>

@@ -1,37 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="./css/style.css" />
-    <title>Join a Chat Room!</title>
-  </head>
 
-  <body>
-    <main id="main-container">
-      <form action="/chat.html">
-        <div class="row">
-          <label for="userName">Display Name: </label>
-          <input
-            class="flex-item join-input"
-            type="text"
-            name="username"
-            required
-          />
-          <label for="room-name">Room:</label>
-          <input
-            class="flex-item join-input"
-            type="text"
-            name="room"
-            placeholder="Main"
-            required
-          />
-          <button id="submit-button">Join!</button>
-        </div>
-      </form>
-    </main>
-    <div id="room-count" class="room-counter"></div>
-    <script src="./js/updateRoomCount.js"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="./css/style.css" />
+  <title>Join a Chat Room!</title>
+</head>
+
+<body>
+  <main id="index-main">
+    <form action="/chat.html">
+      <div>
+        <h1 id="index-header">Join a Room</h1>
+        <label for="userName">Display Name: </label>
+        <input class="join-input" type="text" name="username" required />
+        <label for="room-name">Room:</label>
+        <input class=" join-input" type="text" name="room" placeholder="Main" required />
+        <button id="submit-button">Join!</button>
+      </div>
+    </form>
+  </main>
+  <div id="room-count" class="room-counter"></div>
+  <script src="./js/updateRoomCount.js"></script>
+</body>
+
 </html>
