@@ -78,6 +78,14 @@ function sendConnectedClientCount(room) {
   io.to(room).emit('clientCount', usersInRoom);
 }
 
+/**
+ * Send a list of the usernames in the room
+ * @param {string} room - the room to send the client list to
+ */
+function sendUsernamesListForRoom(room) {
+  io.to(room).emit('currentRoomUsers', getAllUsernamesInRoom(room));
+}
+
 // eslint-disable-next-line no-console
 server.listen(port, () => console.log(`Server running on port ${port}`));
 
@@ -123,11 +131,21 @@ function getIpAddrPortStr(socket) {
   return `${socket.handshake.address}`;
 }
 
+/**
+ *
+ * @param {string} room - the room to broadcast the user list to
+ * @return array of all the usernames in the room
+ */
+function getAllUsernamesInRoom(room) {
+  return allUsers
+    .getUsersInRoom(room)
+    .reduce((usernames, user) => (usernames.push(user.username), usernames), []);
+}
+
 // registered event handlers for sockets
 io.on('connection', (socket) => {
   appendToLog(
-    `New WebSocket connection from ${getIpAddrPortStr(socket)} ${
-      allUsers.users.length
+    `New WebSocket connection from ${getIpAddrPortStr(socket)} ${allUsers.users.length
     } clients\n`,
   );
 
@@ -150,7 +168,9 @@ io.on('connection', (socket) => {
       .to(room)
       .emit('newUserMessage', `User ${username} has joined!`);
 
+    // send data for the count of clients and the number of users in the room
     sendConnectedClientCount(room);
+    sendUsernamesListForRoom(room);
 
     // invoke the user's callback without error on successful join
     callback();
@@ -216,12 +236,12 @@ io.on('connection', (socket) => {
       // show the 'user left' toast on the client
       io.to(user.room).emit('userLeft', `${user.username} has left the chat.`);
       appendToLog(
-        `Client removed: ${getIpAddrPortStr(socket)}. ${
-          allUsers.getUsersInRoom(user.room).length
+        `Client removed: ${getIpAddrPortStr(socket)}. ${allUsers.getUsersInRoom(user.room).length
         } clients remaining in ${user.room}\n`,
       );
       // update clients UI to reflect disconnect
       sendConnectedClientCount(user.room);
+      sendUsernamesListForRoom(user.room);
     }
   });
 }); // end socket io block

@@ -193,7 +193,7 @@ function addMsgToThread(message) {
       } else {
         // prettier-ignore
         // eslint-disable-next-line template-curly-spacing, no-multi-spaces
-        li.innerText += `${token  } `;
+        li.innerText += `${token} `;
       }
     });
   } else {
@@ -239,11 +239,59 @@ function addMsgToThread(message) {
   }
 }
 
+/**
+ *  Display the other users currently in the room
+ * @param {*} usersArr - array containing the other users in the room
+ */
+function addUserToUserList(usersArr) {
+  let username;
+  // check localstorage first
+  if (localStorage.getItem('username') === null) {
+    // we can check the query string
+    username = parseQSParams().username;
+  } else {
+    username = localStorage.getItem('username');
+  }
+
+  const usersIndex = usersArr.indexOf(username);
+  // sanity check
+  if (usersIndex > -1) {
+    // remove the user from the arr
+    usersArr.splice(usersIndex, 1);
+  }
+
+  // suppose we'll also have an element for the user themselves
+  usersArr.push('You');
+
+  const usersList = document.getElementById('users-list');
+  const currentUserLis = [];
+
+  // probably should have used a framework or something to avoid sloppy
+  // state management
+  usersList.childNodes.forEach((li) => {
+    currentUserLis.push(li.innerText);
+  });
+
+  usersArr.forEach((userStr) => {
+    // avoid appending users that are already in the DOM
+    if (currentUserLis.includes(userStr)) {
+      return;
+    }
+    const userLi = document.createElement('li');
+    userLi.innerText = userStr;
+    usersList.appendChild(userLi);
+  });
+}
+
 // receive the client count when the server updates
 socket.on('clientCount', (message) => {
   const msgNum = Number(message);
-  clientCountMsg.innerText =
-    message > 1 ? `${msgNum} users currently` : 'You are the only user';
+  clientCountMsg.innerText = message > 1 ? `${msgNum} users currently` : 'You are the only user';
+});
+
+// recv's an array of usernames for the current room
+socket.on('currentRoomUsers', (usersArr) => {
+  addUserToUserList(usersArr);
 });
 
 // event listener for incoming events
