@@ -3,12 +3,12 @@ const path = require('path');
 const fs = require('fs');
 const http = require('http');
 
-// external user-defined
-
 // external deps
 const express = require('express');
 const socketIo = require('socket.io');
 const Filter = require('bad-words');
+
+// user defined
 const { Users } = require('./utils/Users');
 
 const app = express();
@@ -84,10 +84,15 @@ function sendConnectedClientCount(room) {
  * @return array of all the usernames in the room
  */
 function getAllUsernamesInRoom(room) {
-  return allUsers
-    .getUsersInRoom(room)
-    // eslint-disable-next-line no-sequences
-    .reduce((usernames, user) => (usernames.push(user.username), usernames), []);
+  return (
+    allUsers
+      .getUsersInRoom(room)
+      // eslint-disable-next-line no-sequences
+      .reduce(
+        (usernames, user) => (usernames.push(user.username), usernames),
+        [],
+      )
+  );
 }
 
 /**
@@ -146,7 +151,8 @@ function getIpAddrPortStr(socket) {
 // registered event handlers for sockets
 io.on('connection', (socket) => {
   appendToLog(
-    `New WebSocket connection from ${getIpAddrPortStr(socket)} ${allUsers.users.length
+    `New WebSocket connection from ${getIpAddrPortStr(socket)} ${
+      allUsers.users.length
     } clients\n`,
   );
 
@@ -237,7 +243,8 @@ io.on('connection', (socket) => {
       // show the 'user left' toast on the client
       io.to(user.room).emit('userLeft', `${user.username} has left the chat.`);
       appendToLog(
-        `Client removed: ${getIpAddrPortStr(socket)}. ${allUsers.getUsersInRoom(user.room).length
+        `Client removed: ${getIpAddrPortStr(socket)}. ${
+          allUsers.getUsersInRoom(user.room).length
         } clients remaining in ${user.room}\n`,
       );
       // update clients UI to reflect disconnect

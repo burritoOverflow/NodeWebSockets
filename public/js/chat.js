@@ -56,6 +56,28 @@ function sendMessage(message) {
 }
 
 /**
+ *
+ * @param {*} element - html element
+ * @return - true if the element is either hover or focused
+ */
+function isElementHoveredOrFocused(element) {
+  const isHover = element.parentElement.querySelector(':hover') === element;
+  const isFocus = element.parentElement.querySelector(':focus') === element;
+  return isHover || isFocus;
+}
+
+/**
+ * Scroll the view of messages to the latest message
+ */
+function scrollToLatestMessage() {
+  const messages = document.getElementsByClassName('message');
+  messages[messages.length - 1].scrollIntoView({
+    block: 'end',
+    behavior: 'smooth',
+  });
+}
+
+/**
  * determine if valid http(s) url
  * @param {*} string
  * @return {boolean} - true if valid
@@ -227,11 +249,11 @@ function addMsgToThread(message) {
   });
 
   msgThread.appendChild(li);
-  const messages = document.getElementsByClassName('message');
-  messages[messages.length - 1].scrollIntoView({
-    block: 'end',
-    behavior: 'smooth',
-  });
+
+  // once the message is added to the DOM, scroll to the latest
+  if (!isElementHoveredOrFocused(msgThread)) {
+    scrollToLatestMessage();
+  }
 
   // show a user a notification
   if (!usersOwnMessage) {
@@ -286,7 +308,8 @@ function addUserToUserList(usersArr) {
 // receive the client count when the server updates
 socket.on('clientCount', (message) => {
   const msgNum = Number(message);
-  clientCountMsg.innerText = message > 1 ? `${msgNum} users currently` : 'You are the only user';
+  clientCountMsg.innerText =
+    message > 1 ? `${msgNum} users currently` : 'You are the only user';
 });
 
 // recv's an array of usernames for the current room

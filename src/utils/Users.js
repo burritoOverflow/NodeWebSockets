@@ -65,7 +65,7 @@ class Users {
    * @param {number} userObj - the user's id
    */
   getUser(id) {
-    let userToFind = undefined;
+    let userToFind;
     this.users.forEach((user) => {
       if (user.id === id) {
         userToFind = user;
