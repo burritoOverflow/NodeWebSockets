@@ -1,3 +1,4 @@
+/* eslint-disable func-names */
 /* eslint-disable no-underscore-dangle */
 const mongoose = require('mongoose');
 const validator = require('validator');

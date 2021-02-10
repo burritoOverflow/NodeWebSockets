@@ -1,6 +1,5 @@
 // built-in modules
 const path = require('path');
-const fs = require('fs');
 const http = require('http');
 
 // external deps
@@ -12,11 +11,15 @@ const cookieParser = require('cookie-parser');
 // user defined
 const { Users } = require('./utils/Users');
 const verifyUserJWT = require('./utils/verifyJWT');
+const { appendToLog } = require('./utils/logging');
 require('./db/mongoose');
 
 // models
-const { User } = require('./models/user');
-const { Message } = require('./models/messages');
+const {
+  addSocketIoIdToUser,
+  addMessage,
+  removeSocketIoIdFromUser,
+} = require('./db/updateDb');
 
 const app = express();
 const server = http.createServer(app);
@@ -31,6 +34,7 @@ app.use(cookieParser());
 
 // user router
 app.use('/api', require('./routes/user'));
+app.use('/api', require('./routes/room'));
 
 const allUsers = new Users();
 
@@ -98,23 +102,6 @@ app.get('/rooms', (req, res) => {
 });
 
 /**
- * Append a given log message to the log file
- * @param {string} logMsg
- */
-function appendToLog(logMsg) {
-  const dateStr = new Date().toLocaleString();
-  // prepend the current date string
-  const outputLogMsg = `${dateStr} ${logMsg}`;
-
-  fs.appendFile('websocket.log', outputLogMsg, (err) => {
-    if (err) {
-      // eslint-disable-next-line no-console
-      console.error(err);
-    }
-  });
-}
-
-/**
  *
  * @param {string} message - the message (multiple strings, typically)
  * to determine if the message contains a tweak.
@@ -173,8 +160,7 @@ function sendUsernamesListForRoom(room) {
   io.to(room).emit('currentRoomUsers', getAllUsernamesInRoom(room));
 }
 
-// eslint-disable-next-line no-console
-server.listen(port, () => console.log(`Server running on port ${port}`));
+server.listen(port, () => appendToLog(`Server running on port ${port}\n`));
 
 /**
  * given one of the reserved messages, perform the corresponding action
@@ -231,24 +217,7 @@ io.on('connection', (socket) => {
   const tokenCookieValue = cookies.split(';')[0].split('=')[1];
   const usernameCookieValue = cookies.split(';')[1].split('=')[1];
 
-  User.findOne(
-    {
-      'tokens.token': tokenCookieValue,
-      name: usernameCookieValue,
-    },
-    (err, user) => {
-      if (err) {
-        console.error(err);
-      }
-      const { socketIOIDs } = user;
-      socketIOIDs.push({ sid: socket.id });
-      user.save().then((savedUser) => {
-        if (savedUser === user) {
-          console.log('Connect: User saved');
-        }
-      });
-    },
-  );
+  addSocketIoIdToUser(socket, tokenCookieValue, usernameCookieValue);
 
   // listener for a client joining
   // eslint-disable-next-line consistent-return
@@ -290,28 +259,8 @@ io.on('connection', (socket) => {
       return callback('Watch your language');
     }
 
-    User.findOne(
-      {
-        'socketIOIDs.sid': socket.id,
-      },
-      (err, _user) => {
-        if (err) {
-          console.error(err);
-          return;
-        }
-        // eslint-disable-next-line no-underscore-dangle
-        const _message = new Message({
-          contents: message,
-          // eslint-disable-next-line no-underscore-dangle
-          sender: _user._id,
-        });
-        _message.save().then((savedMessage) => {
-          if (savedMessage === _message) {
-            console.log('Message Saved');
-          }
-        });
-      },
-    );
+    // update the db with the message sent
+    addMessage(socket, msgObj);
 
     // if not, send the message to the user's room
     const socketUser = allUsers.getUser(socket.id);
@@ -354,31 +303,7 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     const user = allUsers.removeUserById(socket.id);
 
-    // remove the disconnected socket's id from
-    // the user's document
-    User.findOne(
-      {
-        'tokens.token': tokenCookieValue,
-        name: usernameCookieValue,
-      },
-      (err, _user) => {
-        if (err) {
-          console.error(err);
-        }
-        const { socketIOIDs } = _user;
-        // socketIOIDs.push({ sid: socket.id });
-        // remove the existing socket from the user's sids
-        const filteredSIDs = socketIOIDs.filter(
-          (_socket) => _socket.sid !== socket.id,
-        );
-        _user.socketIOIDs = filteredSIDs;
-        _user.save().then((savedUser) => {
-          if (savedUser === _user) {
-            console.log('Disconnect: User saved');
-          }
-        });
-      },
-    );
+    removeSocketIoIdFromUser(socket, tokenCookieValue, usernameCookieValue);
 
     // possibility exists that a user may never have joined a room,
     // but the join event fires initially

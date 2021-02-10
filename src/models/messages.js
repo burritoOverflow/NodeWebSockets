@@ -10,6 +10,7 @@ const MessageSchema = new mongoose.Schema({
     default: Date.now,
   },
   sender: {
+    // store the sending user's ID
     type: mongoose.Schema.Types.ObjectID,
     required: true,
     ref: 'User',
