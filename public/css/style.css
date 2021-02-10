@@ -28,6 +28,10 @@ a {
   color: white;
 }
 
+#sign-up-list {
+  list-style: none;
+}
+
 .bright {
   background-color: white !important;
   color: black !important;

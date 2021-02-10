@@ -116,5 +116,9 @@ dist
 .pnp.*
 
 #vscode
+.vscode/
 settings.json
 launch.json
+
+# environment vars
+.env

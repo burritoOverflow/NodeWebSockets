@@ -11,11 +11,11 @@
 
 <body>
   <main id="index-main">
-    <form action="/chat.html">
+    <form action="/chat" method="GET">
       <div>
         <h1 id="index-header">Join a Room</h1>
         <label for="userName">Display Name: </label>
-        <input class="join-input" type="text" name="username" required />
+        <input class="join-input" type="text" name="username" id="username-input" required readonly="readonly" />
         <label for="room-name">Room:</label>
         <input class=" join-input" type="text" name="room" placeholder="Main" required />
         <button id="submit-button">Join!</button>

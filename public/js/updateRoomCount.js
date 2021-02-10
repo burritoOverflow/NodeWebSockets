@@ -4,6 +4,18 @@
  * display it on the main page: {count} in {room}
  */
 (() => {
+  const usernameinput = document.getElementById('username-input');
+  usernameinput.style.color = 'black';
+  usernameinput.style.fontWeight = 'bold';
+  usernameinput.style.textAlign = 'center';
+  const cookieArr = document.cookie.split('=');
+  const displayname = cookieArr[cookieArr.indexOf('displayname') + 1];
+  if (displayname) {
+    usernameinput.value = displayname;
+  } else {
+    usernameinput.getElementById('username-input').removeAttribute('readonly');
+  }
+
   fetch('/rooms')
     .then((response) => {
       if (!response.ok) {
@@ -15,8 +27,8 @@
     .then((jsonResp) => {
       // empty object (no rooms occupied), nothing to do
       if (
-        Object.keys(jsonResp).length === 0
-        && jsonResp.constructor === Object
+        Object.keys(jsonResp).length === 0 &&
+        jsonResp.constructor === Object
       ) {
         return;
       }

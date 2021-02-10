@@ -7,9 +7,16 @@ const http = require('http');
 const express = require('express');
 const socketIo = require('socket.io');
 const Filter = require('bad-words');
+const cookieParser = require('cookie-parser');
 
 // user defined
 const { Users } = require('./utils/Users');
+const verifyUserJWT = require('./utils/verifyJWT');
+require('./db/mongoose');
+
+// models
+const { User } = require('./models/user');
+const { Message } = require('./models/messages');
 
 const app = express();
 const server = http.createServer(app);
@@ -19,8 +26,71 @@ const port = process.env.PORT || 3000;
 const pubDirPath = path.join(__dirname, '..', 'public');
 
 app.use(express.static(pubDirPath));
+app.use(express.json());
+app.use(cookieParser());
+
+// user router
+app.use('/api', require('./routes/user'));
 
 const allUsers = new Users();
+
+// without a user logged in, send the user the login page, otherwise, send the choose room page
+app.get('/', async (req, res) => {
+  if (req.cookies.token) {
+    const userObj = await verifyUserJWT(req.cookies.token);
+    if (userObj.name) {
+      if (process.env.NODE_ENV === 'production') {
+        res.cookie('username', userObj.name, { httpOnly: true, secure: true });
+      } else {
+        res.cookie('username', userObj.name, { httpOnly: true });
+      }
+      res.cookie('displayname', userObj.name);
+      res.sendFile(path.join(__dirname, '..', 'html', 'index.html'));
+    } // no name invalid
+  } else {
+    // TODO redirect to login
+    res.redirect('/signup');
+  }
+});
+
+app.get('/joinroom', async (req, res) => {
+  if (req.cookies.token) {
+    const userObj = await verifyUserJWT(req.cookies.token);
+    if (!userObj) {
+      // invalid JWT
+      res.redirect('/signup');
+    }
+  } else {
+    res.redirect('/signup');
+  }
+});
+
+app.get('/signup', (_, res) => {
+  res.sendFile(path.join(__dirname, '..', 'html', 'signup.html'));
+});
+
+// route for chat
+app.get('/chat', async (req, res) => {
+  if (req.cookies.token) {
+    // hmm attempted access with a different username
+    if (req.query.username !== req.cookies.displayname) {
+      res.status(401).send({
+        Error: 'Unauthorized',
+      });
+    }
+    const userObj = await verifyUserJWT(req.cookies.token);
+    if (userObj.name) {
+      // valid; join chat
+      res.sendFile(path.join(__dirname, '..', 'html', 'chat.html'));
+    } else {
+      // not TODO
+      res.redirect('/signup');
+    }
+  } else {
+    // also invalid; not a user
+    res.redirect('/signup');
+  }
+});
 
 // api route for the current rooms
 app.get('/rooms', (req, res) => {
@@ -150,10 +220,34 @@ function getIpAddrPortStr(socket) {
 
 // registered event handlers for sockets
 io.on('connection', (socket) => {
+  const cookies = socket.handshake.headers.cookie;
+
   appendToLog(
     `New WebSocket connection from ${getIpAddrPortStr(socket)} ${
       allUsers.users.length
     } clients\n`,
+  );
+
+  const tokenCookieValue = cookies.split(';')[0].split('=')[1];
+  const usernameCookieValue = cookies.split(';')[1].split('=')[1];
+
+  User.findOne(
+    {
+      'tokens.token': tokenCookieValue,
+      name: usernameCookieValue,
+    },
+    (err, user) => {
+      if (err) {
+        console.error(err);
+      }
+      const { socketIOIDs } = user;
+      socketIOIDs.push({ sid: socket.id });
+      user.save().then((savedUser) => {
+        if (savedUser === user) {
+          console.log('Connect: User saved');
+        }
+      });
+    },
   );
 
   // listener for a client joining
@@ -196,6 +290,29 @@ io.on('connection', (socket) => {
       return callback('Watch your language');
     }
 
+    User.findOne(
+      {
+        'socketIOIDs.sid': socket.id,
+      },
+      (err, _user) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        // eslint-disable-next-line no-underscore-dangle
+        const _message = new Message({
+          contents: message,
+          // eslint-disable-next-line no-underscore-dangle
+          sender: _user._id,
+        });
+        _message.save().then((savedMessage) => {
+          if (savedMessage === _message) {
+            console.log('Message Saved');
+          }
+        });
+      },
+    );
+
     // if not, send the message to the user's room
     const socketUser = allUsers.getUser(socket.id);
 
@@ -221,7 +338,7 @@ io.on('connection', (socket) => {
 
     // emit the message
     io.to(socketUser.room).emit('chatMessage', msgObj);
-  });
+  }); // end client chat
 
   // a client has send lat lng from geolocation api
   socket.on('userLocation', (latLngObj, callback) => {
@@ -236,6 +353,32 @@ io.on('connection', (socket) => {
   // fires when an individual socket (client) disconnects
   socket.on('disconnect', () => {
     const user = allUsers.removeUserById(socket.id);
+
+    // remove the disconnected socket's id from
+    // the user's document
+    User.findOne(
+      {
+        'tokens.token': tokenCookieValue,
+        name: usernameCookieValue,
+      },
+      (err, _user) => {
+        if (err) {
+          console.error(err);
+        }
+        const { socketIOIDs } = _user;
+        // socketIOIDs.push({ sid: socket.id });
+        // remove the existing socket from the user's sids
+        const filteredSIDs = socketIOIDs.filter(
+          (_socket) => _socket.sid !== socket.id,
+        );
+        _user.socketIOIDs = filteredSIDs;
+        _user.save().then((savedUser) => {
+          if (savedUser === _user) {
+            console.log('Disconnect: User saved');
+          }
+        });
+      },
+    );
 
     // possibility exists that a user may never have joined a room,
     // but the join event fires initially

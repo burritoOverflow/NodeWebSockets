@@ -275,7 +275,7 @@ function addUserToUserList(usersArr) {
     username = localStorage.getItem('username');
   }
 
-  const usersIndex = usersArr.indexOf(username);
+  const usersIndex = usersArr.indexOf(username.toLowerCase());
   // sanity check
   if (usersIndex > -1) {
     // remove the user from the arr
