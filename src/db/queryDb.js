@@ -12,6 +12,15 @@ const findRoomByName = async (roomName) => {
   return room;
 };
 
+/**
+ * Get all room names
+ */
+const getAllRoomNames = async () => {
+  const rooms = await Room.find({});
+  return rooms;
+};
+
 module.exports = {
   findRoomByName,
+  getAllRoomNames,
 };

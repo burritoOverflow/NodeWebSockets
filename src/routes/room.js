@@ -1,7 +1,7 @@
 const express = require('express');
 const { Room } = require('../models/room');
 const verifyUserJWT = require('../utils/verifyJWT');
-const { findRoomByName } = require('../db/queryDb');
+const { findRoomByName, getAllRoomNames } = require('../db/queryDb');
 
 const router = express.Router();
 
@@ -36,6 +36,12 @@ router.post('/room', async (req, res) => {
     // no token provided
     res.status(401).send({ error: 'Unauthorized' });
   }
+});
+
+// accessible globally
+router.get('/room', async (req, res) => {
+  const rooms = await getAllRoomNames();
+  res.send(rooms);
 });
 
 module.exports = router;

@@ -10,6 +10,7 @@ const cookieParser = require('cookie-parser');
 
 // user defined
 const { Users } = require('./utils/Users');
+const { SidMap } = require('./utils/SidMap');
 const verifyUserJWT = require('./utils/verifyJWT');
 const { appendToLog } = require('./utils/logging');
 require('./db/mongoose');
@@ -18,7 +19,9 @@ require('./db/mongoose');
 const {
   addSocketIoIdToUser,
   addMessage,
-  removeSocketIoIdFromUser,
+  addUserToRoom,
+  removeUserOnDisconnect,
+  addSIDToUserAndJoinRoom,
 } = require('./db/updateDb');
 
 const app = express();
@@ -37,6 +40,7 @@ app.use('/api', require('./routes/user'));
 app.use('/api', require('./routes/room'));
 
 const allUsers = new Users();
+const sioRoomMap = new SidMap();
 
 // without a user logged in, send the user the login page, otherwise, send the choose room page
 app.get('/', async (req, res) => {
@@ -146,6 +150,7 @@ function getAllUsernamesInRoom(room) {
       .getUsersInRoom(room)
       // eslint-disable-next-line no-sequences
       .reduce(
+        // eslint-disable-next-line no-sequences
         (usernames, user) => (usernames.push(user.username), usernames),
         [],
       )
@@ -209,7 +214,7 @@ io.on('connection', (socket) => {
   const cookies = socket.handshake.headers.cookie;
 
   appendToLog(
-    `New WebSocket connection from ${getIpAddrPortStr(socket)} ${
+    `Connection event from ${getIpAddrPortStr(socket)} sid: ${socket.id} ${
       allUsers.users.length
     } clients\n`,
   );
@@ -217,12 +222,26 @@ io.on('connection', (socket) => {
   const tokenCookieValue = cookies.split(';')[0].split('=')[1];
   const usernameCookieValue = cookies.split(';')[1].split('=')[1];
 
-  addSocketIoIdToUser(socket, tokenCookieValue, usernameCookieValue);
+  // add the sid to the user
+  // addSocketIoIdToUser(socket, tokenCookieValue, usernameCookieValue);
 
   // listener for a client joining
   // eslint-disable-next-line consistent-return
   socket.on('join', ({ username, room }, callback) => {
+    sioRoomMap.addSidRoomMapping(socket.id, room);
+
+    appendToLog(
+      `join event from ${socket.id} in room ${room} with username ${username}\n`,
+    );
     const { error } = allUsers.addUser({ id: socket.id, username, room });
+
+    // addUserToRoom(socket.id, room);
+    addSIDToUserAndJoinRoom(
+      socket,
+      tokenCookieValue,
+      usernameCookieValue,
+      room,
+    );
 
     // in the event the user cannot be added, inform them and halt execution
     if (error) {
@@ -301,9 +320,24 @@ io.on('connection', (socket) => {
 
   // fires when an individual socket (client) disconnects
   socket.on('disconnect', () => {
-    const user = allUsers.removeUserById(socket.id);
+    let room;
+    try {
+      room = allUsers.getUser(socket.id).room;
+    } catch (error) {
+      // disconnect fired without user being added to the users arr
+      room = sioRoomMap.getSidRoomMapping(socket.id);
+      appendToLog('User not found in user array');
+      console.log(error);
+    } finally {
+      removeUserOnDisconnect(
+        socket,
+        tokenCookieValue,
+        usernameCookieValue,
+        room,
+      );
+    }
 
-    removeSocketIoIdFromUser(socket, tokenCookieValue, usernameCookieValue);
+    const user = allUsers.removeUserById(socket.id);
 
     // possibility exists that a user may never have joined a room,
     // but the join event fires initially

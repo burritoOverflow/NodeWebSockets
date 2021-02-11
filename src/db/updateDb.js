@@ -1,10 +1,10 @@
 /* eslint-disable no-console */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-param-reassign */
-
 const { User } = require('../models/user');
 const { Message } = require('../models/messages');
 const { appendToLog } = require('../utils/logging');
+const { Room } = require('../models/room');
 
 /**
  * Add a socket io id to the corresponding user
@@ -12,27 +12,40 @@ const { appendToLog } = require('../utils/logging');
  * @param {*} tokenCookieValue - the user's JWT, obtained from the user's cookies
  * @param {*} usernameCookieValue - the username, obtained from the user's cookies
  */
-function addSocketIoIdToUser(socket, tokenCookieValue, usernameCookieValue) {
-  User.findOne(
-    {
-      'tokens.token': tokenCookieValue,
-      name: usernameCookieValue,
-    },
-    (err, user) => {
-      if (err) {
-        console.error(err);
-      }
-      const { socketIOIDs } = user;
-      socketIOIDs.push({ sid: socket.id });
-      user.save().then((savedUser) => {
-        if (savedUser === user) {
-          appendToLog(
-            `Connect: User ${savedUser._id} with sid ${socket.id} added and saved\n`,
-          );
-        }
-      });
-    },
-  );
+async function addSocketIoIdToUser(
+  socket,
+  tokenCookieValue,
+  usernameCookieValue,
+) {
+  const user = await User.findOne({
+    'tokens.token': tokenCookieValue,
+    name: usernameCookieValue,
+  });
+
+  if (!user) {
+    appendToLog(
+      `addSocketIoIdToUser: User not found with token ${tokenCookieValue} and username ${usernameCookieValue}`,
+    );
+  }
+
+  const { socketIOIDs } = user;
+  if (socketIOIDs.includes(socket.id)) {
+    appendToLog(
+      `addSocketIoIdToUser: duplicate sid ${socket.id} provided for user ${user._id}`,
+    );
+  }
+
+  // add the latest sid
+  socketIOIDs.push({ sid: socket.id });
+  const savedUser = await user.save();
+
+  if (savedUser === user) {
+    appendToLog(
+      `addSocketIoIdToUser: User ${savedUser._id} with sid ${socket.id} added and saved\n`,
+    );
+    return true;
+  }
+  return false;
 }
 
 /**
@@ -41,38 +54,40 @@ function addSocketIoIdToUser(socket, tokenCookieValue, usernameCookieValue) {
  * @param {*} tokenCookieValue - JWT from the user's cookie
  * @param {*} usernameCookieValue - username from the user's cookie
  */
-function removeSocketIoIdFromUser(
+async function removeSocketIoIdFromUser(
   socket,
   tokenCookieValue,
   usernameCookieValue,
 ) {
   // remove the disconnected socket's id from
   // the user's document
-  User.findOne(
-    {
-      'tokens.token': tokenCookieValue,
-      name: usernameCookieValue,
-    },
-    (err, _user) => {
-      if (err) {
-        console.error(err);
-      }
-      const { socketIOIDs } = _user;
-      // socketIOIDs.push({ sid: socket.id });
-      // remove the existing socket from the user's sids
-      const filteredSIDs = socketIOIDs.filter(
-        (_socket) => _socket.sid !== socket.id,
-      );
-      _user.socketIOIDs = filteredSIDs;
-      _user.save().then((savedUser) => {
-        if (savedUser === _user) {
-          appendToLog(
-            `Disconnect: Updated sid ${socket.id} removed from User ${savedUser._id}\n`,
-          );
-        }
-      });
-    },
+  const user = await User.findOne({
+    'tokens.token': tokenCookieValue,
+    name: usernameCookieValue,
+  });
+
+  if (!user) {
+    appendToLog(
+      `removeSocketIoIdFromUser:  User not found with token ${tokenCookieValue} and username ${usernameCookieValue}`,
+    );
+    return false;
+  }
+
+  // remove the existing socket from the user's sids
+  const { socketIOIDs } = user;
+  const filteredSIDs = socketIOIDs.filter(
+    (_socket) => _socket.sid !== socket.id,
   );
+  user.socketIOIDs = filteredSIDs;
+  const savedUser = await user.save();
+
+  if (savedUser === user) {
+    appendToLog(
+      `removeSocketIoIdFromUser: Disconnect: Updated sid ${socket.id} removed from User ${savedUser._id}\n`,
+    );
+    return true;
+  }
+  return false;
 }
 
 /**
@@ -80,38 +95,169 @@ function removeSocketIoIdFromUser(
  * @param {*} socket - the socket pertaining the messages' sender
  * @param {*} msgObj - the message object (contains the date and message string)
  */
-function addMessage(socket, msgObj) {
+async function addMessage(socket, msgObj) {
   const { message } = msgObj;
   // get the user that sent the message
-  User.findOne(
-    {
-      // find the user by the sender's socketio id
-      'socketIOIDs.sid': socket.id,
-    },
-    (err, _user) => {
-      if (err) {
-        // eslint-disable-next-line no-console
-        console.error(err);
-        return;
-      }
-      // with the user retrieved update the message with the user's
-      // id
-      const _message = new Message({
-        contents: message,
-        sender: _user._id,
-        date: new Date(msgObj.msgSendDate),
-      });
-      _message.save().then((savedMessage) => {
-        if (savedMessage === _message) {
-          appendToLog(`Message ${savedMessage._id} Saved\n`);
-        }
-      });
-    },
+  const _user = await User.findOne({
+    // find the user by the sender's socketio id
+    'socketIOIDs.sid': socket.id,
+  });
+
+  if (!_user) {
+    appendToLog(`addMessage: User not found for sid ${socket.id}\n`);
+  }
+
+  // with the user retrieved update the message with the user's
+  // id
+  const _message = new Message({
+    contents: message,
+    sender: _user._id,
+    date: new Date(msgObj.msgSendDate),
+  });
+
+  const savedMessage = await _message.save();
+  appendToLog(
+    `Message ${savedMessage._id} '${savedMessage.contents}' Saved\n\n`,
   );
 }
 
+/**
+ * Append the user's id to the room's users
+ * @param {*} sid - the socketio id
+ * @param {*} roomName - the name of the room
+ * @returns - boolean indicating success
+ */
+async function addUserToRoom(sid, roomName) {
+  const room = await Room.findOne({ name: roomName });
+
+  // get the id of the user that corresponds to the provided socketio id
+  const user = await User.findOne({
+    'socketIOIDs.sid': sid,
+  });
+
+  if (!user) {
+    appendToLog(`addUserToRoom: User not found with sid ${sid}\n\n`);
+    return false;
+  }
+
+  if (!room) {
+    appendToLog(`addUserToRoom: room with name ${roomName} not found\n`);
+    return false;
+  }
+
+  // in the event a disconnect wasn't recorded properly, the user may already
+  // be associated with the room
+  let exit = false;
+  room.users.forEach((userDocument) => {
+    if (userDocument._id === user._id) {
+      console.log(userDocument._id, user._id);
+      exit = true;
+    }
+  });
+  if (exit) {
+    // already in room
+    return false;
+  }
+
+  // append the user's id to the room's users
+  room.users.push(user._id);
+  await room.save();
+  appendToLog(
+    `addUserToRoom: Added sid ${sid} to user with id ${user._id} to room ${room._id}\n`,
+  );
+  return true;
+}
+
+/**
+ * Remove the user from the room when the socket is disconnected
+ * @param {*} sid - the socketio id corresponding to the user that is leaving
+ * @param {*} roomName - the name of the room
+ */
+async function removeUserFromRoom(sid, roomName) {
+  // find the corresponding user and room
+  const user = await User.findOne({
+    'socketIOIDs.sid': sid,
+  });
+
+  if (!user) {
+    appendToLog(`removeUserFromRoom: user with sid ${sid} not found\n`);
+    return false;
+  }
+
+  const room = await Room.findOne({ name: roomName });
+
+  if (!room) {
+    appendToLog(`removeUserFromRoom: room with name ${roomName} not found\n`);
+    return false;
+  }
+
+  const { users } = room;
+
+  // find the user with the corresponding user id
+  const filteredUsers = users.filter((u) => !u._id.equals(user._id));
+
+  room.users = filteredUsers;
+  await room.save();
+
+  if (filteredUsers.length === room.users.length - 1) {
+    appendToLog(
+      `removeUserFromRoom: User with id ${user._id} and sid ${sid} removed from room ${roomName} ${room.users.length} users remaining\n`,
+    );
+    return true;
+  }
+  appendToLog(
+    `removeUserFromRoom: User with id ${user._id} and sid ${sid} removal failed from room ${roomName} ${room.users.length} users remaining\n`,
+  );
+  return false;
+}
+
+/**
+ *
+ * @param {*} socket - the socket pertaining the messages' sender
+ * @param {*} tokenCookieValue - the user's JWT, obtained from the user's cookies
+ * @param {*} usernameCookieValue - the username, obtained from the user's cookies
+ * @param {*} room - the room name
+ */
+async function removeUserOnDisconnect(
+  socket,
+  tokenCookieValue,
+  usernameCookieValue,
+  room,
+) {
+  const userRemoveRoomSuccess = await removeUserFromRoom(socket.id, room);
+  const removeSidUserSuccess = await removeSocketIoIdFromUser(
+    socket,
+    tokenCookieValue,
+    usernameCookieValue,
+  );
+  if (userRemoveRoomSuccess && removeSidUserSuccess) {
+    appendToLog('removeUserOnDisconnect: removed successfully\n');
+  }
+}
+
+async function addSIDToUserAndJoinRoom(
+  socket,
+  tokenCookieValue,
+  usernameCookieValue,
+  room,
+) {
+  const addSIDUserSuccess = await addSocketIoIdToUser(
+    socket,
+    tokenCookieValue,
+    usernameCookieValue,
+  );
+  const addUserRoomSuccess = await addUserToRoom(socket.id, room);
+  if (addSIDUserSuccess && addUserRoomSuccess) {
+    appendToLog('addSIDToUserAndJoinRoom: sid and user added to room\n');
+  }
+}
+
 module.exports = {
+  addSIDToUserAndJoinRoom,
   addSocketIoIdToUser,
   addMessage,
   removeSocketIoIdFromUser,
+  addUserToRoom,
+  removeUserFromRoom,
+  removeUserOnDisconnect,
 };
