@@ -1,3 +1,20 @@
+/**
+ * Show the user a toast containing the string argument
+ * @param {*} message - the string contents of the toast
+ * @param {boolean} - if true, redirect
+ */
+function showSnackbarAndRedirect(message, success) {
+  const snackbar = document.getElementById('snackbar');
+  snackbar.innerText = message;
+  snackbar.classList.add('show');
+  setTimeout(() => {
+    snackbar.classList.remove('show');
+    if (success) {
+      window.location.replace('/');
+    }
+  }, 900);
+}
+
 function sendSignUpData(signUpObj) {
   const apiUrl = '/api/users';
   fetch(apiUrl, {
@@ -10,8 +27,10 @@ function sendSignUpData(signUpObj) {
     .then((response) => {
       if (response.ok) {
         // successfully added user
+        const userName = document.getElementById('name').value;
+        showSnackbarAndRedirect(`Welcome ${userName}!`, true);
       } else {
-        document.getElementById('message').innerText = 'sign up failed';
+        showSnackbarAndRedirect('sign up failed', false);
       }
     })
     .then((json) => console.log(json))

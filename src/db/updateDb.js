@@ -7,7 +7,8 @@ const { appendToLog } = require('../utils/logging');
 const { Room } = require('../models/room');
 
 /**
- * Add a socket io id to the corresponding user
+ * Add a socket io id to the corresponding user. Used when a user joins a room.
+ *
  * @param {*} socket - the socketio socket pertaining to the user that sent the message
  * @param {*} tokenCookieValue - the user's JWT, obtained from the user's cookies
  * @param {*} usernameCookieValue - the username, obtained from the user's cookies
@@ -50,6 +51,7 @@ async function addSocketIoIdToUser(
 
 /**
  * Used on disconnect--remove the socket id from the corresponding user, as the sid is ephemeral
+ *
  * @param {*} socket - the socket corresponding to the sender
  * @param {*} tokenCookieValue - JWT from the user's cookie
  * @param {*} usernameCookieValue - username from the user's cookie
@@ -92,6 +94,7 @@ async function removeSocketIoIdFromUser(
 
 /**
  * Add a message to the db with the user's id (sender)
+ *
  * @param {*} socket - the socket pertaining the messages' sender
  * @param {*} msgObj - the message object (contains the date and message string)
  */
@@ -123,6 +126,7 @@ async function addMessage(socket, msgObj) {
 
 /**
  * Append the user's id to the room's users
+ *
  * @param {*} sid - the socketio id
  * @param {*} roomName - the name of the room
  * @returns - boolean indicating success
@@ -170,6 +174,7 @@ async function addUserToRoom(sid, roomName) {
 
 /**
  * Remove the user from the room when the socket is disconnected
+ *
  * @param {*} sid - the socketio id corresponding to the user that is leaving
  * @param {*} roomName - the name of the room
  */
@@ -212,6 +217,7 @@ async function removeUserFromRoom(sid, roomName) {
 }
 
 /**
+ * Used to remove the socketio id from a user when the user disconnects
  *
  * @param {*} socket - the socket pertaining the messages' sender
  * @param {*} tokenCookieValue - the user's JWT, obtained from the user's cookies

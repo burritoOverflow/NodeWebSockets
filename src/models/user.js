@@ -11,6 +11,7 @@ require('dotenv').config();
 const UserSchema = new mongoose.Schema({
   name: {
     type: String,
+    unique: true,
     required: true,
     trim: true,
     minLength: 3,

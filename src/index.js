@@ -69,7 +69,8 @@ app.get('/joinroom', async (req, res) => {
       res.redirect('/signup');
     }
   } else {
-    res.redirect('/signup');
+    // send the user to the join a room page
+    res.sendFile(path.join(__dirname, '..', 'html', 'index.html'));
   }
 });
 
