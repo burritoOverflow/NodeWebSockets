@@ -16,6 +16,8 @@ function showSnackbarAndRedirect(message, success) {
 }
 
 function sendSignUpData(signUpObj) {
+  const signUpForm = document.getElementById('sign-up-form');
+  signUpForm.classList.add('blur-element');
   const apiUrl = '/api/users';
   fetch(apiUrl, {
     method: 'POST',
@@ -35,6 +37,9 @@ function sendSignUpData(signUpObj) {
     })
     .then((json) => console.log(json))
     .catch((error) => console.error(error));
+  setTimeout(() => {
+    signUpForm.classList.remove('blur-element');
+  }, 800);
 }
 
 document.getElementById('sign-up-form').addEventListener('submit', (event) => {
