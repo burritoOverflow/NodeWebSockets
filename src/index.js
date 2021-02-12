@@ -279,9 +279,6 @@ io.on('connection', (socket) => {
       return callback('Watch your language');
     }
 
-    // update the db with the message sent
-    addMessage(socket, msgObj);
-
     // if not, send the message to the user's room
     const socketUser = allUsers.getUser(socket.id);
 
@@ -304,6 +301,9 @@ io.on('connection', (socket) => {
     // add the user's name to the message object
     // eslint-disable-next-line no-param-reassign
     msgObj.username = socketUser.username;
+
+    // update the db with the message sent
+    addMessage(socket, msgObj, socketUser.room);
 
     // emit the message
     io.to(socketUser.room).emit('chatMessage', msgObj);

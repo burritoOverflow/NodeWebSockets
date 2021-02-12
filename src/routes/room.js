@@ -1,5 +1,6 @@
 const express = require('express');
 const { Room } = require('../models/room');
+const { User } = require('../models/user');
 const verifyUserJWT = require('../utils/verifyJWT');
 const { findRoomByName, getAllRoomNames } = require('../db/queryDb');
 
@@ -42,6 +43,42 @@ router.post('/room', async (req, res) => {
 router.get('/room', async (req, res) => {
   const rooms = await getAllRoomNames();
   res.send(rooms);
+});
+
+// get usernames of users in the room provided via the parameter
+router.get('/room/usernames/:room', async (req, res) => {
+  // only validated users can access this route
+  if (req.cookies.token) {
+    const userObj = await verifyUserJWT(req.cookies.token);
+
+    // verify the token provided
+    if (!userObj) {
+      res.status(401).send({ error: 'Unauthorized' });
+    }
+
+    // valid token
+    const roomName = req.params.room;
+    const room = await Room.findOne({ name: roomName });
+
+    if (!room) {
+      // parameter provided for the room is not a valid room name
+      res.status(400).send(`Room ${roomName} not found`);
+    } else {
+      // room found
+      const userIDArr = [];
+      room.users.forEach((user) => {
+        // eslint-disable-next-line no-underscore-dangle
+        userIDArr.push(user._id);
+      });
+      const userList = await User.find().all('_id', userIDArr);
+      // transform the query result to just return the usernames
+      const userNameArr = userList.map((u) => u.name);
+      res.status(200).send({ UserList: userNameArr });
+    }
+  } else {
+    // no token provided
+    res.status(401).send({ error: 'Unauthorized' });
+  }
 });
 
 module.exports = router;

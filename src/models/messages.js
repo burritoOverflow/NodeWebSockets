@@ -15,6 +15,12 @@ const MessageSchema = new mongoose.Schema({
     required: true,
     ref: 'User',
   },
+  room: {
+    // store the ObjectID for the room the message was sent to
+    type: mongoose.Schema.Types.ObjectID,
+    required: true,
+    ref: 'Room',
+  },
 });
 
 const Message = mongoose.model('Message', MessageSchema);

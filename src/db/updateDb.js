@@ -97,8 +97,9 @@ async function removeSocketIoIdFromUser(
  *
  * @param {*} socket - the socket pertaining the messages' sender
  * @param {*} msgObj - the message object (contains the date and message string)
+ * @param {string} roomName - the name of the room the message was sent to
  */
-async function addMessage(socket, msgObj) {
+async function addMessage(socket, msgObj, roomName) {
   const { message } = msgObj;
   // get the user that sent the message
   const _user = await User.findOne({
@@ -110,17 +111,26 @@ async function addMessage(socket, msgObj) {
     appendToLog(`addMessage: User not found for sid ${socket.id}\n`);
   }
 
+  // room names must be globally unique, so get the room's ID from the room name
+  const room = await Room.findOne({ name: roomName });
+
+  if (!room) {
+    // room not found for the name provided
+    appendToLog(`addMessage: Room not found for room name: ${roomName}`);
+  }
+
   // with the user retrieved update the message with the user's
   // id
   const _message = new Message({
     contents: message,
     sender: _user._id,
     date: new Date(msgObj.msgSendDate),
+    room: room._id,
   });
 
   const savedMessage = await _message.save();
   appendToLog(
-    `Message ${savedMessage._id} '${savedMessage.contents}' Saved\n\n`,
+    `Message ${savedMessage._id} '${savedMessage.contents} in room ${room._id}' Saved\n\n`,
   );
 }
 
