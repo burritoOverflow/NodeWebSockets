@@ -1,4 +1,5 @@
 const express = require('express');
+const { Room } = require('../models/room');
 const { Message } = require('../models/messages');
 const { User } = require('../models/user');
 const verifyUserJWT = require('../utils/verifyJWT');
@@ -16,7 +17,7 @@ router.get('/messages/:room', async (req, res) => {
     }
     // get the id for the room provided
     const roomName = req.params.room;
-    const room = await findRoomByName(roomName);
+    const room = await Room.findOne({ name: roomName });
 
     // eslint-disable-next-line no-underscore-dangle
     const messagesFromRoom = await Message.find({ room: room._id })
@@ -30,14 +31,14 @@ router.get('/messages/:room', async (req, res) => {
       sender: msg.sender,
     }));
 
-    // collect just the userIDs
+    // collect just the userIDs from the messages
     const userIDArr = [];
-    room.users.forEach((user) => {
-      // make sure no duplicates exist
+    msgArr.forEach((msg) => {
       // eslint-disable-next-line no-underscore-dangle
-      userIDArr.push(user._id);
+      userIDArr.push(msg.sender);
     });
 
+    // get an array of users with the ids provided
     const userList = await User.find().in('_id', userIDArr);
 
     // given the result of the query, convert the IDs in the message array into usernames
