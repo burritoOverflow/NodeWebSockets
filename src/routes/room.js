@@ -70,7 +70,7 @@ router.get('/room/usernames/:room', async (req, res) => {
         // eslint-disable-next-line no-underscore-dangle
         userIDArr.push(user._id);
       });
-      const userList = await User.find().all('_id', userIDArr);
+      const userList = await User.find().in('_id', userIDArr);
       // transform the query result to just return the usernames
       const userNameArr = userList.map((u) => u.name);
       res.status(200).send({ UserList: userNameArr });

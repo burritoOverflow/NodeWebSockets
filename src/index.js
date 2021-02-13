@@ -38,6 +38,7 @@ app.use(cookieParser());
 // user router
 app.use('/api', require('./routes/user'));
 app.use('/api', require('./routes/room'));
+app.use('/api', require('./routes/messages'));
 
 const allUsers = new Users();
 const sioRoomMap = new SidMap();
