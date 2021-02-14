@@ -21,11 +21,14 @@ router.get('/messages/:room', async (req, res) => {
 
     // eslint-disable-next-line no-underscore-dangle
     const messagesFromRoom = await Message.find({ room: room._id })
-      .sort({ date: 1 }) // oldest first
+      .sort({
+        date: -1,
+      }) // oldest first
       .limit(10);
 
     // simplify the contents; don't need the message's id
-    const msgArr = messagesFromRoom.map((msg) => ({
+    // TODO rewrite this so the query returns them in reverse
+    const msgArr = messagesFromRoom.reverse().map((msg) => ({
       contents: msg.contents,
       date: msg.date,
       sender: msg.sender,

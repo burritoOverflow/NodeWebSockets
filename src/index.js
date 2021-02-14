@@ -167,8 +167,6 @@ function sendUsernamesListForRoom(room) {
   io.to(room).emit('currentRoomUsers', getAllUsernamesInRoom(room));
 }
 
-server.listen(port, () => appendToLog(`Server running on port ${port}\n`));
-
 /**
  * given one of the reserved messages, perform the corresponding action
  * @param {*} messageObj
@@ -357,3 +355,6 @@ io.on('connection', (socket) => {
     }
   });
 }); // end socket io block
+
+// start server
+server.listen(port, () => appendToLog(`Server running on port ${port}\n`));

@@ -9,6 +9,43 @@ const clientCountMsg = document.getElementById('received-message');
 const msgThread = document.getElementById('message-thread');
 
 /**
+ * Fetch previous message from the room the user is currently in
+ * Messages are :
+ * {
+        "contents": "whats up",
+        "date": "2021-02-12T22:06:19.900Z",
+        "sender": "SenderOfMessage"
+    }
+ */
+function fetchMessages() {
+  const { room } = parseQSParams();
+  const messagesApiUrl = `/api/messages/${room}`;
+  const usernameFromLS = localStorage.getItem('username');
+  fetch(messagesApiUrl)
+    .then((response) => {
+      if (!response.ok) {
+        // req failed
+      }
+      return response.json();
+    })
+    .then((JSONresponse) => {
+      const msgArr = [];
+      JSONresponse.forEach((retMsg) => {
+        const msgObj = {
+          message: retMsg.contents,
+          msgSendDate: Date.parse(retMsg.date),
+          username: retMsg.sender,
+        };
+        msgArr.push(msgObj);
+      });
+
+      msgArr.forEach((msgObj) => {
+        addMsgToThread(msgObj);
+      });
+    });
+}
+
+/**
  * Show the user a toast containing the string argument
  * @param {*} message - the string contents of the toast
  */
@@ -175,7 +212,9 @@ function addMsgToThread(message) {
   const userNameSpan = document.createElement('span');
 
   // check if the user is seeing their own sent message
-  const usersOwnMessage = message.username === localStorage.getItem('username');
+  const usersOwnMessage =
+    message.username.toLowerCase() ===
+    localStorage.getItem('username').toLowerCase();
 
   // UI should reflect a user seeing their own message differently
   if (usersOwnMessage) {
@@ -369,6 +408,7 @@ socket.on('userLeft', (message) => {
 // we'll also store the User's name in localstorage, and should change the DOM
 // elements to reflect that
 socket.emit('join', parseQSParams(), (error) => {
+  fetchMessages();
   const { username, room } = parseQSParams();
   if (error) {
     window.location.href = '/';
