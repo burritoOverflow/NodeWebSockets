@@ -1,4 +1,5 @@
 const { Room } = require('../models/room');
+const { User } = require('../models/user');
 
 /**
  * Check if there exists a room by this name
@@ -33,8 +34,32 @@ const getCountOfUsersinRoom = async (roomName) => {
   throw new Error('Invalid room name provided');
 };
 
+/**
+ * Get a list of users in the provided room
+ *
+ * @param {*} roomName - the name of the room
+ * @returns - a list of usernames in the room
+ */
+const getUsersInRoom = async (roomName) => {
+  const room = await findRoomByName(roomName);
+  if (room) {
+    // collect the userIDs from the room
+    // eslint-disable-next-line no-underscore-dangle
+    const userIDs = room.users.map((user) => user._id);
+
+    // get the usernames
+    const userList = await User.find().in('_id', userIDs);
+
+    // we just need the names here
+    const usernames = userList.map((user) => user.name);
+    return usernames;
+  }
+  throw new Error('Invalid room name provided');
+};
+
 module.exports = {
   findRoomByName,
   getAllRoomNames,
   getCountOfUsersinRoom,
+  getUsersInRoom,
 };
