@@ -35,6 +35,9 @@ app.use(express.static(pubDirPath));
 app.use(express.json());
 app.use(cookieParser());
 
+// middleware for maintenance; set NODE_ENV to ret 503 if === "maintenance"
+app.use(require('./middleware/maintenance'));
+
 // user router
 app.use('/api', require('./routes/user'));
 app.use('/api', require('./routes/room'));

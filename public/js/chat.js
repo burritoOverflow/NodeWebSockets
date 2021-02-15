@@ -9,10 +9,24 @@ const clientCountMsg = document.getElementById('received-message');
 const msgThread = document.getElementById('message-thread');
 
 /**
+ * Parse the query string parameters for the room and the user name
+ * Return an object containing those
+ * @return {Object} - object containing username and room
+ */
+function parseQSParams() {
+  const queryStr = window.location.search;
+  const qsParameters = queryStr.split('&');
+  return {
+    username: qsParameters[0].split('=')[1],
+    room: qsParameters[1].split('=')[1],
+  };
+}
+
+/**
  * Fetch previous message from the room the user is currently in
  * Messages are :
  * {
-        "contents": "whats up",
+        "contents": "This is a message",
         "date": "2021-02-12T22:06:19.900Z",
         "sender": "SenderOfMessage"
     }
@@ -20,7 +34,6 @@ const msgThread = document.getElementById('message-thread');
 function fetchMessages() {
   const { room } = parseQSParams();
   const messagesApiUrl = `/api/messages/${room}`;
-  const usernameFromLS = localStorage.getItem('username');
   fetch(messagesApiUrl)
     .then((response) => {
       if (!response.ok) {
@@ -31,6 +44,7 @@ function fetchMessages() {
     .then((JSONresponse) => {
       const msgArr = [];
       JSONresponse.forEach((retMsg) => {
+        // reformat the message object into the format expected for the addMsgToThread function
         const msgObj = {
           message: retMsg.contents,
           msgSendDate: Date.parse(retMsg.date),
@@ -40,6 +54,7 @@ function fetchMessages() {
       });
 
       msgArr.forEach((msgObj) => {
+        // display the message
         addMsgToThread(msgObj);
       });
     });
@@ -105,6 +120,7 @@ function isElementHoveredOrFocused(element) {
 
 /**
  * Scroll the view of messages to the latest message
+ * Used on update when a new message arrives
  */
 function scrollToLatestMessage() {
   const messages = document.getElementsByClassName('message');
@@ -137,20 +153,6 @@ msgBtn.addEventListener('click', () => {
   }
   sendMessage(msgStr);
 });
-
-/**
- * Parse the query string parameters for the room and the user name
- * Return an object containing those
- * @return {Object} - object containing username and room
- */
-function parseQSParams() {
-  const queryStr = window.location.search;
-  const qsParameters = queryStr.split('&');
-  return {
-    username: qsParameters[0].split('=')[1],
-    room: qsParameters[1].split('=')[1],
-  };
-}
 
 // event handler for the send location button
 sendLocButton.addEventListener('click', () => {
@@ -276,6 +278,7 @@ function addMsgToThread(message) {
     });
   });
 
+  // on mouseout, restore the elements' appearance
   li.addEventListener('mouseout', () => {
     msgThread.style.backgroundColor = '#18181b';
     document.querySelectorAll('.message').forEach((msgEl) => {
@@ -290,6 +293,7 @@ function addMsgToThread(message) {
   msgThread.appendChild(li);
 
   // once the message is added to the DOM, scroll to the latest
+  // don't if the message thread is hovered or focused
   if (!isElementHoveredOrFocused(msgThread)) {
     scrollToLatestMessage();
   }
