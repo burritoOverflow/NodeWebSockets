@@ -4,9 +4,12 @@ const socket = io();
 
 const msgInput = document.getElementById('message-text');
 const msgBtn = document.getElementById('submit-button');
+const fetchOldMessagesBtn = document.getElementById('fetch-older-messages');
 const sendLocButton = document.getElementById('share-location-button');
 const clientCountMsg = document.getElementById('received-message');
 const msgThread = document.getElementById('message-thread');
+
+let olderMessagesReqCount = 0;
 
 /**
  * Parse the query string parameters for the room and the user name
@@ -57,6 +60,141 @@ function fetchMessages() {
         // display the message
         addMsgToThread(msgObj);
       });
+    });
+}
+
+function fetchOlderMessages(countOfReq) {
+  // first request will skip 10, second will skip 20, and so on
+  const limit = 10;
+  const skipNum = countOfReq * limit;
+  const { room } = parseQSParams();
+  const messagesApiUrl = `/api/messages/${room}?limit=${limit}&skip=${skipNum}`;
+
+  fetch(messagesApiUrl)
+    .then((response) => {
+      if (!response.ok) {
+        // req failed
+      }
+      return response.json();
+    })
+    .then((JSONresponse) => {
+      // collect each of the formatted messages
+      const msgArr = [];
+      JSONresponse.forEach((retMsg) => {
+        const msgObj = {
+          message: retMsg.contents,
+          msgSendDate: Date.parse(retMsg.date),
+          username: retMsg.sender,
+        };
+        msgArr.push(msgObj);
+      });
+
+      msgArr.forEach((message) => {
+        // display the message
+        const li = document.createElement('li');
+        li.classList.add('message');
+
+        const msgTokens = message.message.split(' ');
+
+        let containsURL = false;
+        const urlIdxs = [];
+
+        const anchorElements = [];
+
+        // check if a single string in the message is a valid HTTP(S) url
+        msgTokens.forEach((token, idx) => {
+          if (isValidHttpUrl(token)) {
+            urlIdxs.push(idx);
+            containsURL = true;
+          }
+        });
+
+        // create the spans for the user name the date of the message
+        const userNameSpan = document.createElement('span');
+
+        // check if the user is seeing their own sent message
+        const usersOwnMessage =
+          message.username.toLowerCase() ===
+          localStorage.getItem('username').toLowerCase();
+
+        // UI should reflect a user seeing their own message differently
+        if (usersOwnMessage) {
+          userNameSpan.innerText = 'You ';
+        } else {
+          userNameSpan.innerText = `${message.username} `;
+        }
+        userNameSpan.classList.add('username-span');
+
+        // parse the timestamp in the message and display
+        // as a formatted string
+        const dateSpan = document.createElement('span');
+        dateSpan.innerText = ` on ${new Date(message.msgSendDate)
+          .toLocaleString()
+          .replace(',', ' at')} `;
+        dateSpan.classList.add('date-span');
+
+        // prepend the text on the list element, only if other user's message
+        if (!usersOwnMessage) {
+          li.innerText = 'From ';
+        }
+
+        li.appendChild(userNameSpan);
+        li.appendChild(dateSpan);
+
+        // if the message sent contains a url
+        if (containsURL) {
+          msgTokens.forEach((token, idx) => {
+            if (urlIdxs.includes(idx)) {
+              const anchorEl = document.createElement('a');
+              anchorEl.setAttribute('href', token);
+              anchorEl.setAttribute('target', '_blank');
+              anchorEl.innerText = token;
+              anchorElements.push(anchorEl);
+
+              li.appendChild(anchorEl);
+            } else {
+              // prettier-ignore
+              // eslint-disable-next-line template-curly-spacing, no-multi-spaces
+              li.innerText += `${token} `;
+            }
+          });
+        } else {
+          // in the event a token string is not a URL, we'll
+          // create an additional span for the actual string message
+          const msgSpan = document.createElement('span');
+          msgSpan.classList.add('message-element-span');
+          msgSpan.innerText = `${message.message}`;
+          li.appendChild(msgSpan);
+        }
+
+        // dynamically change the style on hover events
+        li.addEventListener('mouseover', () => {
+          msgThread.style.backgroundColor = 'black';
+          document.querySelectorAll('.message').forEach((msgEl) => {
+            if (msgEl !== li) {
+              msgEl.classList.add('blurry-text');
+            }
+          });
+        });
+
+        // on mouseout, restore the elements' appearance
+        li.addEventListener('mouseout', () => {
+          msgThread.style.backgroundColor = '#18181b';
+          document.querySelectorAll('.message').forEach((msgEl) => {
+            if (msgEl !== li) {
+              // eslint-disable-next-line no-param-reassign
+              msgEl.style.opacity = 1.0;
+              msgEl.classList.remove('blurry-text');
+            }
+          });
+        });
+
+        msgThread.prepend(li);
+      }); // end iteration
+
+      if (!isElementHoveredOrFocused(msgThread)) {
+        scrollToEarliestMessage();
+      }
     });
 }
 
@@ -131,6 +269,18 @@ function scrollToLatestMessage() {
 }
 
 /**
+ * Scroll to the earliest message in the thread
+ * Used when fetching older messages
+ */
+function scrollToEarliestMessage() {
+  const messages = document.getElementsByClassName('message');
+  messages[0].scrollIntoView({
+    block: 'end',
+    behavior: 'smooth',
+  });
+}
+
+/**
  * determine if valid http(s) url
  * @param {*} string
  * @return {boolean} - true if valid
@@ -174,6 +324,11 @@ sendLocButton.addEventListener('click', () => {
       sendLocButton.enabled = true;
     });
   });
+});
+
+fetchOldMessagesBtn.addEventListener('click', () => {
+  ++olderMessagesReqCount;
+  fetchOlderMessages(olderMessagesReqCount);
 });
 
 // allow for enter key in the text input to send a message
