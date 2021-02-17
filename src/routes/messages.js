@@ -3,12 +3,15 @@ const { Room } = require('../models/room');
 const { Message } = require('../models/messages');
 const { User } = require('../models/user');
 const verifyUserJWT = require('../utils/verifyJWT');
-const { findRoomByName } = require('../db/queryDb');
 
 const router = express.Router();
 
-// return most recent 10 messages from the room provided
+// return most recent messages from the room provided
+// either via a qs param, or default 10
 router.get('/messages/:room', async (req, res) => {
+  const limit = req.query.limit ? parseInt(req.query.limit, 10) : 10;
+  const skip = req.query.skip ? parseInt(req.query.skip, 10) : 0;
+
   if (req.cookies.token) {
     const userObj = await verifyUserJWT(req.cookies.token);
     if (!userObj) {
@@ -24,7 +27,8 @@ router.get('/messages/:room', async (req, res) => {
       .sort({
         date: -1,
       }) // oldest first
-      .limit(10);
+      .limit(limit)
+      .skip(skip);
 
     // simplify the contents; don't need the message's id
     // TODO rewrite this so the query returns them in reverse
