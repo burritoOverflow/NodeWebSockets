@@ -8,66 +8,71 @@ const jwt = require('jsonwebtoken');
 // env vars
 require('dotenv').config();
 
-const UserSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    unique: true,
-    required: true,
-    trim: true,
-    minLength: 3,
-  },
-  email: {
-    type: String,
-    unique: true,
-    required: true,
-    trim: true,
-    validate(value) {
-      if (!validator.isEmail(value)) {
-        throw new Error('Email is invalid');
-      }
+const UserSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      unique: true,
+      required: true,
+      trim: true,
+      minLength: 3,
     },
-  },
-  password: {
-    type: String,
-    required: true,
-    trim: true,
-    // add password requirements
-    validate(value) {
-      if (
-        !validator.isStrongPassword(value, {
-          minLength: 8,
-          minLowercase: 1,
-          minUppercase: 1,
-          minNumbers: 1,
-          minSymbols: 1,
-          returnScore: false,
-        })
-      ) {
-        throw new Error('Weak password');
-      }
-    },
-  },
-  age: {
-    type: Number,
-    min: 18,
-  },
-  tokens: [
-    // store JWT with the user
-    {
-      token: {
-        type: String,
-        required: true,
+    email: {
+      type: String,
+      unique: true,
+      required: true,
+      trim: true,
+      validate(value) {
+        if (!validator.isEmail(value)) {
+          throw new Error('Email is invalid');
+        }
       },
     },
-  ],
-  socketIOIDs: [
-    {
-      sid: {
-        type: String,
+    password: {
+      type: String,
+      required: true,
+      trim: true,
+      // add password requirements
+      validate(value) {
+        if (
+          !validator.isStrongPassword(value, {
+            minLength: 8,
+            minLowercase: 1,
+            minUppercase: 1,
+            minNumbers: 1,
+            minSymbols: 1,
+            returnScore: false,
+          })
+        ) {
+          throw new Error('Weak password');
+        }
       },
     },
-  ],
-});
+    age: {
+      type: Number,
+      min: 18,
+    },
+    tokens: [
+      // store JWT with the user
+      {
+        token: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
+    socketIOIDs: [
+      {
+        sid: {
+          type: String,
+        },
+      },
+    ],
+  },
+  {
+    timestamps: true,
+  },
+);
 
 // adds an instance method
 // generate a jwt

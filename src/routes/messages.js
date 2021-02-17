@@ -58,6 +58,9 @@ router.get('/messages/:room', async (req, res) => {
       userIDSenderObj.forEach((senderObj) => {
         // eslint-disable-next-line no-underscore-dangle
         if (msgObj.sender.equals(senderObj._id)) {
+          // format the message in the manner that the client code expects
+          // this format is the same as the format for messages emitted during
+          // a message event from sio
           const msg = {
             contents: msgObj.contents,
             date: msgObj.date,
