@@ -221,6 +221,7 @@ a {
 }
 
 #fetch-older-messages {
+  visibility: hidden;
   z-index: 0;
   width: 40%;
   margin-top: 1em;

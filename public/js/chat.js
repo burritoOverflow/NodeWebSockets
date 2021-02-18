@@ -89,108 +89,13 @@ function fetchOlderMessages(countOfReq) {
         msgArr.push(msgObj);
       });
 
+      // display the messages in the correct order
+      msgArr.reverse();
       msgArr.forEach((message) => {
         // display the message
-        const li = document.createElement('li');
-        li.classList.add('message');
-
-        const msgTokens = message.message.split(' ');
-
-        let containsURL = false;
-        const urlIdxs = [];
-
-        const anchorElements = [];
-
-        // check if a single string in the message is a valid HTTP(S) url
-        msgTokens.forEach((token, idx) => {
-          if (isValidHttpUrl(token)) {
-            urlIdxs.push(idx);
-            containsURL = true;
-          }
-        });
-
-        // create the spans for the user name the date of the message
-        const userNameSpan = document.createElement('span');
-
-        // check if the user is seeing their own sent message
-        const usersOwnMessage =
-          message.username.toLowerCase() ===
-          localStorage.getItem('username').toLowerCase();
-
-        // UI should reflect a user seeing their own message differently
-        if (usersOwnMessage) {
-          userNameSpan.innerText = 'You ';
-        } else {
-          userNameSpan.innerText = `${message.username} `;
-        }
-        userNameSpan.classList.add('username-span');
-
-        // parse the timestamp in the message and display
-        // as a formatted string
-        const dateSpan = document.createElement('span');
-        dateSpan.innerText = ` on ${new Date(message.msgSendDate)
-          .toLocaleString()
-          .replace(',', ' at')} `;
-        dateSpan.classList.add('date-span');
-
-        // prepend the text on the list element, only if other user's message
-        if (!usersOwnMessage) {
-          li.innerText = 'From ';
-        }
-
-        li.appendChild(userNameSpan);
-        li.appendChild(dateSpan);
-
-        // if the message sent contains a url
-        if (containsURL) {
-          msgTokens.forEach((token, idx) => {
-            if (urlIdxs.includes(idx)) {
-              const anchorEl = document.createElement('a');
-              anchorEl.setAttribute('href', token);
-              anchorEl.setAttribute('target', '_blank');
-              anchorEl.innerText = token;
-              anchorElements.push(anchorEl);
-
-              li.appendChild(anchorEl);
-            } else {
-              // prettier-ignore
-              // eslint-disable-next-line template-curly-spacing, no-multi-spaces
-              li.innerText += `${token} `;
-            }
-          });
-        } else {
-          // in the event a token string is not a URL, we'll
-          // create an additional span for the actual string message
-          const msgSpan = document.createElement('span');
-          msgSpan.classList.add('message-element-span');
-          msgSpan.innerText = `${message.message}`;
-          li.appendChild(msgSpan);
-        }
-
-        // dynamically change the style on hover events
-        li.addEventListener('mouseover', () => {
-          msgThread.style.backgroundColor = 'black';
-          document.querySelectorAll('.message').forEach((msgEl) => {
-            if (msgEl !== li) {
-              msgEl.classList.add('blurry-text');
-            }
-          });
-        });
-
-        // on mouseout, restore the elements' appearance
-        li.addEventListener('mouseout', () => {
-          msgThread.style.backgroundColor = '#18181b';
-          document.querySelectorAll('.message').forEach((msgEl) => {
-            if (msgEl !== li) {
-              // eslint-disable-next-line no-param-reassign
-              msgEl.style.opacity = 1.0;
-              msgEl.classList.remove('blurry-text');
-            }
-          });
-        });
-
+        const li = createLiMessageElement(message, false);
         msgThread.prepend(li);
-      }); // end iteration
+      });
 
       if (!isElementHoveredOrFocused(msgThread)) {
         scrollToEarliestMessage();
@@ -257,96 +162,11 @@ function isElementHoveredOrFocused(element) {
 }
 
 /**
- * Scroll the view of messages to the latest message
- * Used on update when a new message arrives
+ * Create and return a message element
+ * @param {*} message - a message object, used for creating the message element
+ * @param {*} showNotification - boolean to show the notification
  */
-function scrollToLatestMessage() {
-  const messages = document.getElementsByClassName('message');
-  messages[messages.length - 1].scrollIntoView({
-    block: 'end',
-    behavior: 'smooth',
-  });
-}
-
-/**
- * Scroll to the earliest message in the thread
- * Used when fetching older messages
- */
-function scrollToEarliestMessage() {
-  const messages = document.getElementsByClassName('message');
-  messages[0].scrollIntoView({
-    block: 'end',
-    behavior: 'smooth',
-  });
-}
-
-/**
- * determine if valid http(s) url
- * @param {*} string
- * @return {boolean} - true if valid
- */
-function isValidHttpUrl(string) {
-  let url;
-  try {
-    url = new URL(string);
-  } catch (_) {
-    return false;
-  }
-  return url.protocol === 'http:' || url.protocol === 'https:';
-}
-
-msgBtn.addEventListener('click', () => {
-  // make sure a message is present
-  const msgStr = msgInput.value.trim();
-  if (msgStr === '') {
-    return;
-  }
-  sendMessage(msgStr);
-});
-
-// event handler for the send location button
-sendLocButton.addEventListener('click', () => {
-  sendLocButton.disabled = true;
-  sendLocButton.classList.add('blurry-text');
-
-  if (!navigator.geolocation) {
-    return;
-  }
-
-  navigator.geolocation.getCurrentPosition((position) => {
-    const { latitude, longitude } = position.coords;
-    const latLng = {
-      latitude,
-      longitude,
-    };
-    socket.emit('userLocation', latLng, (serverAckMessage) => {
-      showUserToast(serverAckMessage);
-      sendLocButton.enabled = true;
-    });
-  });
-});
-
-fetchOldMessagesBtn.addEventListener('click', () => {
-  ++olderMessagesReqCount;
-  fetchOlderMessages(olderMessagesReqCount);
-});
-
-// allow for enter key in the text input to send a message
-msgInput.addEventListener('keypress', (e) => {
-  const { key } = e;
-  if (key === 'Enter') {
-    const msgStr = msgInput.value.trim();
-    if (msgStr !== '') {
-      sendMessage(msgStr);
-    }
-  }
-});
-
-/**
- * append individual messages to the message thread
- * @param {*} message
- */
-function addMsgToThread(message) {
+function createLiMessageElement(message, showNotification) {
   const li = document.createElement('li');
   li.classList.add('message');
 
@@ -445,17 +265,113 @@ function addMsgToThread(message) {
     });
   });
 
+  // show a user a notification
+  if (!usersOwnMessage && showNotification) {
+    displayNotification(`${message.username} said ${message.message}`);
+  }
+
+  return li;
+}
+
+/**
+ * Scroll the view of messages to the latest message
+ * Used on update when a new message arrives
+ */
+function scrollToLatestMessage() {
+  const messages = document.getElementsByClassName('message');
+  messages[messages.length - 1].scrollIntoView({
+    block: 'end',
+    behavior: 'smooth',
+  });
+}
+
+/**
+ * Scroll to the earliest message in the thread
+ * Used when fetching older messages
+ */
+function scrollToEarliestMessage() {
+  const messages = document.getElementsByClassName('message');
+  messages[0].scrollIntoView({
+    block: 'end',
+    behavior: 'smooth',
+  });
+}
+
+/**
+ * determine if valid http(s) url
+ * @param {*} string
+ * @return {boolean} - true if valid
+ */
+function isValidHttpUrl(string) {
+  let url;
+  try {
+    url = new URL(string);
+  } catch (_) {
+    return false;
+  }
+  return url.protocol === 'http:' || url.protocol === 'https:';
+}
+
+msgBtn.addEventListener('click', () => {
+  // make sure a message is present
+  const msgStr = msgInput.value.trim();
+  if (msgStr === '') {
+    return;
+  }
+  sendMessage(msgStr);
+});
+
+// event handler for the send location button
+sendLocButton.addEventListener('click', () => {
+  sendLocButton.disabled = true;
+  sendLocButton.classList.add('blurry-text');
+
+  if (!navigator.geolocation) {
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition((position) => {
+    const { latitude, longitude } = position.coords;
+    const latLng = {
+      latitude,
+      longitude,
+    };
+    socket.emit('userLocation', latLng, (serverAckMessage) => {
+      showUserToast(serverAckMessage);
+      sendLocButton.enabled = true;
+    });
+  });
+});
+
+// event listener for the fetch old messages
+fetchOldMessagesBtn.addEventListener('click', () => {
+  ++olderMessagesReqCount;
+  fetchOlderMessages(olderMessagesReqCount);
+});
+
+// allow for enter key in the text input to send a message
+msgInput.addEventListener('keypress', (e) => {
+  const { key } = e;
+  if (key === 'Enter') {
+    const msgStr = msgInput.value.trim();
+    if (msgStr !== '') {
+      sendMessage(msgStr);
+    }
+  }
+});
+
+/**
+ * append individual messages to the message thread, used when a message is recieved
+ * @param {*} message
+ */
+function addMsgToThread(message) {
+  const li = createLiMessageElement(message, true);
   msgThread.appendChild(li);
 
   // once the message is added to the DOM, scroll to the latest
   // don't if the message thread is hovered or focused
   if (!isElementHoveredOrFocused(msgThread)) {
     scrollToLatestMessage();
-  }
-
-  // show a user a notification
-  if (!usersOwnMessage) {
-    displayNotification(`${message.username} said ${message.message}`);
   }
 }
 
@@ -567,7 +483,11 @@ socket.on('userLeft', (message) => {
 // we'll also store the User's name in localstorage, and should change the DOM
 // elements to reflect that
 socket.emit('join', parseQSParams(), (error) => {
-  fetchMessages();
+  setTimeout(() => {
+    fetchMessages();
+    fetchOldMessagesBtn.style.visibility = 'visible';
+  }, 1200);
+
   const { username, room } = parseQSParams();
   if (error) {
     window.location.href = '/';
