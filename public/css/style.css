@@ -237,8 +237,8 @@ a {
 
 #filter-messages {
   padding: 0.6em;
-  border: 1px solid #9147ff;
-  color: #9147ff;
+  border: 1px solid white;
+  color: #ffffff;
   background-color: #1f1f23;
   visibility: hidden;
   font-size: large;
@@ -251,8 +251,12 @@ a {
   grid-row: 2 / 2;
 }
 
-#filter-messages:focus {
+#filter-messages:focus,
+#filter-messages:hover {
   outline: none;
+  border: 1px solid #9147ff;
+  color: #9147ff;
+  background-color: black;
 }
 
 #fetch-older-messages:hover {
