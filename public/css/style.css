@@ -235,6 +235,26 @@ a {
   grid-row: 2 / 2;
 }
 
+#filter-messages {
+  padding: 0.6em;
+  border: 1px solid #9147ff;
+  color: #9147ff;
+  background-color: #1f1f23;
+  visibility: hidden;
+  font-size: large;
+  border-radius: 54px;
+  text-align: center;
+  width: 45%;
+  z-index: 0;
+  margin-top: 7em;
+  grid-column: 4 / 4;
+  grid-row: 2 / 2;
+}
+
+#filter-messages:focus {
+  outline: none;
+}
+
 #fetch-older-messages:hover {
   background-color: white;
   color: black;

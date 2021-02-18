@@ -8,6 +8,7 @@ const fetchOldMessagesBtn = document.getElementById('fetch-older-messages');
 const sendLocButton = document.getElementById('share-location-button');
 const clientCountMsg = document.getElementById('received-message');
 const msgThread = document.getElementById('message-thread');
+const filterMsgsInput = document.getElementById('filter-messages');
 
 let olderMessagesReqCount = 0;
 
@@ -349,6 +350,49 @@ fetchOldMessagesBtn.addEventListener('click', () => {
   fetchOlderMessages(olderMessagesReqCount);
 });
 
+// event listener for filtering messages
+filterMsgsInput.addEventListener('input', (e) => {
+  const contents = e.target.value;
+  const msgElements = document.querySelectorAll('.message');
+
+  if (contents.trim() === '') {
+    // restore display of all searched elements
+    msgElements.forEach((msgEl) => {
+      // eslint-disable-next-line no-param-reassign
+      msgEl.style.display = 'block';
+    });
+    return;
+  }
+
+  // eslint-disable-next-line no-plusplus
+  for (let i = 0; i < msgElements.length; i++) {
+    // get the children from the individual message element
+    const msgChildren = msgElements[i].childNodes;
+    let usernameSpanContents;
+    let msgContents;
+
+    // messages from other users will have 4 children, the first is the 'from'
+    // not present on user's own message
+    if (msgChildren.length === 4) {
+      usernameSpanContents = msgChildren[1].childNodes[0].data;
+      msgContents = msgChildren[3].childNodes[0].data;
+    } else {
+      // message from user contains one less child
+      usernameSpanContents = msgChildren[0].childNodes[0].data;
+      msgContents = msgChildren[2].childNodes[0].data;
+    }
+
+    if (
+      usernameSpanContents.includes(contents) ||
+      msgContents.includes(contents)
+    ) {
+      msgElements[i].style.display = 'block';
+    } else {
+      msgElements[i].style.display = 'none';
+    }
+  }
+});
+
 // allow for enter key in the text input to send a message
 msgInput.addEventListener('keypress', (e) => {
   const { key } = e;
@@ -486,6 +530,7 @@ socket.emit('join', parseQSParams(), (error) => {
   setTimeout(() => {
     fetchMessages();
     fetchOldMessagesBtn.style.visibility = 'visible';
+    filterMsgsInput.style.visibility = 'visible';
   }, 1200);
 
   const { username, room } = parseQSParams();
