@@ -38,6 +38,16 @@ router.post('/users/login', async (req, res) => {
       req.body.password,
     );
     const token = await user.generateAuthToken();
+    // set the cookie as appropriate
+    if (process.env.NODE_ENV === 'production') {
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: true,
+      });
+    } else {
+      res.cookie('token', token, { httpOnly: true, sameSite: true });
+    }
     res.status(200).send({
       user,
       token,

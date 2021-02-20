@@ -67,7 +67,8 @@ a {
   filter: blur(10px);
 }
 
-#sign-up-form {
+#sign-up-form,
+#login-form {
   background-color: black;
   border: 1px solid whitesmoke;
   border-radius: 30px;

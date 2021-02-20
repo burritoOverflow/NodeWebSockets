@@ -60,8 +60,7 @@ app.get('/', async (req, res) => {
       res.sendFile(path.join(__dirname, '..', 'html', 'index.html'));
     } // no name invalid
   } else {
-    // TODO redirect to login
-    res.redirect('/signup');
+    res.redirect('/login');
   }
 });
 
@@ -85,6 +84,11 @@ app.get('/signup', (_, res) => {
 // route for chat
 app.get('/chat', async (req, res) => {
   if (req.cookies.token) {
+    // attempting to navigate to chat without qs params isn't valid
+    if (req.query.username === '' || req.query.room === '') {
+      res.redirect('/');
+    }
+
     // hmm attempted access with a different username
     if (req.query.username !== req.cookies.displayname) {
       res.status(401).send({
@@ -102,6 +106,23 @@ app.get('/chat', async (req, res) => {
   } else {
     // also invalid; not a user
     res.redirect('/signup');
+  }
+});
+
+// login route
+app.get('/login', async (req, res) => {
+  if (req.cookies.token) {
+    // verify if the user is a valid user
+    const user = await verifyUserJWT(req.cookies.token);
+    if (!user) {
+      // invalid token
+      res.sendFile(path.join(__dirname, '..', 'html', 'login.html'));
+    } else {
+      // valid user, so they can join a room
+      res.sendFile(path.join(__dirname, '..', 'html', 'chat.html'));
+    }
+  } else {
+    res.sendFile(path.join(__dirname, '..', 'html', 'login.html'));
   }
 });
 

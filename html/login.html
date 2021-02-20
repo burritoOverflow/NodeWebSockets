@@ -7,18 +7,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./css/style.css" />
     <link rel="stylesheet" href="./css/snackbar.css" />
-    <title>Create an Account</title>
+    <title>Login to Start Chatting</title>
 </head>
 
 <body>
     <main id="index-main">
-        <form id="sign-up-form">
-            <h1 id="index-header">Join and start chatting now!</h1>
+        <form id="login-form">
+            <h1 id="index-header">Login and start chatting!</h1>
             <ul id="sign-up-list">
-                <li>
-                    <label for="name">Name:</label>
-                    <input class=" join-input" type="text" id="name" name="user-name">
-                </li>
                 <li>
                     <label for="mail">E-mail:</label>
                     <input class=" join-input" type="email" id="email" name="user-email">
@@ -28,13 +24,12 @@
                     <input type="password" class="join-input" id="password" name="user-password" />
                 </li>
             </ul>
-            <button id="submit-button">Sign Up</button>
+            <button id="submit-button">Log in</button>
         </form>
-        <p id="message"></p>
         <div id="snackbar"></div>
-        <a href="/login">Already have an account? Login</a>
+        <a href="/signup">New user? Join</a>
     </main>
-    <script src="./js/signUp.js"></script>
+    <script src="./js/login.js"></script>
 </body>
 
 </html>
