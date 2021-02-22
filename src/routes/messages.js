@@ -1,10 +1,21 @@
 const express = require('express');
+const multer = require('multer');
+const AWS = require('aws-sdk');
+
+const fs = require('fs');
+
 const { Room } = require('../models/room');
 const { Message } = require('../models/messages');
 const { User } = require('../models/user');
 const verifyUserJWT = require('../utils/verifyJWT');
+const { appendToLog } = require('../utils/logging');
 
 const router = express.Router();
+require('dotenv').config();
+
+// AWS config
+AWS.config.update({ region: 'us-east-1' });
+const s3 = new AWS.S3({ apiVersion: '2006-03-01' });
 
 // return most recent messages from the room provided
 // either via a qs param, or default 10
@@ -81,5 +92,76 @@ router.get('/messages/:room', async (req, res) => {
   res.status(401).send({ error: 'Unauthorized' });
   // need the user names from the users that sent the messages
 });
+
+// multer config, for file uploads
+const upload = multer({
+  limits: {
+    // 1MB limit for these photos (1MB == 1,000,000 B)
+    fileSize: 5000 ** 2,
+  },
+  fileFilter(req, file, cb) {
+    // called by multer, (req, file, cb)
+    cb(undefined, true);
+  },
+});
+
+// route for filesharing; 'upload' is the key
+router.post(
+  '/messages/file',
+  upload.single('upload'),
+  async (req, res) => {
+    // verify the user
+    if (req.cookies.token) {
+      const userObj = await verifyUserJWT(req.cookies.token);
+
+      if (!userObj) {
+        // invalid token
+        res.status(401).send({ error: 'Unauthorized' });
+      }
+
+      // we'll append the timestamp string to avoid overwriting filenames
+      const uploadDateStr = String(+new Date());
+
+      // get the data (file buffer) from multer
+      const fileBuffer = req.file.buffer;
+      const fileExtension = req.file.originalname.slice(
+        req.file.originalname.indexOf('.'),
+      );
+      const filename = req.file.originalname.slice(
+        0,
+        req.file.originalname.indexOf('.'),
+      );
+
+      const uploadFilename = `${filename}_${uploadDateStr}.${fileExtension}`;
+
+      const s3Response = await s3
+        .upload({
+          Bucket: process.env.S3_BUCKET_NAME,
+          Key: uploadFilename,
+          Body: fileBuffer,
+        })
+        .promise();
+
+      // log the response
+      appendToLog(JSON.stringify(s3Response));
+
+      // build the public URL
+      const filePublicURL = `https://ws-app-storage.s3.amazonaws.com/${uploadFilename}`;
+
+      // on success, return the public url in the response
+      res.status(201).send({
+        originalName: req.file.originalname,
+        url: filePublicURL,
+      });
+    } else {
+      // no token provided
+      res.status(401).send({ error: 'Unauthorized' });
+    }
+  },
+  (error, req, res, next) => {
+    // if error, we'll handle this more appropriately
+    res.status(400).send({ error: error.message });
+  },
+);
 
 module.exports = router;

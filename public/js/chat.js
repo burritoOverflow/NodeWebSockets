@@ -9,6 +9,37 @@ const sendLocButton = document.getElementById('share-location-button');
 const clientCountMsg = document.getElementById('received-message');
 const msgThread = document.getElementById('message-thread');
 const filterMsgsInput = document.getElementById('filter-messages');
+const fileInput = document.getElementById('file-upload-input');
+
+/**
+ *  Send the user selected file to the API
+ *
+ * @param {*} file the file the user is uploading
+ */
+function uploadFile(file) {
+  const data = new FormData();
+  data.append('upload', file);
+
+  fetch('/api/messages/file', {
+    method: 'POST',
+    // headers: {
+    //   // may have to set file type
+    //   'Content-Type': 'You will perhaps need to define a content-type here',
+    // },
+    body: data, // This is your file object
+  })
+    .then((response) => response.json()) // response is JSON, so convert
+    .then(
+      (success) => console.log(success), // Handle the success response object
+    )
+    .catch(
+      (error) => console.log(error), // Handle the error response object
+    );
+}
+
+// Runs when the file selection event is emitted
+const onSelectFile = () => uploadFile(fileInput.files[0]);
+fileInput.addEventListener('change', onSelectFile, false);
 
 let olderMessagesReqCount = 0;
 
