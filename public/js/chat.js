@@ -22,15 +22,14 @@ function uploadFile(file) {
 
   fetch('/api/messages/file', {
     method: 'POST',
-    // headers: {
-    //   // may have to set file type
-    //   'Content-Type': 'You will perhaps need to define a content-type here',
-    // },
-    body: data, // This is your file object
+    body: data,
   })
     .then((response) => response.json()) // response is JSON, so convert
     .then(
-      (success) => console.log(success), // Handle the success response object
+      (resJSON) => {
+        const userMessage = `shared ${resJSON.originalName} : ${resJSON.url}`;
+        sendMessage(resJSON.url);
+      }, // Handle the success response object
     )
     .catch(
       (error) => console.log(error), // Handle the error response object
@@ -251,6 +250,8 @@ function createLiMessageElement(message, showNotification) {
 
   // if the message sent contains a url
   if (containsURL) {
+    const msgSpan = document.createElement('span');
+    msgSpan.classList.add('message-element-span');
     msgTokens.forEach((token, idx) => {
       if (urlIdxs.includes(idx)) {
         const anchorEl = document.createElement('a');
@@ -259,12 +260,14 @@ function createLiMessageElement(message, showNotification) {
         anchorEl.innerText = token;
         anchorElements.push(anchorEl);
 
-        li.appendChild(anchorEl);
+        msgSpan.appendChild(anchorEl);
       } else {
         // prettier-ignore
         // eslint-disable-next-line template-curly-spacing, no-multi-spaces
-        li.innerText += `${token} `;
+        msgSpan.innerText += ` ${token} `;
       }
+
+      li.appendChild(msgSpan);
     });
   } else {
     // in the event a token string is not a URL, we'll
