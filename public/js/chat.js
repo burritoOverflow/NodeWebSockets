@@ -29,6 +29,8 @@ function uploadFile(file) {
       (resJSON) => {
         const userMessage = `shared ${resJSON.originalName} : ${resJSON.url}`;
         sendMessage(resJSON.url);
+        // clear the selection from the input
+        fileInput.value = '';
       }, // Handle the success response object
     )
     .catch(
@@ -89,11 +91,21 @@ function fetchMessages() {
 
       msgArr.forEach((msgObj) => {
         // display the message
-        addMsgToThread(msgObj);
+        const li = createLiMessageElement(msgObj, false);
+        msgThread.appendChild(li);
+
+        if (!isElementHoveredOrFocused(msgThread)) {
+          scrollToLatestMessage();
+        }
       });
     });
 }
 
+/**
+ * Fetch older messages (after the most recent 10) from the database for the room
+ *
+ * @param {number} countOfReq  - the number of previous requests since page load
+ */
 function fetchOlderMessages(countOfReq) {
   // first request will skip 10, second will skip 20, and so on
   const limit = 10;

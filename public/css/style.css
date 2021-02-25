@@ -19,9 +19,9 @@ a {
 }
 
 #index-main {
+  place-items: center;
   height: 100%;
   display: grid;
-  place-items: center;
 }
 
 #index-header {
@@ -47,10 +47,10 @@ a {
 }
 
 .join-input {
-  font-size: larger;
   transition-duration: 500ms;
   padding: 1em;
   margin: 1em;
+  font-size: larger;
   display: block;
   border: 0.5px solid purple;
   border-radius: 50px;
@@ -196,19 +196,27 @@ a {
   font-weight: 600;
 }
 
+#file-upload-input {
+  background-color: #9147ff;
+  border-radius: 30px;
+  border: 1px solid black;
+  font-weight: 600;
+  margin-top: 5%;
+}
+
 #share-location-button:hover {
   color: whitesmoke;
   background-color: black;
 }
 
 #submit-button {
-  margin-top: 1em;
-  border: 1px solid black;
-  border-radius: 30px;
-  padding: 0.9em;
   background-color: #9147ff;
+  border-radius: 30px;
+  border: 1px solid black;
   color: antiquewhite;
   font-weight: 600;
+  margin-top: 1em;
+  padding: 0.9em;
 }
 
 #submit-button:hover {
@@ -358,6 +366,11 @@ a {
   display: block;
   padding-left: 1em;
   padding-right: 1em;
+}
+
+.message-element-span > a {
+  color: #18181b;
+  font-weight: bolder;
 }
 
 .username-span {

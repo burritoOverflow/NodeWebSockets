@@ -124,13 +124,18 @@ router.post(
 
       // get the data (file buffer) from multer
       const fileBuffer = req.file.buffer;
+
       const fileExtension = req.file.originalname.slice(
         req.file.originalname.indexOf('.'),
       );
-      const filename = req.file.originalname.slice(
+
+      let filename = req.file.originalname.slice(
         0,
         req.file.originalname.indexOf('.'),
       );
+
+      // for ease of use here, we'll just replace all spaces with underscores
+      filename = filename.split(' ').join('_');
 
       const uploadFilename = `${filename}_${uploadDateStr}.${fileExtension}`;
 
