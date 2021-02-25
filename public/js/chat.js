@@ -28,7 +28,7 @@ function uploadFile(file) {
     .then(
       (resJSON) => {
         const userMessage = `shared ${resJSON.originalName} : ${resJSON.url}`;
-        sendMessage(resJSON.url);
+        sendMessage(userMessage);
         // clear the selection from the input
         fileInput.value = '';
       }, // Handle the success response object
@@ -425,7 +425,23 @@ filterMsgsInput.addEventListener('input', (e) => {
     } else {
       // message from user contains one less child
       usernameSpanContents = msgChildren[0].childNodes[0].data;
-      msgContents = msgChildren[2].childNodes[0].data;
+
+      if (msgChildren[2].childNodes.length === 1) {
+        msgContents =
+          msgChildren[2].childNodes[0].data ||
+          msgChildren[2].childNodes[0].innerText;
+      } else {
+        // in this instance it contains both an anchor and a message
+        msgChildren[2].childNodes.forEach((msgChild) => {
+          // data appears for span elements
+          if (msgChild.data) {
+            msgContents += ` ${msgChild.data} `;
+          } else {
+            // otherwise just check the inner text of the anchor
+            msgContents += ` ${msgChild.innerText} `;
+          }
+        });
+      }
     }
 
     if (
