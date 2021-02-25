@@ -630,11 +630,24 @@ socket.emit('join', parseQSParams(), (error) => {
     const eventNodeType = _event.target.nodeName.toUpperCase();
 
     // if the event fires on the text input area, return
-    if (eventCharCode === 0 || eventNodeType === 'TEXTAREA') {
+    if (
+      eventCharCode === 0 ||
+      eventNodeType === 'TEXTAREA' ||
+      eventNodeType === 'INPUT'
+    ) {
       return;
     }
 
-    console.log(eventCharCode);
+    if (eventCharCode === 102) {
+      document.getElementById('filter-messages').focus();
+      return;
+    }
+
+    if (eventCharCode === 115) {
+      // open the file upload prompt
+      document.getElementById('file-upload-input').click();
+      return;
+    }
 
     if (eventCharCode === 116) {
       // scroll the messages thread to the top for 't'
