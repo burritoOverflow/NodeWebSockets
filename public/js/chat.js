@@ -634,6 +634,48 @@ socket.emit('join', parseQSParams(), (error) => {
       return;
     }
 
+    console.log(eventCharCode);
+
+    if (eventCharCode === 116) {
+      // scroll the messages thread to the top for 't'
+      scrollToEarliestMessage();
+      return;
+    }
+
+    if (eventCharCode === 98) {
+      // scroll to bottom messages for 'b'
+      scrollToLatestMessage();
+      return;
+    }
+
+    // vi style, j for down, k for up
+    // we'll scroll down by the approximate size of a child element
+    if (eventCharCode === 106) {
+      if (msgThread.childNodes.length > 0) {
+        // make sure there are even children
+        const verticalScrollHeight = msgThread.childNodes[0].offsetHeight;
+        msgThread.scrollBy(0, -verticalScrollHeight);
+      } else {
+        return;
+      }
+    }
+
+    if (eventCharCode === 107) {
+      if (msgThread.childNodes.length > 0) {
+        // make sure there are even children
+        const verticalScrollHeight = msgThread.childNodes[0].offsetHeight;
+        msgThread.scrollBy(0, verticalScrollHeight);
+      } else {
+        return;
+      }
+    }
+
+    if (eventCharCode === 109) {
+      // focus on messages
+      msgInput.focus();
+      return;
+    }
+
     if (eventCharCode !== secretCommand.charCodeAt(offset)) {
       // reset the index into the string
       offset = eventCharCode === secretCommand.charCodeAt(0) ? 1 : 0;

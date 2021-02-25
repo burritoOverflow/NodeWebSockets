@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "windowsDev" : "@powershell -Command $env:DEBUG='socket.io*'; npm run dev"
   },
   "author": "",
   "license": "ISC",
@@ -15,6 +16,7 @@
     "bad-words": "^3.0.4",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.5",
+    "debug": "^4.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
