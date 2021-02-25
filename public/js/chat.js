@@ -1,3 +1,4 @@
+/* eslint-disable no-plusplus */
 // takes a url arg if not connecting to the same server serving the script
 // eslint-disable-next-line no-undef
 const socket = io();
@@ -10,6 +11,9 @@ const clientCountMsg = document.getElementById('received-message');
 const msgThread = document.getElementById('message-thread');
 const filterMsgsInput = document.getElementById('filter-messages');
 const fileInput = document.getElementById('file-upload-input');
+
+// count the number of requests to date for fetching data
+let olderMessagesReqCount = 0;
 
 /**
  *  Send the user selected file to the API
@@ -41,8 +45,6 @@ function uploadFile(file) {
 // Runs when the file selection event is emitted
 const onSelectFile = () => uploadFile(fileInput.files[0]);
 fileInput.addEventListener('change', onSelectFile, false);
-
-let olderMessagesReqCount = 0;
 
 /**
  * Parse the query string parameters for the room and the user name
@@ -107,6 +109,12 @@ function fetchMessages() {
  * @param {number} countOfReq  - the number of previous requests since page load
  */
 function fetchOlderMessages(countOfReq) {
+  // first check if the 'clear' secret has been invoked, if so, just call the default fetch messages
+  if (msgThread.childNodes.length === 0) {
+    fetchMessages();
+    return;
+  }
+
   // first request will skip 10, second will skip 20, and so on
   const limit = 10;
   const skipNum = countOfReq * limit;
@@ -607,3 +615,38 @@ socket.emit('join', parseQSParams(), (error) => {
     localStorage.setItem('username', username);
   }
 });
+
+// eslint-disable-next-line wrap-iife
+(function () {
+  const secretCommand = 'clear';
+  let offset = 0;
+
+  document.onkeypress = (event) => {
+    // eslint-disable-next-line no-underscore-dangle
+    const _event = event || window.event;
+    const eventCharCode = _event.charCode;
+
+    // find the location of the input event (here, either global or the text area)
+    const eventNodeType = _event.target.nodeName.toUpperCase();
+
+    // if the event fires on the text input area, return
+    if (eventCharCode === 0 || eventNodeType === 'TEXTAREA') {
+      return;
+    }
+
+    if (eventCharCode !== secretCommand.charCodeAt(offset)) {
+      // reset the index into the string
+      offset = eventCharCode === secretCommand.charCodeAt(0) ? 1 : 0;
+    } else if (offset < secretCommand.length - 1) {
+      // correct input; increment
+      offset++;
+    } else {
+      // correct, remove all children and reset the state
+      while (msgThread.firstChild) {
+        msgThread.removeChild(msgThread.lastChild);
+      }
+      offset = 0;
+      olderMessagesReqCount = 0;
+    }
+  };
+})();
