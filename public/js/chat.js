@@ -591,6 +591,19 @@ socket.on('newUserMessage', (message) => {
 // display the toast when a client leaves, if the page
 // is visible, else we'll use a notification
 socket.on('userLeft', (message) => {
+  // we'll just get the first token from the message (that's the username of the client that left)
+  const usernameToRemove = message.split(' ')[0];
+  const usersList = document.getElementById('users-list');
+  usersList.childNodes.forEach((node) => {
+    // skip the text node
+    if (!node.innerText) {
+      return;
+    }
+
+    if (node.innerText.includes(usernameToRemove)) {
+      usersList.removeChild(node);
+    }
+  });
   if (document.hidden) {
     displayNotification(message);
   } else {

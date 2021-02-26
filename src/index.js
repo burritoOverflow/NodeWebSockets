@@ -239,9 +239,11 @@ io.use((socket, next) => {
   const { room } = socket.handshake.auth;
   if (!username || !room) {
     appendToLog('Username or Room missing from socket');
-    return next(new Error('invalid username'));
+    return next(new Error('Missing Username or Room'));
   }
+  // eslint-disable-next-line no-param-reassign
   socket.username = username;
+  // eslint-disable-next-line no-param-reassign
   socket.room = room;
   next();
 });
@@ -386,7 +388,7 @@ io.on('connection', (socket) => {
           allUsers.getUsersInRoom(user.room).length
         } clients remaining in ${user.room}\n`,
       );
-      // update clients UI to reflect disconnect
+      // update clients' UI to reflect disconnect
       sendConnectedClientCount(user.room);
       sendUsernamesListForRoom(user.room);
     }
