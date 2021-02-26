@@ -15,6 +15,95 @@ const fileInput = document.getElementById('file-upload-input');
 // count the number of requests to date for fetching data
 let olderMessagesReqCount = 0;
 
+// contains object for each connected user with the usernames and the sid
+let currentUsersArr = [];
+
+// set when a user LI element is selected
+let pmReciever;
+
+// store an object containing pms from each user
+const PMs = {};
+
+/**
+ *
+ * @param {*} usersObjArr - array of user objects (sids and usernames)
+ */
+function updateUsersArr(usersObjArr) {
+  // reset the state of the users arr
+  currentUsersArr = [];
+
+  // get this users username
+  let username;
+  if (localStorage.getItem('username') === null) {
+    username = parseQSParams().username;
+  } else {
+    username = localStorage.getItem('username');
+  }
+
+  // update the user array with other users
+  usersObjArr.forEach((user) => {
+    if (user.username !== username) {
+      currentUsersArr.push(user);
+    }
+  });
+}
+
+/**
+ * Set the state of the PM recipient
+ * @param {*} username - the username selected from the list by the user
+ */
+function setPMReciever(username) {
+  currentUsersArr.forEach((u) => {
+    if (u.username === username) {
+      pmReciever = u;
+    }
+  });
+}
+
+/**
+ * Fires when the send pm button is clicked, if the preconditions are met.
+ */
+function sendPM() {
+  const content = document.getElementById('pm-textarea').value;
+  if (content.trim() === '') {
+    return;
+  }
+
+  if (pmReciever === undefined) {
+    return;
+  }
+
+  socket.emit('private message', {
+    content,
+    to: pmReciever.id,
+    toName: pmReciever.username,
+  });
+
+  document.getElementById('pm-textarea').value = '';
+}
+
+/**
+ *
+ * @param {string} username - show the PMs between the user and this username
+ */
+function showPMsListUser(username) {
+  const pmList = document.getElementById('pm-list');
+
+  // remove all the children elements from the pm list
+  while (pmList.firstChild) {
+    pmList.removeChild(pmList.lastChild);
+  }
+
+  if (PMs[username]) {
+    // add the elements corresponding to PMs w/ the username arg
+    PMs[username].forEach((pmsg) => {
+      const pmLi = document.createElement('li');
+      pmLi.innerText = `${pmsg.date} ${pmsg.contents}`;
+      pmList.appendChild(pmLi);
+    });
+  }
+}
+
 /**
  *  Send the user selected file to the API
  *
@@ -474,6 +563,11 @@ msgInput.addEventListener('keypress', (e) => {
   }
 });
 
+// Event handler for the sending of PMs
+document.getElementById('pm-send-button').addEventListener('click', () => {
+  sendPM();
+});
+
 /**
  * append individual messages to the message thread, used when a message is recieved
  * @param {*} message
@@ -494,6 +588,12 @@ function addMsgToThread(message) {
  * @param {*} usersArr - array containing the other users in the room
  */
 function addUserToUserList(usersArr) {
+  const usernamesArr = usersArr.reduce(
+    // eslint-disable-next-line no-sequences
+    (usernames, user) => (usernames.push(user.username), usernames),
+    [],
+  );
+
   let username;
   // check localstorage first
   if (localStorage.getItem('username') === null) {
@@ -503,15 +603,15 @@ function addUserToUserList(usersArr) {
     username = localStorage.getItem('username');
   }
 
-  const usersIndex = usersArr.indexOf(username.toLowerCase());
+  const usersIndex = usernamesArr.indexOf(username.toLowerCase());
   // sanity check
   if (usersIndex > -1) {
     // remove the user from the arr
-    usersArr.splice(usersIndex, 1);
+    usernamesArr.splice(usersIndex, 1);
   }
 
   // suppose we'll also have an element for the user themselves
-  usersArr.push('You');
+  usernamesArr.push('You');
 
   const usersList = document.getElementById('users-list');
   const currentUserLis = [];
@@ -522,14 +622,34 @@ function addUserToUserList(usersArr) {
     currentUserLis.push(li.innerText);
   });
 
-  usersArr.forEach((userStr) => {
+  // add to the pm users list
+  const pmUsersList = document.getElementById('pm-users-list');
+
+  usernamesArr.forEach((userStr) => {
     // avoid appending users that are already in the DOM
     if (currentUserLis.includes(userStr)) {
       return;
     }
+
+    // create elements for each list
     const userLi = document.createElement('li');
+
     userLi.innerText = userStr;
     usersList.appendChild(userLi);
+
+    if (userStr === 'You') {
+      return;
+    }
+
+    // otherwise add to the PM elements
+    const userPmLi = document.createElement('li');
+    userPmLi.innerText = userStr;
+    userPmLi.addEventListener('click', () => {
+      const usernameToSend = userPmLi.textContent;
+      setPMReciever(usernameToSend);
+      showPMsListUser(usernameToSend);
+    });
+    pmUsersList.appendChild(userPmLi);
   });
 }
 
@@ -547,6 +667,7 @@ socket.on('clientCount', (message) => {
 
 // recv's an array of usernames for the current room
 socket.on('currentRoomUsers', (usersArr) => {
+  updateUsersArr(usersArr);
   addUserToUserList(usersArr);
 });
 
@@ -594,6 +715,8 @@ socket.on('userLeft', (message) => {
   // we'll just get the first token from the message (that's the username of the client that left)
   const usernameToRemove = message.split(' ')[0];
   const usersList = document.getElementById('users-list');
+  const pmUsersList = document.getElementById('pm-users-list');
+
   usersList.childNodes.forEach((node) => {
     // skip the text node
     if (!node.innerText) {
@@ -604,10 +727,42 @@ socket.on('userLeft', (message) => {
       usersList.removeChild(node);
     }
   });
+
+  // repeat for the PM users list
+  pmUsersList.childNodes.forEach((node) => {
+    if (!node.innerText) {
+      return;
+    }
+
+    if (node.innerText.includes(usernameToRemove)) {
+      usersList.removeChild(node);
+    }
+  });
+
   if (document.hidden) {
     displayNotification(message);
   } else {
     showUserToast(message);
+  }
+});
+
+// store  the PM when recv'd
+socket.on('private message', (pm) => {
+  const fromNameLower = pm.fromName.toLowerCase();
+
+  if (fromNameLower in PMs) {
+    PMs[fromNameLower].push({
+      date: new Date().toLocaleString(),
+      contents: pm.content,
+    });
+  } else {
+    // create key and array
+    PMs[fromNameLower] = [
+      {
+        date: new Date().toLocaleString(),
+        contents: pm.content,
+      },
+    ];
   }
 });
 

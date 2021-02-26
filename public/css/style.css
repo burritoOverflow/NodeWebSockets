@@ -129,6 +129,53 @@ a {
   grid-row: 5;
 }
 
+#pm-div {
+  height: 100%;
+  background-color: black;
+  border: 1px solid whitesmoke;
+  grid-column: 3 / 5;
+  grid-row: 5;
+}
+
+#pm-users-list {
+  /* height: 50%; */
+  width: 25%;
+  float: left;
+}
+
+#pm-users-list > li {
+  margin-top: 5%;
+  padding: 12%;
+  background-color: whitesmoke;
+  border-radius: 6px;
+  border: 1px solid white;
+}
+
+#pm-display-button {
+  background-color: #9147ff;
+  border-radius: 30px;
+  border: 1px solid black;
+  color: antiquewhite;
+  font-weight: 600;
+  grid-column: 2;
+  grid-row: 5;
+  margin-left: 72%;
+  padding: 0.9em;
+  width: 25%;
+}
+
+#pm-send-button {
+  background-color: #6014d1;
+  border-radius: 30px;
+  border: 1px solid black;
+  color: rgb(15, 15, 15);
+  /* float: right; */
+  font-weight: 700;
+  margin-left: 72%;
+  padding: 0.9em;
+  width: 25%;
+}
+
 #message-text {
   width: 83%;
   color: #9147ff;
@@ -140,6 +187,18 @@ a {
   background: black;
   border-radius: 10px;
   animation: 0.6s ease-out 0s 1 slideInFromLeft;
+}
+
+#pm-textarea {
+  width: 70%;
+  color: #9147ff;
+  caret-color: #9147ff;
+  padding: 0.54em;
+  font-size: x-large;
+  text-align: unset;
+  display: block;
+  background: black;
+  border-radius: 10px;
 }
 
 #active-users-list {
@@ -351,6 +410,16 @@ a {
   padding: 1em;
 }
 
+.pm-message {
+  background-color: grey;
+  width: 54%;
+  font-size: large;
+  border: 1px solid whitesmoke;
+  border-radius: 7px;
+  margin: 10px;
+  padding: 1em;
+}
+
 .message:hover {
   border: 1px solid whitesmoke;
   transform: translate(1px, -7px);
@@ -414,6 +483,26 @@ a {
   height: 89%;
   width: 83%;
   list-style: none;
+}
+
+#pm-list {
+  height: 50%;
+  margin-left: 35%;
+  border: 1px solid white;
+  border-radius: 50px;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+  background-color: #18181b;
+  scrollbar-width: none;
+  overflow-y: scroll;
+  list-style: none;
+}
+
+#pm-list > li {
+  background-color: grey;
+  border: 1px solid white;
+  color: white;
+  font-weight: 700;
 }
 
 #message-thread:hover {

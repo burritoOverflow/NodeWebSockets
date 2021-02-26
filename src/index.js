@@ -182,11 +182,20 @@ function getAllUsernamesInRoom(room) {
 }
 
 /**
+ *
+ * @param {*} room - the current room
+ * @return - arr of the complete user objects in room, including sids
+ */
+function getAllUsersInRoom(room) {
+  return allUsers.getUsersInRoom(room);
+}
+
+/**
  * Send a list of the usernames in the room
  * @param {string} room - the room to send the client list to
  */
 function sendUsernamesListForRoom(room) {
-  io.to(room).emit('currentRoomUsers', getAllUsernamesInRoom(room));
+  io.to(room).emit('currentRoomUsers', getAllUsersInRoom(room));
 }
 
 /**
@@ -355,6 +364,15 @@ io.on('connection', (socket) => {
         latLngObj,
       )}\n`,
     );
+  });
+
+  // private chat
+  socket.on('private message', ({ content, to }) => {
+    socket.to(to).emit('private message', {
+      content,
+      from: socket.id,
+      fromName: socket.username,
+    });
   });
 
   // fires when an individual socket (client) disconnects
