@@ -17,9 +17,7 @@ require('./db/mongoose');
 
 // models
 const {
-  addSocketIoIdToUser,
   addMessage,
-  addUserToRoom,
   removeUserOnDisconnect,
   addSIDToUserAndJoinRoom,
 } = require('./db/updateDb');
@@ -233,6 +231,21 @@ function getIpAddrPortStr(socket) {
   return `${socket.handshake.address}`;
 }
 
+/**
+ * Add username and room to the socket
+ */
+io.use((socket, next) => {
+  const { username } = socket.handshake.auth;
+  const { room } = socket.handshake.auth;
+  if (!username || !room) {
+    appendToLog('Username or Room missing from socket');
+    return next(new Error('invalid username'));
+  }
+  socket.username = username;
+  socket.room = room;
+  next();
+});
+
 // registered event handlers for sockets
 io.on('connection', (socket) => {
   const cookies = socket.handshake.headers.cookie;
@@ -346,7 +359,7 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     let room;
     try {
-      room = allUsers.getUser(socket.id).room;
+      room = socket.room;
     } catch (error) {
       // disconnect fired without user being added to the users arr
       room = sioRoomMap.getSidRoomMapping(socket.id);

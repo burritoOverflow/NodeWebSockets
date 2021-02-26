@@ -1,7 +1,7 @@
 /* eslint-disable no-plusplus */
 // takes a url arg if not connecting to the same server serving the script
 // eslint-disable-next-line no-undef
-const socket = io();
+const socket = io({ autoConnect: false });
 
 const msgInput = document.getElementById('message-text');
 const msgBtn = document.getElementById('submit-button');
@@ -533,6 +533,11 @@ function addUserToUserList(usersArr) {
   });
 }
 
+// for debugging during development only
+socket.onAny((event, ...args) => {
+  console.log(event, args);
+});
+
 // receive the client count when the server updates
 socket.on('clientCount', (message) => {
   const msgNum = Number(message);
@@ -616,6 +621,7 @@ socket.emit('join', parseQSParams(), (error) => {
   }
 });
 
+// keybinding iife
 // eslint-disable-next-line wrap-iife
 (function () {
   const secretCommand = 'clear';
@@ -639,12 +645,13 @@ socket.emit('join', parseQSParams(), (error) => {
     }
 
     if (eventCharCode === 102) {
+      // focus on the 'filter messages element'
       document.getElementById('filter-messages').focus();
       return;
     }
 
     if (eventCharCode === 115) {
-      // open the file upload prompt
+      // open the file upload prompt with 's' (click the file input element)
       document.getElementById('file-upload-input').click();
       return;
     }
@@ -705,3 +712,13 @@ socket.emit('join', parseQSParams(), (error) => {
     }
   };
 })();
+
+/**
+ * Set the addition parameters on the socket when the user joins
+ * the room. Get the room name and the username from the QS params
+ */
+window.onload = function init() {
+  const userObj = parseQSParams();
+  socket.auth = { username: userObj.username, room: userObj.room };
+  socket.connect();
+};
