@@ -949,4 +949,10 @@ window.onload = function init() {
   const userObj = parseQSParams();
   socket.auth = { username: userObj.username, room: userObj.room };
   socket.connect();
+
+  // set the click handler on the pm display button
+  const pmToggleButton = document.getElementById('pm-display-button');
+  pmToggleButton.addEventListener('click', () => {
+    document.getElementById('pm-div').classList.toggle('hidden');
+  });
 };

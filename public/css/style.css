@@ -39,6 +39,10 @@ a {
   color: black !important;
 }
 
+.hidden {
+  visibility: hidden;
+}
+
 #join-room-div {
   background-color: black;
   border: 0px solid white;
@@ -133,26 +137,28 @@ a {
   height: 100%;
   background-color: black;
   border: 1px solid whitesmoke;
-  grid-column: 3 / 5;
-  grid-row: 5;
+  height: 25%;
+  width: 25%;
+  position: absolute;
+  right: 0;
+  bottom: 0;
 }
 
 #pm-users-list {
+  margin-left: -5%;
   list-style: none;
-  /* height: 50%; */
   width: 25%;
   float: left;
 }
 
 #pm-users-list > li {
-  text-align: center;
   background-color: whitesmoke;
   border-radius: 6px;
   border: 1px solid white;
   font-size: larger;
   font-weight: 900;
-  margin-top: 5%;
   padding: 7%;
+  text-align: center;
   text-align: center;
 }
 
@@ -181,15 +187,16 @@ a {
 }
 
 #pm-send-button {
+  position: absolute;
+  bottom: 0;
   background-color: #6014d1;
   border-radius: 30px;
   border: 1px solid black;
   color: rgb(15, 15, 15);
-  /* float: right; */
   font-weight: 700;
-  margin-left: 72%;
   padding: 0.9em;
   width: 25%;
+  margin-left: 75%;
 }
 
 #message-text {
@@ -206,15 +213,18 @@ a {
 }
 
 #pm-textarea {
-  width: 70%;
+  display: inline;
+  width: 65%;
+  margin-right: 5%;
   color: #9147ff;
   caret-color: #9147ff;
   padding: 0.54em;
   font-size: x-large;
   text-align: unset;
-  display: block;
   background: rgb(44, 43, 43);
   border-radius: 10px;
+  position: absolute;
+  bottom: 0;
 }
 
 #active-users-list {
@@ -442,7 +452,6 @@ a {
 }
 
 .message-element-span {
-  /* width: 79%; */
   font-weight: bolder;
   padding-top: 0.7em;
   padding-bottom: 0.5em;
@@ -503,7 +512,7 @@ a {
 
 #pm-list {
   visibility: hidden;
-  height: 50%;
+  height: 75%;
   margin-left: 35%;
   border: 1px solid white;
   border-radius: 50px;
@@ -519,6 +528,7 @@ a {
   text-align: center;
   background-color: grey;
   border: 1px solid white;
+  border-radius: 22px;
   color: white;
   font-weight: 700;
   padding: 3%;
