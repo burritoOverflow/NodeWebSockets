@@ -138,17 +138,32 @@ a {
 }
 
 #pm-users-list {
+  list-style: none;
   /* height: 50%; */
   width: 25%;
   float: left;
 }
 
 #pm-users-list > li {
-  margin-top: 5%;
-  padding: 12%;
   background-color: whitesmoke;
   border-radius: 6px;
   border: 1px solid white;
+  font-size: larger;
+  font-weight: 900;
+  margin-top: 5%;
+  padding: 7%;
+  text-align: center;
+}
+
+.sent-pm-li {
+  background-color: black;
+  color: white;
+  border: 1px solid grey;
+}
+
+.new-pm {
+  border: 1px solid green;
+  color: green;
 }
 
 #pm-display-button {
@@ -503,6 +518,7 @@ a {
   border: 1px solid white;
   color: white;
   font-weight: 700;
+  padding: 3%;
 }
 
 #message-thread:hover {

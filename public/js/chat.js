@@ -105,6 +105,20 @@ function showPMsListUser(username) {
 }
 
 /**
+ * Update the Pm element pertaining to the sender
+ * @param {*} username  - the sender of the PM
+ */
+function updatePmLiElement(username) {
+  const usersPMList = document.getElementById('pm-users-list');
+
+  usersPMList.childNodes.forEach((node) => {
+    if (node.textContent.toLowerCase() === username) {
+      node.classList.add('new-pm');
+    }
+  });
+}
+
+/**
  *  Send the user selected file to the API
  *
  * @param {*} file the file the user is uploading
@@ -644,7 +658,9 @@ function addUserToUserList(usersArr) {
     // otherwise add to the PM elements
     const userPmLi = document.createElement('li');
     userPmLi.innerText = userStr;
+
     userPmLi.addEventListener('click', () => {
+      userPmLi.classList.remove('new-pm');
       const usernameToSend = userPmLi.textContent;
       setPMReciever(usernameToSend);
       showPMsListUser(usernameToSend);
@@ -730,12 +746,8 @@ socket.on('userLeft', (message) => {
 
   // repeat for the PM users list
   pmUsersList.childNodes.forEach((node) => {
-    if (!node.innerText) {
-      return;
-    }
-
-    if (node.innerText.includes(usernameToRemove)) {
-      usersList.removeChild(node);
+    if (node.textContent.includes(usernameToRemove)) {
+      pmUsersList.removeChild(node);
     }
   });
 
@@ -763,6 +775,16 @@ socket.on('private message', (pm) => {
         contents: pm.content,
       },
     ];
+  }
+
+  const message = `PM from ${pm.fromName}`;
+  // add the corresponding class
+  updatePmLiElement(fromNameLower);
+
+  if (document.hidden) {
+    displayNotification(message);
+  } else {
+    showUserToast(message);
   }
 });
 
