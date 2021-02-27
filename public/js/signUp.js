@@ -12,9 +12,14 @@ function showSnackbarAndRedirect(message, success) {
     if (success) {
       window.location.replace('/');
     }
-  }, 900);
+  }, 1100);
 }
 
+/**
+ * The form allowing the user to sign up.
+ *
+ * @param {*} signUpObj - the sign up form's contents
+ */
 function sendSignUpData(signUpObj) {
   const signUpForm = document.getElementById('sign-up-form');
   signUpForm.classList.add('blur-element');
@@ -27,15 +32,18 @@ function sendSignUpData(signUpObj) {
     },
   })
     .then((response) => {
-      if (response.ok) {
-        // successfully added user
-        const userName = document.getElementById('name').value;
-        showSnackbarAndRedirect(`Welcome ${userName}!`, true);
-      } else {
-        showSnackbarAndRedirect('sign up failed', false);
-      }
+      response.json().then((json) => {
+        if (response.ok) {
+          // successfully added user
+          const userName = document.getElementById('name').value;
+          showSnackbarAndRedirect(`Welcome ${userName}!`, true);
+        } else {
+          // sign up failed
+          const failureMsg = `sign up failed: ${json.status}`;
+          showSnackbarAndRedirect(failureMsg, false);
+        }
+      });
     })
-    .then((json) => console.log(json))
     .catch((error) => console.error(error));
   setTimeout(() => {
     signUpForm.classList.remove('blur-element');

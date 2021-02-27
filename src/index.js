@@ -262,8 +262,7 @@ io.on('connection', (socket) => {
   const cookies = socket.handshake.headers.cookie;
 
   appendToLog(
-    `Connection event from ${getIpAddrPortStr(socket)} sid: ${socket.id} ${
-      allUsers.users.length
+    `Connection event from ${getIpAddrPortStr(socket)} sid: ${socket.id} 
     } clients\n`,
   );
 
@@ -281,6 +280,8 @@ io.on('connection', (socket) => {
     appendToLog(
       `join event from ${socket.id} in room ${room} with username ${username}\n`,
     );
+
+    // add user to room on room join event
     const { error } = allUsers.addUser({ id: socket.id, username, room });
 
     // addUserToRoom(socket.id, room);

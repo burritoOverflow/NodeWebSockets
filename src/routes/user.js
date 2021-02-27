@@ -25,7 +25,19 @@ router.post('/users', async (req, res) => {
     }
     res.status(201).send({ user: _user, token });
   } catch (error) {
-    console.error(error._message);
+    // return the appropriate error message to the client
+    if (error.errors.password) {
+      return res.status(400).send({ status: error.errors.password.message });
+    }
+
+    if (error.keyValue.email) {
+      return res.status(400).send({ status: 'Email already in use.' });
+    }
+
+    if (error.keyValue.name) {
+      return res.status(400).send({ status: 'Username already in use' });
+    }
+
     res.status(400).send({ status: error._message });
   }
 });
