@@ -140,6 +140,7 @@ function showPMsListUser(username) {
 
 /**
  * Update the Pm element pertaining to the sender
+ *
  * @param {*} username  - the sender of the PM
  */
 function updatePmLiElement(username) {
@@ -611,6 +612,16 @@ msgInput.addEventListener('keypress', (e) => {
   }
 });
 
+// do the same for the PM input
+document.getElementById('pm-textarea').addEventListener('keypress', (e) => {
+  const { key } = e;
+  if (key === 'Enter') {
+    // send PM
+    // validation occurs within the sendPM function, so we'll just hand that off here
+    sendPM();
+  }
+});
+
 // Event handler for the sending of PMs
 document.getElementById('pm-send-button').addEventListener('click', () => {
   sendPM();
@@ -632,7 +643,9 @@ function addMsgToThread(message) {
 }
 
 /**
- *  Display the other users currently in the room
+ *  Display the other users currently in the room for both the PM li elements
+ * and the user element displaying the room's current users
+ *
  * @param {*} usersArr - array containing the other users in the room
  */
 function addUserToUserList(usersArr) {
@@ -693,6 +706,7 @@ function addUserToUserList(usersArr) {
     const userPmLi = document.createElement('li');
     userPmLi.innerText = userStr;
 
+    // click handler for each username li element
     userPmLi.addEventListener('click', () => {
       const pmList = document.getElementById('pm-list');
 
@@ -701,6 +715,11 @@ function addUserToUserList(usersArr) {
 
       // toggle this as selected
       userPmLi.classList.add('selected-user-pm');
+
+      // change the button to reflect the state of the user that the
+      // PM will be sent to
+      const sendPMButton = document.getElementById('pm-send-button');
+      sendPMButton.innerText = `PM ${userStr}`;
 
       const usernameToSend = userPmLi.textContent;
       setPMReciever(usernameToSend);
@@ -712,7 +731,7 @@ function addUserToUserList(usersArr) {
         }
         node.classList.remove('selected-user-pm');
       });
-    });
+    }); // end click handler
 
     pmUsersList.appendChild(userPmLi);
   });
@@ -807,23 +826,28 @@ socket.on('userLeft', (message) => {
   }
 });
 
-// store  the PM when recv'd
+// store the PM when recv'd
 socket.on('private message', (pm) => {
   const fromNameLower = pm.fromName.toLowerCase();
+
+  const pmsg = {
+    content: pm.content,
+    date: new Date().toLocaleString(),
+  };
 
   if (fromNameLower in PMs) {
     PMs[fromNameLower].push({
       to: 'You',
-      date: new Date().toLocaleString(),
-      contents: pm.content,
+      date: pmsg.date,
+      contents: pmsg.content,
     });
   } else {
     // create key and array
     PMs[fromNameLower] = [
       {
         to: 'You',
-        date: new Date().toLocaleString(),
-        contents: pm.content,
+        date: pmsg.date,
+        contents: pmsg.content,
       },
     ];
   }
@@ -836,6 +860,15 @@ socket.on('private message', (pm) => {
     displayNotification(message);
   } else {
     showUserToast(message);
+  }
+
+  // if the currently selected PM user is the user that sent the
+  // PM, update the PM list when recieved
+  if (pmReciever.username === fromNameLower) {
+    const pmList = document.getElementById('pm-list');
+    const pmLi = document.createElement('li');
+    pmLi.innerText = `${pmsg.date} ${pmsg.content}`;
+    pmList.appendChild(pmLi);
   }
 });
 
@@ -888,6 +921,12 @@ socket.emit('join', parseQSParams(), (error) => {
     if (eventCharCode === 102) {
       // focus on the 'filter messages element'
       document.getElementById('filter-messages').focus();
+      return;
+    }
+
+    if (eventCharCode === 112) {
+      // toggle the visibility of the PM ui
+      document.getElementById('pm-div').classList.toggle('hidden');
       return;
     }
 
