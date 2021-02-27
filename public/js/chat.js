@@ -79,10 +79,38 @@ function sendPM() {
     toName: pmReciever.username,
   });
 
+  const toNameLower = pmReciever.username.toLowerCase();
+  const msgDate = new Date().toLocaleString();
+
+  if (toNameLower in PMs) {
+    PMs[toNameLower].push({
+      to: toNameLower,
+      date: msgDate,
+      contents: content,
+    });
+  } else {
+    // create key and array
+    PMs[toNameLower] = [
+      {
+        to: toNameLower,
+        date: msgDate,
+        contents: content,
+      },
+    ];
+  }
+
+  // create the indicidual message element and append to the pm list
+  const pmList = document.getElementById('pm-list');
+  const pmLi = document.createElement('li');
+  pmLi.classList.add('sent-pm-li');
+  pmLi.innerText = `${msgDate} ${content}`;
+  pmList.appendChild(pmLi);
+
   document.getElementById('pm-textarea').value = '';
 }
 
 /**
+ * Get all PMs between the user and a specific user
  *
  * @param {string} username - show the PMs between the user and this username
  */
@@ -99,6 +127,12 @@ function showPMsListUser(username) {
     PMs[username].forEach((pmsg) => {
       const pmLi = document.createElement('li');
       pmLi.innerText = `${pmsg.date} ${pmsg.contents}`;
+
+      // style sent messages
+      if (pmsg.to !== 'You') {
+        pmLi.classList.add('sent-pm-li');
+      }
+
       pmList.appendChild(pmLi);
     });
   }
@@ -660,6 +694,8 @@ function addUserToUserList(usersArr) {
     userPmLi.innerText = userStr;
 
     userPmLi.addEventListener('click', () => {
+      const pmList = document.getElementById('pm-list');
+      pmList.style.visibility = 'visible';
       userPmLi.classList.remove('new-pm');
       const usernameToSend = userPmLi.textContent;
       setPMReciever(usernameToSend);
@@ -764,6 +800,7 @@ socket.on('private message', (pm) => {
 
   if (fromNameLower in PMs) {
     PMs[fromNameLower].push({
+      to: 'You',
       date: new Date().toLocaleString(),
       contents: pm.content,
     });
@@ -771,6 +808,7 @@ socket.on('private message', (pm) => {
     // create key and array
     PMs[fromNameLower] = [
       {
+        to: 'You',
         date: new Date().toLocaleString(),
         contents: pm.content,
       },
