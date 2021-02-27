@@ -162,6 +162,11 @@ a {
   text-align: center;
 }
 
+.selected-user-pm {
+  border: 1px solid grey;
+  color: grey;
+}
+
 .sent-pm-li {
   background-color: black !important;
   color: white !important;

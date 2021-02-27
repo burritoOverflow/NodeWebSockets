@@ -695,12 +695,25 @@ function addUserToUserList(usersArr) {
 
     userPmLi.addEventListener('click', () => {
       const pmList = document.getElementById('pm-list');
+
       pmList.style.visibility = 'visible';
       userPmLi.classList.remove('new-pm');
+
+      // toggle this as selected
+      userPmLi.classList.add('selected-user-pm');
+
       const usernameToSend = userPmLi.textContent;
       setPMReciever(usernameToSend);
       showPMsListUser(usernameToSend);
+
+      pmUsersList.childNodes.forEach((node) => {
+        if (node === userPmLi || node.nodeName === '#text') {
+          return;
+        }
+        node.classList.remove('selected-user-pm');
+      });
     });
+
     pmUsersList.appendChild(userPmLi);
   });
 }
