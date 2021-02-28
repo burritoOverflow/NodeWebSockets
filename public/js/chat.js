@@ -1,6 +1,8 @@
 /* eslint-disable no-plusplus */
 // takes a url arg if not connecting to the same server serving the script
 // eslint-disable-next-line no-undef
+import PrivateMessage from './PrivateMessage.js';
+
 const socket = io({ autoConnect: false });
 
 const msgInput = document.getElementById('message-text');
@@ -23,6 +25,8 @@ let pmReciever;
 
 // store an object containing pms from each user
 const PMs = {};
+
+const pm = new PrivateMessage();
 
 /**
  *
