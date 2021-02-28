@@ -2,6 +2,7 @@
 // takes a url arg if not connecting to the same server serving the script
 // eslint-disable-next-line no-undef
 import PrivateMessage from './PrivateMessage.js';
+import PrivateMessageMap from './PrivateMessageMap.js';
 
 const socket = io({ autoConnect: false });
 
@@ -24,9 +25,7 @@ let currentUsersArr = [];
 let pmReciever;
 
 // store an object containing pms from each user
-const PMs = {};
-
-const pm = new PrivateMessage();
+const pmMap = new PrivateMessageMap();
 
 /**
  *
@@ -86,22 +85,8 @@ function sendPM() {
   const toNameLower = pmReciever.username.toLowerCase();
   const msgDate = new Date().toLocaleString();
 
-  if (toNameLower in PMs) {
-    PMs[toNameLower].push({
-      to: toNameLower,
-      date: msgDate,
-      contents: content,
-    });
-  } else {
-    // create key and array
-    PMs[toNameLower] = [
-      {
-        to: toNameLower,
-        date: msgDate,
-        contents: content,
-      },
-    ];
-  }
+  const pm = new PrivateMessage(toNameLower, msgDate, content);
+  pmMap.addPM(toNameLower, pm);
 
   // create the indicidual message element and append to the pm list
   const pmList = document.getElementById('pm-list');
@@ -126,9 +111,10 @@ function showPMsListUser(username) {
     pmList.removeChild(pmList.lastChild);
   }
 
-  if (PMs[username]) {
-    // add the elements corresponding to PMs w/ the username arg
-    PMs[username].forEach((pmsg) => {
+  const userPMs = pmMap.getPMsWithUser(username);
+
+  if (userPMs) {
+    userPMs.forEach((pmsg) => {
       const pmLi = document.createElement('li');
       pmLi.innerText = `${pmsg.date} ${pmsg.contents}`;
 
@@ -619,7 +605,7 @@ msgInput.addEventListener('keypress', (e) => {
 // do the same for the PM input
 document.getElementById('pm-textarea').addEventListener('keypress', (e) => {
   const { key } = e;
-  if (key === 'Enter') {
+  if (key === 'Enter' && pmReciever) {
     // send PM
     // validation occurs within the sendPM function, so we'll just hand that off here
     sendPM();
@@ -839,22 +825,8 @@ socket.on('private message', (pm) => {
     date: new Date().toLocaleString(),
   };
 
-  if (fromNameLower in PMs) {
-    PMs[fromNameLower].push({
-      to: 'You',
-      date: pmsg.date,
-      contents: pmsg.content,
-    });
-  } else {
-    // create key and array
-    PMs[fromNameLower] = [
-      {
-        to: 'You',
-        date: pmsg.date,
-        contents: pmsg.content,
-      },
-    ];
-  }
+  const privMsg = new PrivateMessage('You', pmsg.date, pmsg.content);
+  pmMap.addPM(fromNameLower, privMsg);
 
   const message = `PM from ${pm.fromName}`;
   // add the corresponding class
