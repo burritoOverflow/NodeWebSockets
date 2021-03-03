@@ -494,7 +494,70 @@ function createLiMessageElement(message, showNotification) {
     // create an additional span for the actual string message
     const msgSpan = document.createElement('span');
     msgSpan.classList.add('message-element-span');
-    msgSpan.innerText = `${message.message}`;
+
+    msgSpan.innerHTML = '';
+
+    // determine if contains a tagged user
+    const tokens = message.message.split(' ');
+    tokens.forEach((token) => {
+      const tagIdx = token.indexOf('@');
+
+      if (tagIdx === -1) {
+        msgSpan.innerHTML += ` ${token} `;
+      } else {
+        // ensure that the only tag is the first character
+        if (tagIdx !== 0) {
+          msgSpan.innerHTML += ` ${token} `;
+          return;
+        }
+
+        if (token.slice(1).indexOf('@') !== -1) {
+          msgSpan.innerHTML += ` ${token} `;
+          return;
+        }
+
+        // check if the user tagged is the same as the user
+        const taggedUser = token.slice(1);
+
+        const thisUser =
+          localStorage.getItem('username') || parseQSParams().username;
+
+        if (taggedUser.toLowerCase() === thisUser.toLowerCase()) {
+          // notify the user they've been tagged
+          const taggedByUserStr = userNameSpan.innerText.trim();
+          const taggedStr = `You've been tagged by ${taggedByUserStr}`;
+
+          if (document.hidden) {
+            displayNotification(taggedStr);
+          } else {
+            showUserToast(taggedStr);
+          }
+          // eslint-disable-next-line quotes
+          msgSpan.innerHTML += ` <span class="user-tag">${token}</span> `;
+          return;
+        }
+
+        // check if the tagged user is a valid user (in the chat)
+        const usernameNodes = document.getElementById('users-list').childNodes;
+        const currentUsernames = [];
+
+        // collect each user currently in the room
+        usernameNodes.forEach((node) => {
+          // the text node will not have a child node; each li will (a text node)
+          if (node.innerText) {
+            // easiest to ignore case
+            currentUsernames.push(node.innerText.toLowerCase());
+          }
+        });
+
+        // if not a valid user, don't bother styling it in any specific manner
+        if (!currentUsernames.includes(taggedUser.toLowerCase())) {
+          msgSpan.innerHTML += ` ${token} `;
+        }
+      }
+    });
+
+    // msgSpan.innerText = `${message.message}`;
     li.appendChild(msgSpan);
   }
 
