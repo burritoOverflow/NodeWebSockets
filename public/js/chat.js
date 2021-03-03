@@ -1,9 +1,10 @@
+/* eslint-disable import/extensions */
 /* eslint-disable no-plusplus */
-// takes a url arg if not connecting to the same server serving the script
-// eslint-disable-next-line no-undef
 import PrivateMessage from './PrivateMessage.js';
 import PrivateMessageMap from './PrivateMessageMap.js';
 
+// takes a url arg if not connecting to the same server serving the script
+// eslint-disable-next-line no-undef
 const socket = io({ autoConnect: false });
 
 const msgInput = document.getElementById('message-text');
@@ -229,6 +230,75 @@ function fetchMessages() {
         }
       });
     });
+}
+
+/**
+ * Filter the messages displayed in the main contents by the string provided
+ *
+ * @param {*} e - event or string
+ */
+function filterMsgSearch(e) {
+  let contents;
+  if (e.target) {
+    contents = e.target.value;
+  } else {
+    contents = e;
+  }
+
+  const msgElements = document.querySelectorAll('.message');
+
+  if (contents.trim() === '') {
+    // restore display of all searched elements
+    msgElements.forEach((msgEl) => {
+      // eslint-disable-next-line no-param-reassign
+      msgEl.style.display = 'block';
+    });
+    return;
+  }
+
+  // eslint-disable-next-line no-plusplus
+  for (let i = 0; i < msgElements.length; i++) {
+    // get the children from the individual message element
+    const msgChildren = msgElements[i].childNodes;
+    let usernameSpanContents;
+    let msgContents;
+
+    // messages from other users will have 4 children, the first is the 'from'
+    // not present on user's own message
+    if (msgChildren.length === 4) {
+      usernameSpanContents = msgChildren[1].childNodes[0].data;
+      msgContents = msgChildren[3].childNodes[0].data;
+    } else {
+      // message from user contains one less child
+      usernameSpanContents = msgChildren[0].childNodes[0].data;
+
+      if (msgChildren[2].childNodes.length === 1) {
+        msgContents =
+          msgChildren[2].childNodes[0].data ||
+          msgChildren[2].childNodes[0].innerText;
+      } else {
+        // in this instance it contains both an anchor and a message
+        msgChildren[2].childNodes.forEach((msgChild) => {
+          // data appears for span elements
+          if (msgChild.data) {
+            msgContents += ` ${msgChild.data} `;
+          } else {
+            // otherwise just check the inner text of the anchor
+            msgContents += ` ${msgChild.innerText} `;
+          }
+        });
+      }
+    }
+
+    if (
+      usernameSpanContents.includes(contents) ||
+      msgContents.includes(contents)
+    ) {
+      msgElements[i].style.display = 'block';
+    } else {
+      msgElements[i].style.display = 'none';
+    }
+  }
 }
 
 /**
@@ -534,61 +604,7 @@ fetchOldMessagesBtn.addEventListener('click', () => {
 
 // event listener for filtering messages
 filterMsgsInput.addEventListener('input', (e) => {
-  const contents = e.target.value;
-  const msgElements = document.querySelectorAll('.message');
-
-  if (contents.trim() === '') {
-    // restore display of all searched elements
-    msgElements.forEach((msgEl) => {
-      // eslint-disable-next-line no-param-reassign
-      msgEl.style.display = 'block';
-    });
-    return;
-  }
-
-  // eslint-disable-next-line no-plusplus
-  for (let i = 0; i < msgElements.length; i++) {
-    // get the children from the individual message element
-    const msgChildren = msgElements[i].childNodes;
-    let usernameSpanContents;
-    let msgContents;
-
-    // messages from other users will have 4 children, the first is the 'from'
-    // not present on user's own message
-    if (msgChildren.length === 4) {
-      usernameSpanContents = msgChildren[1].childNodes[0].data;
-      msgContents = msgChildren[3].childNodes[0].data;
-    } else {
-      // message from user contains one less child
-      usernameSpanContents = msgChildren[0].childNodes[0].data;
-
-      if (msgChildren[2].childNodes.length === 1) {
-        msgContents =
-          msgChildren[2].childNodes[0].data ||
-          msgChildren[2].childNodes[0].innerText;
-      } else {
-        // in this instance it contains both an anchor and a message
-        msgChildren[2].childNodes.forEach((msgChild) => {
-          // data appears for span elements
-          if (msgChild.data) {
-            msgContents += ` ${msgChild.data} `;
-          } else {
-            // otherwise just check the inner text of the anchor
-            msgContents += ` ${msgChild.innerText} `;
-          }
-        });
-      }
-    }
-
-    if (
-      usernameSpanContents.includes(contents) ||
-      msgContents.includes(contents)
-    ) {
-      msgElements[i].style.display = 'block';
-    } else {
-      msgElements[i].style.display = 'none';
-    }
-  }
+  filterMsgSearch(e);
 });
 
 // allow for enter key in the text input to send a message
@@ -667,8 +683,6 @@ function addUserToUserList(usersArr) {
   const usersList = document.getElementById('users-list');
   const currentUserLis = [];
 
-  // probably should have used a framework or something to avoid sloppy
-  // state management
   usersList.childNodes.forEach((li) => {
     currentUserLis.push(li.innerText);
   });
@@ -686,6 +700,19 @@ function addUserToUserList(usersArr) {
     const userLi = document.createElement('li');
 
     userLi.innerText = userStr;
+    userLi.addEventListener('click', () => {
+      const userNameStr = userLi.innerText;
+
+      if (filterMsgsInput.value === userNameStr) {
+        filterMsgsInput.value = '';
+        // restore the state to show all messages
+        filterMsgSearch('');
+      } else {
+        filterMsgsInput.value = userNameStr;
+        filterMsgSearch(userNameStr);
+      }
+    });
+
     usersList.appendChild(userLi);
 
     if (userStr === 'You') {
