@@ -69,10 +69,12 @@ function setPMReciever(username) {
  */
 function sendPM() {
   const content = document.getElementById('pm-textarea').value;
+  // must have message contents
   if (content.trim() === '') {
     return;
   }
 
+  // must have a designed recipient
   if (pmReciever === undefined) {
     return;
   }
@@ -552,8 +554,9 @@ function scrollToEarliestMessage() {
 
 /**
  * determine if valid http(s) url
+ *
  * @param {*} string
- * @return {boolean} - true if valid
+ * @return {boolean} - true if the string provided is a valid url
  */
 function isValidHttpUrl(string) {
   let url;
@@ -800,7 +803,7 @@ socket.on('tweak', (messageObj) => {
   }
 });
 
-// recvs a broadcast when a connection is detected server-side.
+// recvs a broadcast when a new connection is detected server-side.
 // add this message in a seperate fashion
 socket.on('newUserMessage', (message) => {
   if (document.hidden) {

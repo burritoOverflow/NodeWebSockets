@@ -623,6 +623,11 @@ a {
     linear-gradient(to bottom, #ffffff 0%, #e5e5e5 100%);
 }
 
+.user-tag {
+  font-variant-ligatures: historical-ligatures;
+  font-weight: bolder;
+}
+
 @keyframes slideInFromLeft {
   0% {
     transform: translateX(-100%);
