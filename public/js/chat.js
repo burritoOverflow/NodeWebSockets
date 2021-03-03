@@ -921,6 +921,42 @@ socket.emit('join', parseQSParams(), (error) => {
       return;
     }
 
+    if (eventCharCode === 120) {
+      const isFullScreen =
+        (document.fullScreenElement && document.fullScreenElement !== null) ||
+        document.mozFullScreen ||
+        document.webkitIsFullScreen;
+
+      let supportedMethod;
+
+      // exit fullscreen if set
+      if (isFullScreen) {
+        supportedMethod =
+          document.cancelFullScreen ||
+          document.webkitCancelFullScreen ||
+          document.mozCancelFullScreen ||
+          document.exitFullscreen ||
+          document.webkitExitFullscreen;
+
+        if (supportedMethod) {
+          supportedMethod.call(document);
+        }
+      } else {
+        // enter full screen
+        supportedMethod =
+          document.body.requestFullScreen ||
+          document.body.webkitRequestFullScreen ||
+          document.body.mozRequestFullScreen ||
+          document.body.msRequestFullScreen;
+
+        if (supportedMethod) {
+          supportedMethod.call(document.body);
+        }
+      }
+
+      return;
+    }
+
     if (eventCharCode === 102) {
       // focus on the 'filter messages element'
       document.getElementById('filter-messages').focus();
