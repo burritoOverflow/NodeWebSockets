@@ -257,9 +257,10 @@ function filterMsgSearch(e) {
       }
     }
 
+    // display on the elements that contain the contents searched for
     if (
-      usernameSpanContents.includes(contents) ||
-      msgContents.includes(contents)
+      usernameSpanContents.trim().includes(contents) ||
+      msgContents.trim().includes(contents)
     ) {
       msgElements[i].style.display = 'block';
     } else {

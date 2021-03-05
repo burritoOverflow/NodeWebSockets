@@ -4,10 +4,17 @@ const express = require('express');
 const router = express.Router();
 
 const { User } = require('../models/user');
+const { appendToLog } = require('../utils/logging');
 
 // add a new user
 router.post('/users', async (req, res) => {
   const user = new User(req.body);
+
+  if (!user) {
+    // creation failed
+    res.status(400).send({ status: 'User creation failed' });
+  }
+
   try {
     const _user = await user.save();
     // after creation, generate an auth token
@@ -30,6 +37,7 @@ router.post('/users', async (req, res) => {
       return res.status(400).send({ status: error.errors.password.message });
     }
 
+    // uniqueness is enforced for users
     if (error.keyValue.email) {
       return res.status(400).send({ status: 'Email already in use.' });
     }
@@ -49,7 +57,21 @@ router.post('/users/login', async (req, res) => {
       req.body.email,
       req.body.password,
     );
+
+    // log the failed login attempt (no, don't log the plaintext password)
+    if (!user) {
+      appendToLog(
+        `'/users/login': POST User not found with e-mail: ${req.body.email} and provided password}`,
+      );
+    }
+
     const token = await user.generateAuthToken();
+
+    // log the successful login
+    appendToLog(
+      `'/users/login': POST User ${user.name} ${user.email} granted token ${token}`,
+    );
+
     // set the cookie as appropriate
     if (process.env.NODE_ENV === 'production') {
       res.cookie('token', token, {

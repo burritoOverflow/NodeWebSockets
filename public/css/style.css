@@ -286,12 +286,18 @@ a {
   font-weight: 600;
 }
 
+#share-file {
+  color: #9147ff;
+  font-weight: bolder;
+}
+
 #file-upload-input {
+  text-align: center;
   background-color: #9147ff;
   border-radius: 30px;
   border: 1px solid black;
   font-weight: 600;
-  margin-top: 5%;
+  margin-top: -2%;
 }
 
 #share-location-button:hover {

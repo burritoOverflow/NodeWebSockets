@@ -42,7 +42,6 @@ router.get('/messages/:room', async (req, res) => {
       .skip(skip);
 
     // simplify the contents; don't need the message's id
-    // TODO rewrite this so the query returns them in reverse
     const msgArr = messagesFromRoom.reverse().map((msg) => ({
       contents: msg.contents,
       date: msg.date,

@@ -24,9 +24,6 @@
     if (counter < message.length) {
       typeWriterEl.innerHTML += currentChar;
       ++counter;
-      // dynamically resize the textarea to correspond to
-      // the growth of the header area
-
       setTimeout(terminalTextRender, durationBetChar);
     }
   };
@@ -35,6 +32,8 @@
 })();
 
 (() => {
+  // toggle the appearance of the cursor at a fixed interval to
+  // provide the appearance of cursor
   const consoleCursor = document.getElementById('console-cursor');
   let visible = true;
   setInterval(() => {
