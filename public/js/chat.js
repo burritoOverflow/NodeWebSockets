@@ -1031,9 +1031,46 @@ window.onload = function init() {
   socket.auth = { username: userObj.username, room: userObj.room };
   socket.connect();
 
+  // set the accent color if the user has one saved
+  const colorChoice = localStorage.getItem('colorChoice');
+
+  if (colorChoice) {
+    // if user has stored choice, set the style accordingly
+    document.documentElement.style.setProperty('--primaryColor', colorChoice);
+    const snackBar = document.getElementById('snackbar');
+    snackBar.style.backgroundColor = colorChoice;
+  }
+
   // set the click handler on the pm display button
   const pmToggleButton = document.getElementById('pm-display-button');
   pmToggleButton.addEventListener('click', () => {
     document.getElementById('pm-div').classList.toggle('hidden');
   });
+
+  // add event listeners for each of the dropdown color options
+  const dropdown = document.getElementsByClassName('dropdown-content')[0];
+  const choiceStr = 'Choice';
+
+  // skip the first child; it's the button
+  for (let i = 1; i < dropdown.childNodes.length; i += 2) {
+    // add a click handler to each
+    dropdown.childNodes[i].addEventListener('click', (e) => {
+      e.preventDefault();
+      const textColorChoice =
+        dropdown.childNodes[i].innerText.toLowerCase() + choiceStr;
+
+      const colorHex = getComputedStyle(
+        document.documentElement,
+      ).getPropertyValue(`--${textColorChoice}`);
+
+      document.documentElement.style.setProperty('--primaryColor', colorHex);
+
+      // we also need to set the snackbar color
+      const snackBar = document.getElementById('snackbar');
+      snackBar.style.backgroundColor = colorHex;
+
+      // set the selection in the user's localstorage
+      localStorage.setItem('colorChoice', colorHex);
+    });
+  }
 };
