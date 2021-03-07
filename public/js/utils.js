@@ -40,33 +40,6 @@ function isElementHoveredOrFocused(element) {
 }
 
 /**
- *  Send the user selected file to the API
- *
- * @param {*} file the file the user is uploading
- */
-function uploadFile(file) {
-  const data = new FormData();
-  data.append('upload', file);
-
-  fetch('/api/messages/file', {
-    method: 'POST',
-    body: data,
-  })
-    .then((response) => response.json()) // response is JSON, so convert
-    .then(
-      (resJSON) => {
-        const userMessage = `shared ${resJSON.originalName} : ${resJSON.url}`;
-        sendMessage(userMessage);
-        // clear the selection from the input
-        fileInput.value = '';
-      }, // Handle the success response object
-    )
-    .catch(
-      (error) => console.log(error), // Handle the error response object
-    );
-}
-
-/**
  * @param {*} message - the message to show in the notification
  */
 function displayNotification(message) {
@@ -90,6 +63,5 @@ export {
   parseQSParams,
   isValidHttpUrl,
   isElementHoveredOrFocused,
-  uploadFile,
   displayNotification,
 };
