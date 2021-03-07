@@ -1,3 +1,7 @@
+:root {
+  --primaryColor: #9147ff;
+}
+
 html,
 body {
   height: 100%;
@@ -179,7 +183,7 @@ a {
 }
 
 #pm-display-button {
-  background-color: #9147ff;
+  background-color: var(--primaryColor);
   border-radius: 30px;
   border: 1px solid black;
   color: antiquewhite;
@@ -206,8 +210,8 @@ a {
 
 #message-text {
   width: 83%;
-  color: #9147ff;
-  caret-color: #9147ff;
+  color: var(--primaryColor);
+  caret-color: var(--primaryColor);
   padding: 0.54em;
   font-size: x-large;
   text-align: unset;
@@ -221,8 +225,8 @@ a {
   display: inline;
   width: 65%;
   margin-right: 5%;
-  color: #9147ff;
-  caret-color: #9147ff;
+  color: var(--primaryColor);
+  caret-color: var(--primaryColor);
   padding: 0.54em;
   font-size: x-large;
   text-align: unset;
@@ -272,7 +276,7 @@ a {
 
 #message-text::selection {
   font-size: xx-large;
-  background-color: #9147ff;
+  background-color: var(--primaryColor);
   color: whitesmoke;
 }
 
@@ -287,13 +291,13 @@ a {
 }
 
 #share-file {
-  color: #9147ff;
+  color: var(--primaryColor);
   font-weight: bolder;
 }
 
 #file-upload-input {
   text-align: center;
-  background-color: #9147ff;
+  background-color: var(--primaryColor);
   border-radius: 30px;
   border: 1px solid black;
   font-weight: 600;
@@ -306,7 +310,7 @@ a {
 }
 
 #submit-button {
-  background-color: #9147ff;
+  background-color: var(--primaryColor);
   border-radius: 30px;
   border: 1px solid black;
   color: antiquewhite;
@@ -333,7 +337,7 @@ a {
   border: 1px solid black;
   border-radius: 30px;
   padding: 0.9em;
-  background-color: #9147ff;
+  background-color: var(--primaryColor);
   color: antiquewhite;
   font-weight: 600;
   grid-column: 4 / 4;
@@ -359,8 +363,8 @@ a {
 #filter-messages:focus,
 #filter-messages:hover {
   outline: none;
-  border: 1px solid #9147ff;
-  color: #9147ff;
+  border: 1px solid var(--primaryColor);
+  color: var(--primaryColor);
   background-color: black;
 }
 
@@ -376,7 +380,7 @@ a {
 
 #message-text:hover,
 #message-text:focus {
-  border: 1px solid #9147ff;
+  border: 1px solid var(--primaryColor);
 }
 
 #submit-button,
@@ -400,7 +404,7 @@ a {
 
 #message-thread > li:nth-child(odd) {
   margin-left: 6%;
-  background-color: #9147ff;
+  background-color: var(--primaryColor);
   color: whitesmoke;
 }
 
@@ -421,7 +425,7 @@ a {
   text-align: center;
   border: 1px solid black;
   border-radius: 30px;
-  background-color: #9147ff;
+  background-color: var(--primaryColor);
 }
 
 #message-thread > li:nth-child(odd) > .message-element-span {
@@ -434,7 +438,7 @@ a {
 #message-thread > li:nth-child(even) > .message-element-span {
   text-align: center;
   border-radius: 30px;
-  background-color: #9147ff;
+  background-color: var(--primaryColor);
 }
 
 .message {
@@ -549,7 +553,7 @@ a {
 }
 
 #message-thread:hover {
-  border: 1.5px solid #9147ff;
+  border: 1.5px solid var(--primaryColor);
   box-shadow: rgba(199, 194, 194, 0.35) 9px 11px 20px;
 }
 
@@ -574,7 +578,7 @@ a {
   font-weight: bold;
   padding: 0.7em;
   border-radius: 30px;
-  background-color: #9147ff;
+  background-color: var(--primaryColor);
   font-size: larger;
   text-align: center;
   color: antiquewhite;
