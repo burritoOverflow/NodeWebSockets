@@ -341,9 +341,8 @@ function fetchOlderMessages(countOfReq) {
         msgThread.prepend(li);
       });
 
-      if (!isElementHoveredOrFocused(msgThread)) {
-        scrollToEarliestMessage();
-      }
+      // we'll scroll to the earliest regardless of the state
+      scrollToEarliestMessage();
     });
 }
 

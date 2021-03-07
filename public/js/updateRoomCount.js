@@ -33,6 +33,12 @@ function addOptionsToRoomSelect(roomNamesArr) {
     usernameinput.getElementById('username-input').removeAttribute('readonly');
   }
 
+  // set user selected accent style if present
+  const colorChoice = localStorage.getItem('colorChoice');
+  if (colorChoice) {
+    document.documentElement.style.setProperty('--primaryColor', colorChoice);
+  }
+
   fetch('/api/room')
     .then((response) => {
       if (!response.ok) {

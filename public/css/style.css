@@ -111,6 +111,7 @@ a {
 }
 
 #heading {
+  border: 1.4px solid var(--primaryColor);
   /* width: 55%; */
   border-radius: 10px;
   text-align: center;
@@ -152,6 +153,10 @@ a {
   bottom: 0;
 }
 
+#pm-div:hover {
+  border-color: var(--primaryColor);
+}
+
 #pm-users-list {
   margin-left: -5%;
   list-style: none;
@@ -160,6 +165,7 @@ a {
 }
 
 #pm-users-list > li {
+  border: 1px solid var(--primaryColor);
   background-color: whitesmoke;
   border-radius: 6px;
   border: 1px solid white;
@@ -202,7 +208,7 @@ a {
 #pm-send-button {
   position: absolute;
   bottom: 0;
-  background-color: #6014d1;
+  background-color: var(--primaryColor);
   border-radius: 30px;
   border: 1px solid black;
   color: rgb(15, 15, 15);
@@ -238,6 +244,13 @@ a {
   border-radius: 10px;
   position: absolute;
   bottom: 0;
+}
+
+#pm-textarea:hover,
+#pm-textarea:active,
+#pm-textarea:focus {
+  outline: none;
+  border: 1.34px solid var(--primaryColor);
 }
 
 #active-users-list {
