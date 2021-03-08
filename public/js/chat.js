@@ -198,11 +198,16 @@ function uploadFile(file) {
     method: 'POST',
     body: data,
   })
-    .then((response) => response.json()) // response is JSON, so convert
+    // response is JSON, so convert
+    .then((response) => response.json())
     .then(
       (resJSON) => {
-        const userMessage = `shared ${resJSON.originalName} : ${resJSON.url}`;
-        sendMessage(userMessage);
+        if (resJSON.error) {
+          showUserToast(resJSON.error);
+        } else {
+          const userMessage = `shared ${resJSON.originalName} : ${resJSON.url}`;
+          sendMessage(userMessage);
+        }
         // clear the selection from the input
         fileInput.value = '';
       }, // Handle the success response object
