@@ -4,6 +4,7 @@
   --orangeChoice: #dc541f;
   --greenChoice: #15ac59;
   --purpleChoice: #9147ff;
+  --backgroundColor: #1f1f23;
 }
 
 html,
@@ -49,6 +50,10 @@ a {
 
 .hidden {
   visibility: hidden;
+}
+
+.no-display {
+  display: none !important;
 }
 
 #join-room-div {

@@ -34,6 +34,9 @@ let pmReciever;
 // store an object containing pms from each user
 const pmMap = new PrivateMessageMap();
 
+// state of the focused mode
+let inFocusMode = false;
+
 /**
  *
  * @param {*} usersObjArr - array of user objects (sids and usernames)
@@ -68,6 +71,81 @@ function setPMReciever(username) {
       pmReciever = u;
     }
   });
+}
+
+/**
+ *  Toggle the display mode from focused
+ */
+function toggleDisplayFocusMode() {
+  const headingEl = document.getElementById('heading');
+  const activeUserList = document.getElementById('active-users-list');
+  const btnContainer = document.getElementById('button-div');
+  const dropdownMain = document.getElementById('dropdown');
+  const pmDisplayBtn = document.getElementById('pm-display-button');
+
+  const elementsToToggleDisplay = [
+    headingEl,
+    activeUserList,
+    btnContainer,
+    dropdownMain,
+    pmDisplayBtn,
+  ];
+
+  // toggle the display width
+  elementsToToggleDisplay.forEach((element) => {
+    if (!inFocusMode) {
+      element.classList.add('no-display');
+    } else {
+      element.classList.remove('no-display');
+    }
+  });
+
+  // get the grey color property
+  const darkGrey = getComputedStyle(document.documentElement).getPropertyValue(
+    '--backgroundColor',
+  );
+
+  const blackStr = 'black';
+
+  // enter focus mode
+  if (!inFocusMode) {
+    // change the grid layout for both the message element and the
+    // message thread
+    // use all of the grid rows
+    msgThread.style.gridRow = '1/5';
+    msgInput.style.height = '89%';
+
+    // let's make the background for the input the same as the background color
+
+    msgInput.style.backgroundColor = darkGrey;
+
+    document.getElementsByTagName('body')[0].style.backgroundColor = blackStr;
+    document.getElementsByTagName('html')[0].style.backgroundColor = blackStr;
+  } else {
+    // exit focus mode
+    msgInput.style.width = '83%';
+
+    // make the input about 2/3 the height of the thread
+    const msgThreadHeight = window.getComputedStyle(msgThread).height;
+
+    // returns a string of the height in pixels; we don't need the 'px'
+    const heightVal = Number(
+      msgThreadHeight.slice(0, msgThreadHeight.length - 3),
+    );
+
+    // now we'll set the height to this value
+    msgInput.style.height = `${heightVal * 0.72}px`;
+
+    // restore the default grid row orientation
+    msgThread.style.gridRow = '2/5';
+
+    // restore the original color
+    document.getElementsByTagName('body')[0].style.backgroundColor = darkGrey;
+    document.getElementsByTagName('html')[0].style.backgroundColor = darkGrey;
+    msgInput.style.backgroundColor = blackStr;
+  }
+
+  inFocusMode = !inFocusMode;
 }
 
 /**
@@ -983,6 +1061,11 @@ socket.emit('join', parseQSParams(), (error) => {
       // toggle the visibility of the PM ui
       document.getElementById('pm-div').classList.toggle('hidden');
       return;
+    }
+
+    if (eventCharCode === 113) {
+      // 'q' for toggle focus mode
+      toggleDisplayFocusMode();
     }
 
     if (eventCharCode === 115) {
