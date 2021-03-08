@@ -68,9 +68,11 @@ a {
   border-radius: 50px;
 }
 
-.join-input:focus {
+.join-input:focus,
+.join-input:hover {
+  border: 1.5px solid var(--primaryColor);
   outline: none;
-  font-size: medium;
+  font-size: large;
   font-weight: bold;
 }
 
@@ -337,13 +339,11 @@ a {
 }
 
 #submit-button:hover {
-  color: black;
-  background-color: purple;
+  background-color: rgb(19, 18, 19);
 }
 
 #submit-button:focus {
-  color: black;
-  background-color: purple;
+  background-color: rgb(20, 19, 20);
 }
 
 #fetch-older-messages {
@@ -461,7 +461,7 @@ a {
 .message {
   width: 54%;
   font-size: large;
-  transition: transform 0.3s ease-in-out;
+  transition: transform 0.45s ease-in-out;
   border: 1px solid black;
   border-radius: 20px;
   margin: 10px;
