@@ -42,6 +42,7 @@ router.post('/room', async (req, res) => {
 // accessible globally
 router.get('/room', async (req, res) => {
   const rooms = await getAllRoomNames();
+  res.set('Cache-Control', 'no-store');
   res.send(rooms);
 });
 

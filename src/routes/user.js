@@ -28,7 +28,7 @@ router.post('/users', async (req, res) => {
     } else {
       // during dev w/ http the cookie is discarded by most browsers, as
       // secure cookies cannot be set over http
-      res.cookie('token', token, { httpOnly: true, sameSite: true });
+      true, res.cookie('token', token, { httpOnly: true, sameSite: true });
     }
     res.status(201).send({ user: _user, token });
   } catch (error) {

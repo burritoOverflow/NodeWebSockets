@@ -50,10 +50,20 @@ app.get('/', async (req, res) => {
     const userObj = await verifyUserJWT(req.cookies.token);
     if (userObj.name) {
       if (process.env.NODE_ENV === 'production') {
-        res.cookie('username', userObj.name, { httpOnly: true, secure: true });
+        res.cookie('username', userObj.name, {
+          httpOnly: true,
+          secure: true,
+          sameSite: true,
+        });
       } else {
-        res.cookie('username', userObj.name, { httpOnly: true });
+        // for ease during development (cannot set secure w/o HTTPS)
+        res.cookie('username', userObj.name, {
+          httpOnly: true,
+          sameSite: true,
+        });
       }
+
+      // not http cookie, for ease of use
       res.cookie('displayname', userObj.name);
       res.sendFile(path.join(__dirname, '..', 'html', 'index.html'));
     } // no name invalid
