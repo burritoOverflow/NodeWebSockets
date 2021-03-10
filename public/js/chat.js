@@ -728,7 +728,6 @@ msgInput.addEventListener('keypress', (e) => {
   // entered a space
   if (key === ' ') {
     const enteredTokens = msgInput.value.trim().split(' ');
-    console.log(enteredTokens);
     if (enteredTokens[0] === '/explode' || enteredTokens[0] === '/expire') {
       msgInput.style.color = 'red';
     } else {
@@ -907,6 +906,10 @@ socket.on('chatMessage', (message) => {
     createdLi.classList.add('expire-msg');
 
     createdLi.childNodes.forEach((child) => {
+      if (!child.classList) {
+        return;
+      }
+
       // ignore the date element
       if (!child.classList.contains('date-span')) {
         child.style.backgroundColor = 'white';
@@ -916,7 +919,6 @@ socket.on('chatMessage', (message) => {
         child.innerText = `Remains for: ${secondsExpire}`;
 
         setInterval(() => {
-          console.log(child);
           let updateTime = Number(child.innerText.split(' ')[2]);
           --updateTime;
           child.innerText = `Remains for: ${updateTime}`;
