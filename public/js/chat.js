@@ -671,6 +671,11 @@ msgBtn.addEventListener('click', () => {
     return;
   }
   sendMessage(msgStr);
+
+  // restore default color when appropriate
+  msgInput.style.color = getComputedStyle(
+    document.documentElement,
+  ).getPropertyValue('--primaryColor');
 });
 
 // event handler for the send location button
@@ -713,6 +718,25 @@ msgInput.addEventListener('keypress', (e) => {
     const msgStr = msgInput.value.trim();
     if (msgStr !== '') {
       sendMessage(msgStr);
+
+      // restore the default color
+      msgInput.style.color = getComputedStyle(
+        document.documentElement,
+      ).getPropertyValue('--primaryColor');
+    }
+  }
+  // entered a space
+  if (key === ' ') {
+    const enteredTokens = msgInput.value.trim().split(' ');
+    console.log(enteredTokens);
+    if (enteredTokens[0] === '/explode' || enteredTokens[0] === '/expire') {
+      msgInput.style.color = 'red';
+    } else {
+      const primaryColorHex = getComputedStyle(
+        document.documentElement,
+      ).getPropertyValue('--primaryColor');
+
+      msgInput.style.color = primaryColorHex;
     }
   }
 });
@@ -745,6 +769,8 @@ function addMsgToThread(message) {
   if (!isElementHoveredOrFocused(msgThread)) {
     scrollToLatestMessage();
   }
+
+  return li;
 }
 
 /**
@@ -873,7 +899,16 @@ socket.on('currentRoomUsers', (usersArr) => {
 
 // event listener for incoming events
 socket.on('chatMessage', (message) => {
-  addMsgToThread(message);
+  // check if expire message
+  const createdLi = addMsgToThread(message);
+
+  // set the message to expire according to the duration
+  if (message.expireDuration) {
+    createdLi.classList.add('expire-msg');
+    setTimeout(() => {
+      createdLi.remove();
+    }, Number(message.expireDuration));
+  }
 });
 
 // server emits tweak event when a special message is detected

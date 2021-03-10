@@ -343,6 +343,8 @@ io.on('connection', (socket) => {
     // check if the leading character is a backslash
     const tweakMsgObj = determineIfMsgContainsTweak(message);
 
+    let expireMsg = false;
+
     if (tweakMsgObj.hasTweakMsg) {
       // valid tweaks message changes the message to deliver
       const msgTokenIdx = tweakMsgObj.idx;
@@ -350,7 +352,14 @@ io.on('connection', (socket) => {
         { message: message.split(' ')[msgTokenIdx] },
         socketUser.room,
       );
-      if (validTweak) {
+
+      // let's determine if it's an 'expiring' message
+      if (
+        message.split(' ')[0] === '/expire' ||
+        message.split(' ')[0] === '/explode'
+      ) {
+        expireMsg = true;
+      } else if (validTweak) {
         // eslint-disable-next-line no-param-reassign
         msgObj.message = validTweak;
       }
@@ -361,7 +370,19 @@ io.on('connection', (socket) => {
     msgObj.username = socketUser.username;
 
     // update the db with the message sent
-    addMessage(socket, msgObj, socketUser.room);
+    if (expireMsg) {
+      // thirty seconds to start with
+      msgObj.expireDuration = 45000;
+
+      // reassign the message to omit the notifier
+      msgObj.message = msgObj.message
+        .split(' ')
+        .slice(1, msgObj.message.length)
+        .join(' ');
+    } else {
+      // do not store expiring messages; they should not be seen after expiration date
+      addMessage(socket, msgObj, socketUser.room);
+    }
 
     // emit the message
     io.to(socketUser.room).emit('chatMessage', msgObj);
