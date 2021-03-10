@@ -479,8 +479,8 @@ a {
   border: 3px solid red;
   border-radius: 0;
   font-weight: bolder;
-  animation-name: thumb;
-  animation-duration: 450ms;
+  animation-name: wobble;
+  animation-duration: 1000ms;
   animation-timing-function: linear;
   transform-origin: 50% 50%;
   animation-iteration-count: infinite;

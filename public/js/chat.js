@@ -905,6 +905,14 @@ socket.on('chatMessage', (message) => {
   // set the message to expire according to the duration
   if (message.expireDuration) {
     createdLi.classList.add('expire-msg');
+
+    createdLi.childNodes.forEach((child) => {
+      // ignore the date element
+      if (!child.classList.contains('date-span')) {
+        child.style.backgroundColor = 'white';
+      }
+    });
+
     setTimeout(() => {
       createdLi.remove();
     }, Number(message.expireDuration));
