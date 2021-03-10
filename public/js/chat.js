@@ -910,6 +910,17 @@ socket.on('chatMessage', (message) => {
       // ignore the date element
       if (!child.classList.contains('date-span')) {
         child.style.backgroundColor = 'white';
+      } else {
+        // former date element
+        const secondsExpire = Number(message.expireDuration) / 1000;
+        child.innerText = `Remains for: ${secondsExpire}`;
+
+        setInterval(() => {
+          console.log(child);
+          let updateTime = Number(child.innerText.split(' ')[2]);
+          --updateTime;
+          child.innerText = `Remains for: ${updateTime}`;
+        }, 1000);
       }
     });
 
