@@ -5,6 +5,7 @@ const router = express.Router();
 
 const { User } = require('../models/user');
 const { appendToLog } = require('../utils/logging');
+const verifyUserJWT = require('../utils/verifyJWT');
 
 // add a new user
 router.post('/users', async (req, res) => {
@@ -28,7 +29,7 @@ router.post('/users', async (req, res) => {
     } else {
       // during dev w/ http the cookie is discarded by most browsers, as
       // secure cookies cannot be set over http
-      true, res.cookie('token', token, { httpOnly: true, sameSite: true });
+      res.cookie('token', token, { httpOnly: true, sameSite: true });
     }
     res.status(201).send({ user: _user, token });
   } catch (error) {
@@ -90,6 +91,44 @@ router.post('/users/login', async (req, res) => {
     // return an error when login fails
     res.status(400).send({ status: error._message });
   }
+});
+
+// allow a user to logout of the current session
+router.post('/users/logout', async (req, res) => {
+  if (req.cookies.token) {
+    // verify that the token exists
+    const validUser = await verifyUserJWT(req.cookies.token);
+
+    if (!validUser.name) {
+      // invalid token provided
+      return res.status(401).send({ error: 'Unauthorized - Invalid Token' });
+    }
+
+    // get the user
+    const user = await User.findOne({ 'tokens.token': req.cookies.token });
+
+    // valid user, so we'll remove the token provided from the user's tokens
+    const { tokens } = user;
+    const initTokensLength = tokens.length;
+
+    // save the updated token array and update the user object
+    user.tokens = tokens.filter((token) => token.token !== req.cookies.token);
+    const savedUser = await user.save();
+
+    // check that the single token has been removed
+    if (initTokensLength - 1 === savedUser.tokens.length) {
+      appendToLog(
+        `POST /api/users/logout - removed token ${req.cookies.token}  from user ${savedUser._id}`,
+      );
+
+      return res
+        .status(200)
+        .send({ status: `Token ${res.cookies.token} removed` });
+    }
+    return res.status(500).send({ error: 'Update failed' });
+  }
+  // no token, no user to logout
+  return res.status(400).send({ error: 'No token provided' });
 });
 
 module.exports = router;

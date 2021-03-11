@@ -5,7 +5,7 @@ const { User } = require('../models/user');
 /**
  *
  * @param {*} token - the JWT to verify
- * @returns - true if a valid user corresponds to the JWT
+ * @returns - an object containing the user's name if found, else an empty object
  */
 async function verifyUserJWT(token) {
   const decodedToken = jwt.verify(token, process.env.JWT_SECRET);

@@ -75,7 +75,7 @@ app.get('/', async (req, res) => {
 app.get('/joinroom', async (req, res) => {
   if (req.cookies.token) {
     const userObj = await verifyUserJWT(req.cookies.token);
-    if (!userObj) {
+    if (!userObj.name) {
       // invalid JWT
       res.redirect('/signup');
     }
@@ -121,8 +121,9 @@ app.get('/chat', async (req, res) => {
 app.get('/login', async (req, res) => {
   if (req.cookies.token) {
     // verify if the user is a valid user
-    const user = await verifyUserJWT(req.cookies.token);
-    if (!user) {
+    const userObj = await verifyUserJWT(req.cookies.token);
+
+    if (!userObj.name) {
       // invalid token
       res.sendFile(path.join(__dirname, '..', 'html', 'login.html'));
     } else {

@@ -29,7 +29,7 @@ router.get('/messages/:room', async (req, res) => {
 
   if (req.cookies.token) {
     const userObj = await verifyUserJWT(req.cookies.token);
-    if (!userObj) {
+    if (!userObj.name) {
       // invalid token
       res.status(401).send({ error: 'Unauthorized' });
     }
@@ -117,7 +117,7 @@ router.post(
     if (req.cookies.token) {
       const userObj = await verifyUserJWT(req.cookies.token);
 
-      if (!userObj) {
+      if (!userObj.name) {
         // invalid token
         res.status(401).send({ error: 'Unauthorized' });
       }

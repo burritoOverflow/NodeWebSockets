@@ -14,7 +14,8 @@ router.post('/room', async (req, res) => {
   // can create rooms
   if (req.cookies.token) {
     const userObj = await verifyUserJWT(req.cookies.token);
-    if (!userObj) {
+
+    if (!userObj.name) {
       // token invalid
       res.status(401).send({ error: 'Unauthorized' });
     }
@@ -53,8 +54,8 @@ router.get('/room/usernames/:room', async (req, res) => {
     const userObj = await verifyUserJWT(req.cookies.token);
 
     // verify the token provided
-    if (!userObj) {
-      res.status(401).send({ error: 'Unauthorized' });
+    if (!userObj.name) {
+      return res.status(401).send({ error: 'Unauthorized' });
     }
 
     // valid token
@@ -63,23 +64,21 @@ router.get('/room/usernames/:room', async (req, res) => {
 
     if (!room) {
       // parameter provided for the room is not a valid room name
-      res.status(400).send(`Room ${roomName} not found`);
-    } else {
-      // room found
-      const userIDArr = [];
-      room.users.forEach((user) => {
-        // eslint-disable-next-line no-underscore-dangle
-        userIDArr.push(user._id);
-      });
-      const userList = await User.find().in('_id', userIDArr);
-      // transform the query result to just return the usernames
-      const userNameArr = userList.map((u) => u.name);
-      res.status(200).send({ UserList: userNameArr });
+      return res.status(400).send(`Room ${roomName} not found`);
     }
-  } else {
-    // no token provided
-    res.status(401).send({ error: 'Unauthorized' });
+    // room found
+    const userIDArr = [];
+    room.users.forEach((user) => {
+      // eslint-disable-next-line no-underscore-dangle
+      userIDArr.push(user._id);
+    });
+    const userList = await User.find().in('_id', userIDArr);
+    // transform the query result to just return the usernames
+    const userNameArr = userList.map((u) => u.name);
+    return res.status(200).send({ UserList: userNameArr });
   }
+  // no token provided
+  return res.status(401).send({ error: 'Unauthorized' });
 });
 
 module.exports = router;
