@@ -7,6 +7,7 @@ import {
   isValidHttpUrl,
   isElementHoveredOrFocused,
   displayNotification,
+  determineIfDelayedMessage,
 } from './utils.js';
 
 // takes a url arg if not connecting to the same server serving the script
@@ -452,8 +453,28 @@ function sendMessage(message) {
   socket.emit('clientChat', msgObj, (serverMsg) => {
     showUserToast(serverMsg);
   });
-  // remove text from the input text-element
-  msgInput.value = '';
+}
+
+/**
+ * Handles both the cleanup of the message and the sending delay
+ *
+ * @param {*} message - message to send, from the user input
+ */
+function sendDelayedMessage(message) {
+  // first, prune the message; we already know it's valid
+  const msgTokens = message.split(' ');
+
+  // convert to seconds; default is ms
+  const delay = parseInt(msgTokens[1], 10) * 1000;
+
+  // recreate a string excluding the first token (verb) and the second (delay)
+  const finalMessage = msgTokens.slice(2).join(' ');
+
+  showUserToast(`Your message will be sent in ${msgTokens[1]} seconds`);
+
+  setTimeout(() => {
+    sendMessage(finalMessage);
+  }, delay);
 }
 
 /**
@@ -670,7 +691,15 @@ msgBtn.addEventListener('click', () => {
   if (msgStr === '') {
     return;
   }
-  sendMessage(msgStr);
+
+  if (determineIfDelayedMessage(msgStr)) {
+    sendDelayedMessage(msgStr);
+  } else {
+    sendMessage(msgStr);
+  }
+
+  // clear the input after send
+  msgInput.value = '';
 
   // restore default color when appropriate
   msgInput.style.color = getComputedStyle(
@@ -717,7 +746,14 @@ msgInput.addEventListener('keypress', (e) => {
   if (key === 'Enter') {
     const msgStr = msgInput.value.trim();
     if (msgStr !== '') {
-      sendMessage(msgStr);
+      if (determineIfDelayedMessage(msgStr)) {
+        sendDelayedMessage(msgStr);
+      } else {
+        sendMessage(msgStr);
+      }
+
+      // clear the message that was sent
+      msgInput.value = '';
 
       // restore the default color
       msgInput.style.color = getComputedStyle(

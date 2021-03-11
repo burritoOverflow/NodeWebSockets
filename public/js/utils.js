@@ -59,9 +59,67 @@ function displayNotification(message) {
   }
 }
 
+/**
+ * Determine if the provided string argument is an integer
+ *
+ * @param {*} str - the string argument to determine if integer
+ * @returns
+ */
+function determineIfInteger(str) {
+  return (
+    !isNaN(str) && parseInt(Number(str)) == str && !isNaN(parseInt(str, 10))
+  );
+}
+
+/**
+ * Determine if the message provided is a string
+ *
+ * @param {*} msgStr - the string argument
+ */
+function determineIfDelayedMessage(msgStr) {
+  const strTokens = msgStr.split(' ');
+  const firstToken = strTokens[0];
+
+  if (firstToken[0] === '/') {
+    // determine if prefaced with any of the possible verbs
+    const wordSet = new Set();
+    wordSet.add('delay');
+    wordSet.add('timer');
+    wordSet.add('schedule');
+    wordSet.add('sleep');
+
+    // remove the leading slash
+    const verbToken = firstToken.slice(1);
+
+    if (wordSet.has(verbToken)) {
+      // get the second token, determine if valid integer
+      const secondToken = strTokens[1];
+      const isInt = determineIfInteger(secondToken);
+
+      if (isInt) {
+        // it's a valid integer, so we just now need to make sure there's
+        // at least a single non empty token that follows
+        const thirdToken = strTokens[2];
+
+        if (thirdToken) {
+          return true;
+        }
+        // no third token
+        return false;
+      }
+      // second token is not an integer
+      return false;
+    } // invalid word after slash
+    return false;
+  } // no slash in first token
+  return false;
+}
+
 export {
+  determineIfInteger,
   parseQSParams,
   isValidHttpUrl,
   isElementHoveredOrFocused,
   displayNotification,
+  determineIfDelayedMessage,
 };
