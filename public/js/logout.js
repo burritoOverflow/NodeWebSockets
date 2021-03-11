@@ -15,6 +15,9 @@ function doLogout() {
       response.json().then((json) => {
         if (response.ok) {
           // successfully logged out
+          // remove username and colorChoice from localstorage
+          localStorage.removeItem('username');
+          localStorage.removeItem('colorChoice');
           window.location.href = '/login';
         } else {
           // logout failed
