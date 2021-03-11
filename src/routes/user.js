@@ -121,9 +121,27 @@ router.post('/users/logout', async (req, res) => {
         `POST /api/users/logout - removed token ${req.cookies.token}  from user ${savedUser._id}`,
       );
 
+      // set expire for yesterday
+      if (process.env.NODE_ENV === 'production') {
+        res.cookie('token', req.cookies.token, {
+          httpOnly: true,
+          secure: true,
+          sameSite: true,
+          expires: new Date(new Date().setDate(new Date().getDate() - 1)),
+        });
+      } else {
+        // during dev w/ http the cookie is discarded by most browsers, as
+        // secure cookies cannot be set over http
+        res.cookie('token', req.cookies.token, {
+          httpOnly: true,
+          sameSite: true,
+          expires: new Date(new Date().setDate(new Date().getDate() - 1)),
+        });
+      }
+
       return res
         .status(200)
-        .send({ status: `Token ${res.cookies.token} removed` });
+        .send({ status: `Token ${req.cookies.token} removed` });
     }
     return res.status(500).send({ error: 'Update failed' });
   }

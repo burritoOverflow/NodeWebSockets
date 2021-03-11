@@ -225,6 +225,27 @@ a {
   margin-left: 75%;
 }
 
+#logout-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: red;
+  border-radius: 22px;
+  border: none;
+  font-size: medium;
+  color: rgb(15, 15, 15);
+  font-weight: bolder;
+  margin: 0.9em;
+  padding: 0.9em;
+}
+
+#logout-button:hover,
+#logout-button:focus {
+  outline: none;
+  background-color: black;
+  color: var(--primaryColor);
+}
+
 #message-text {
   width: 83%;
   color: var(--primaryColor);
