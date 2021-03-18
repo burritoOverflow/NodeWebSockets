@@ -4,6 +4,10 @@
  * display it on the main page: {count} in {room}
  */
 
+let roomNameInput;
+let submitRoomName;
+let createRoomButton;
+
 /**
  * Populate the select element with options for each room name
  *
@@ -20,25 +24,10 @@ function addOptionsToRoomSelect(roomNamesArr) {
   });
 }
 
-(() => {
-  const usernameinput = document.getElementById('username-input');
-  usernameinput.style.color = 'black';
-  usernameinput.style.fontWeight = 'bold';
-  usernameinput.style.textAlign = 'center';
-  const cookieArr = document.cookie.split('=');
-  const displayname = cookieArr[cookieArr.indexOf('displayname') + 1];
-  if (displayname) {
-    usernameinput.value = displayname;
-  } else {
-    usernameinput.getElementById('username-input').removeAttribute('readonly');
-  }
-
-  // set user selected accent style if present
-  const colorChoice = localStorage.getItem('colorChoice');
-  if (colorChoice) {
-    document.documentElement.style.setProperty('--primaryColor', colorChoice);
-  }
-
+/**
+ * Get the list of the currently created rooms
+ */
+function fetchRoomList() {
   fetch('/api/room')
     .then((response) => {
       if (!response.ok) {
@@ -77,4 +66,80 @@ function addOptionsToRoomSelect(roomNamesArr) {
     .catch((error) => {
       console.error('Error fetching data', error);
     });
-})();
+}
+
+/**
+ * POST the created room name, creating a new room
+ *
+ * @param {string} roomName  - the name of the room to create, populated by the input element
+ */
+async function addNewRoom(roomName) {
+  const roomObj = { name: roomName };
+
+  const roomRes = await fetch('/api/room', {
+    method: 'POST', // *GET, POST, PUT, DELETE, etc.
+    credentials: 'same-origin',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(roomObj),
+  });
+
+  // check response
+  return roomRes.json();
+}
+
+window.onload = async function initRooms() {
+  const usernameinput = document.getElementById('username-input');
+  usernameinput.style.color = 'black';
+  usernameinput.style.fontWeight = 'bold';
+  usernameinput.style.textAlign = 'center';
+  const cookieArr = document.cookie.split('=');
+  const displayname = cookieArr[cookieArr.indexOf('displayname') + 1];
+  if (displayname) {
+    usernameinput.value = displayname;
+  } else {
+    usernameinput.getElementById('username-input').removeAttribute('readonly');
+  }
+
+  // set user selected accent style if present
+  const colorChoice = localStorage.getItem('colorChoice');
+  if (colorChoice) {
+    document.documentElement.style.setProperty('--primaryColor', colorChoice);
+  }
+
+  roomNameInput = document.getElementById('room-name-input');
+  submitRoomName = document.getElementById('submit-room-name');
+  createRoomButton = document.getElementById('create-room-button');
+
+  createRoomButton.onclick = (event) => {
+    event.preventDefault();
+    document.getElementById('create-room-div').classList.toggle('hidden');
+  };
+
+  submitRoomName.onclick = async () => {
+    // check that the input is populated with only a single token
+    const inputString = roomNameInput.value.trim().toLowerCase();
+
+    if (!inputString || inputString === '') {
+      return;
+    }
+    if (inputString.split(' ') > 1) {
+      // error; several tokens
+      return;
+    }
+    // otherwise, POST the data that's been submitted; all roomnames are lowercase only
+    const newRoomResponse = await addNewRoom(inputString);
+
+    // handle response
+    if (newRoomResponse.result) {
+      // room created; display a message; fetch new data
+      roomNameInput.value = '';
+
+      // update the rooms to reflect the latest addition
+      fetchRoomList();
+    }
+  };
+
+  fetchRoomList();
+};

@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 const express = require('express');
 const { Room } = require('../models/room');
 const { User } = require('../models/user');
@@ -19,8 +20,16 @@ router.post('/room', async (req, res) => {
       // token invalid
       res.status(401).send({ error: 'Unauthorized' });
     }
+
+    // we need the user's id
+    const { _id } = await User.findOne({ name: userObj.name });
+    // with valid user, add them as the room's admin
+    const roomAdmin = _id;
+    // construct the new room object
+    const newRoomObj = { name: req.body.name, admin: roomAdmin };
     // valid, so check if the room exists
     const existingRoom = await findRoomByName(req.body.name);
+
     // abandon if room exists
     if (existingRoom) {
       res.status(401).send({
@@ -28,9 +37,10 @@ router.post('/room', async (req, res) => {
       });
     }
 
-    // otherwise create
-    const room = new Room(req.body);
+    // otherwise create the new room
+    const room = new Room(newRoomObj);
     await room.save();
+
     res.status(201).send({
       result: `${req.body.name} created`,
     });
@@ -41,6 +51,7 @@ router.post('/room', async (req, res) => {
 });
 
 // accessible globally
+// return a list of all current room names
 router.get('/room', async (req, res) => {
   const rooms = await getAllRoomNames();
   res.set('Cache-Control', 'no-store');

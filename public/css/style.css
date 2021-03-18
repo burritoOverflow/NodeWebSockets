@@ -364,6 +364,51 @@ a {
   padding: 0.9em;
 }
 
+#create-room-button {
+  font-size: medium;
+  margin-left: 3em;
+  background-color: var(--primaryColor);
+  border-radius: 27px;
+  border: 1px solid black;
+  color: antiquewhite;
+  font-weight: 800;
+  margin-top: 1em;
+  padding: 0.9em;
+}
+
+#room-name-input {
+  text-align: center;
+  font-size: medium;
+  border: 4px solid #222;
+  border-radius: 12px;
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.1), 0 0 16px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.5);
+  margin: 0 0 10px 0;
+}
+
+#room-name-input:focus {
+  outline: none;
+  border: 3px solid green;
+}
+
+#submit-room-name {
+  font-weight: bolder;
+  margin-left: 3em;
+  font-size: medium;
+  background-color: green;
+  border-radius: 18px;
+  border: none;
+  padding: 0.9em;
+}
+
+#create-room-div {
+  border-radius: 10px;
+  border: 1px solid #2e2c2c;
+  padding: 3em;
+  background-color: black;
+}
+
 #submit-button:hover {
   background-color: rgb(19, 18, 19);
 }

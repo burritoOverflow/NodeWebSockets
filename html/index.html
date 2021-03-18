@@ -20,11 +20,17 @@
         <select name="room" id="room-select">
         </select>
         <button id="submit-button">Join!</button>
+        <button id="create-room-button">Create a new Room</button>
       </div>
     </form>
     <button id="logout-button">Logout</button>
+    <div id="create-room-div" class="hidden">
+      <input type="text" name="room-name" id="room-name-input" placeholder="Enter a room name">
+      <button id="submit-room-name">Create</button>
+    </div>
     <div id="room-count"></div>
   </main>
+
   <script src="./js/updateRoomCount.js"></script>
   <script src="./js/logout.js"></script>
 </body>

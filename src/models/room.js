@@ -19,6 +19,10 @@ const RoomSchema = new mongoose.Schema(
         },
       },
     ],
+    admin: {
+      type: mongoose.Schema.Types.ObjectID,
+      ref: 'User',
+    },
   },
   {
     timestamps: true,
