@@ -55,8 +55,18 @@ function fetchRoomList() {
         const p = document.createElement('p');
         const { name, numUsers } = roomObj;
         roomNamesArr.push(name);
+
         p.innerText = `${numUsers} users in ${name}`;
         p.classList.add('room-counter');
+        // set the data attr to the room name; we'll use this for a convienience feat
+        p.dataset.roomname = name;
+
+        p.onclick = () => {
+          // we'll populate the option value on click on each of these
+          document.getElementById('room-select').value = p.dataset.roomname;
+        };
+
+        // and add each element
         roomCountDiv.appendChild(p);
       });
 
