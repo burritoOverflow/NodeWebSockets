@@ -92,4 +92,40 @@ router.get('/room/usernames/:room', async (req, res) => {
   return res.status(401).send({ error: 'Unauthorized' });
 });
 
+// get the admin for the room (if exists)
+router.get('/room/admin/:room', async (req, res) => {
+  // request must come from an authenticated user
+  if (req.cookies.token) {
+    const userObj = await verifyUserJWT(req.cookies.token);
+
+    // verify the token provided
+    if (!userObj.name) {
+      return res.status(401).send({ error: 'Unauthorized' });
+    }
+
+    // query for the room passed as a qs parameter
+    const roomName = req.params.room;
+    const room = await Room.findOne({ name: roomName });
+
+    // invalid room provided
+    if (!room) {
+      return res.status(404).send({ error: `No room ${roomName} exists` });
+    }
+
+    // with a valid room, now we need to check if there's an admin for the room
+    if (room.admin) {
+      // get the username associated with the room
+      const adminUser = await User.findById(room.admin);
+
+      // return the admin user's name
+      res.status(200).send({
+        admin: adminUser.name,
+      });
+    } else {
+      // no admin for the room
+      res.status(404).send({ admin: 'none' });
+    }
+  }
+});
+
 module.exports = router;

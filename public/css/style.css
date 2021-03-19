@@ -319,6 +319,14 @@ a {
   border: 1px solid white;
 }
 
+.admin-user-li {
+  color: red;
+  border: 3px solid red !important;
+  border-radius: 11px !important;
+  font-weight: bolder !important;
+  font-style: oblique !important;
+}
+
 #message-text::selection {
   font-size: xx-large;
   background-color: var(--primaryColor);

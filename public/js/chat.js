@@ -662,6 +662,34 @@ function createLiMessageElement(message, showNotification) {
 }
 
 /**
+ * Get the admin username for the current room
+ *
+ * @param {string} roomName - the current room name
+ */
+function getAdminNameForRoom(roomName) {
+  const adminNameUrl = `/api/room/admin/${roomName}`;
+  return fetch(adminNameUrl, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+  })
+    .then((response) => response.json())
+    .then((jsonRes) => {
+      if (jsonRes.admin !== 'none') {
+        // the room has an admin
+        return jsonRes.admin;
+      }
+      // no admin
+      return 'none';
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+}
+
+/**
  * Scroll the view of messages to the latest message
  * Used on update when a new message arrives
  */
@@ -954,6 +982,7 @@ socket.on('chatMessage', (message) => {
         const secondsExpire = Number(message.expireDuration) / 1000;
         child.innerText = `Remains for: ${secondsExpire}`;
 
+        // update the remaining time on the message once per second
         setInterval(() => {
           let updateTime = Number(child.innerText.split(' ')[2]);
           --updateTime;
@@ -962,6 +991,7 @@ socket.on('chatMessage', (message) => {
       }
     });
 
+    // remove the message from the dom based on the expiration timer
     setTimeout(() => {
       createdLi.remove();
     }, Number(message.expireDuration));
@@ -1089,9 +1119,10 @@ socket.emit('join', parseQSParams(), (error) => {
   }
 });
 
-// keybinding iife
-// eslint-disable-next-line wrap-iife
-(function () {
+/**
+ * Set the initial keybindings for interaction with the UI
+ */
+function setKeybindings() {
   const secretCommand = 'clear';
   let offset = 0;
 
@@ -1226,7 +1257,7 @@ socket.emit('join', parseQSParams(), (error) => {
       olderMessagesReqCount = 0;
     }
   };
-})();
+}
 
 /**
  * Set the addition parameters on the socket when the user joins
@@ -1279,4 +1310,41 @@ window.onload = function init() {
       localStorage.setItem('colorChoice', colorHex);
     });
   }
+
+  // last, we'll set up the keybindings
+  setKeybindings();
+
+  // and check if the room has an admin
+  const { room, username } = parseQSParams();
+  getAdminNameForRoom(room).then((res) => {
+    if (res === 'none') {
+      // no admin; nothing to do here
+      return;
+    }
+
+    const adminName = res;
+    let thisUserAdmin = false;
+    if (adminName.toLowerCase() === username.toLowerCase()) {
+      // we're looking for the 'You' element
+      thisUserAdmin = true;
+    }
+
+    // check for the admin in the room; apply the style if so
+    document.getElementById('users-list').childNodes.forEach((element) => {
+      if (!element.innerText) {
+        return;
+      }
+
+      // check if the element is the admin username
+      if (element.innerText === adminName.toLowerCase()) {
+        // add the class where appropriate
+        element.classList.add('admin-user-li');
+      }
+
+      // style the 'You' element if this user is the admin
+      if (element.innerText === 'You' || thisUserAdmin) {
+        element.classList.add('admin-user-li');
+      }
+    });
+  });
 };
