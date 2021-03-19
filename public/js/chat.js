@@ -32,6 +32,12 @@ let currentUsersArr = [];
 // set when a user LI element is selected
 let pmReciever;
 
+// store the room's admin; this will be used on init and on users joining
+let adminName;
+
+// for this user
+let thisUserAdmin = false;
+
 // store an object containing pms from each user
 const pmMap = new PrivateMessageMap();
 
@@ -46,7 +52,7 @@ function updateUsersArr(usersObjArr) {
   // reset the state of the users arr
   currentUsersArr = [];
 
-  // get this users username
+  // get this user's username
   let username;
   if (localStorage.getItem('username') === null) {
     username = parseQSParams().username;
@@ -564,6 +570,7 @@ function createLiMessageElement(message, showNotification) {
       const tagIdx = token.indexOf('@');
 
       if (tagIdx === -1) {
+        // no tag index found
         msgSpan.innerHTML += ` ${token} `;
       } else {
         // ensure that the only tag is the first character
@@ -572,6 +579,7 @@ function createLiMessageElement(message, showNotification) {
           return;
         }
 
+        // mulitple tokens
         if (token.slice(1).indexOf('@') !== -1) {
           msgSpan.innerHTML += ` ${token} `;
           return;
@@ -607,13 +615,15 @@ function createLiMessageElement(message, showNotification) {
           // the text node will not have a child node; each li will (a text node)
           if (node.innerText) {
             // easiest to ignore case
-            currentUsernames.push(node.innerText.toLowerCase());
+            currentUsernames.push(node.innerText.trim().toLowerCase());
           }
         });
 
         // if not a valid user, don't bother styling it in any specific manner
         if (!currentUsernames.includes(taggedUser.toLowerCase())) {
           msgSpan.innerHTML += ` ${token} `;
+        } else {
+          msgSpan.innerHTML += ` <span class="user-tag">${token}</span> `;
         }
 
         // edge case, to avoid an empty element
@@ -649,12 +659,65 @@ function createLiMessageElement(message, showNotification) {
     });
   });
 
+  // Initial right click to create quoted message
+  li.oncontextmenu = (event) => {
+    event.preventDefault();
+    const quotedMsg = makeQuotedMessage(li);
+    document.getElementById('message-text').value = `${quotedMsg} \n\n`;
+  };
+
   // show a user a notification
   if (!usersOwnMessage && showNotification) {
     displayNotification(`${message.username} said ${message.message}`);
   }
 
   return li;
+}
+
+/**
+ * Build a quote string for replies
+ *
+ * @param {HTMLElement} messageElement - the message li element
+ * @returns - string containing the quoted message
+ */
+function makeQuotedMessage(messageElement) {
+  let messageUsername;
+  let messageContents;
+
+  const msgElChildren = messageElement.childNodes;
+
+  msgElChildren.forEach((childElement) => {
+    // if it has the class for username
+
+    // text element
+    if (!childElement.classList) {
+      return;
+    }
+
+    if (childElement.classList[0] === 'username-span') {
+      // if it's not the own user's message, we'll tag the user later, so keep the username
+      const msgSenderUsername = childElement.innerText.trim();
+      // otherwise don't bother
+      if (msgSenderUsername !== 'You') {
+        messageUsername = childElement.innerText.trim();
+      }
+    }
+
+    // get the message contents (trimmed)
+    if (childElement.classList[0] === 'message-element-span') {
+      messageContents = childElement.innerText.trim();
+    }
+  });
+
+  let quoteStr;
+  if (messageUsername) {
+    quoteStr = `Reply to @${messageUsername} '${messageContents}': `;
+  } else {
+    // from the
+    quoteStr = `Adding to previous message '${messageContents}'`;
+  }
+
+  return quoteStr;
 }
 
 /**
@@ -834,7 +897,7 @@ function addMsgToThread(message) {
 
 /**
  *  Display the other users currently in the room for both the PM li elements
- * and the user element displaying the room's current users
+ *  and the user element displaying the room's current users
  *
  * @param {*} usersArr - array containing the other users in the room
  */
@@ -884,6 +947,12 @@ function addUserToUserList(usersArr) {
     const userLi = document.createElement('li');
 
     userLi.innerText = userStr;
+
+    // always check case insensitivity
+    if (userStr === adminName) {
+      userLi.classList.add('admin-user-li');
+    }
+
     userLi.addEventListener('click', () => {
       const userNameStr = userLi.innerText;
 
@@ -900,6 +969,9 @@ function addUserToUserList(usersArr) {
     usersList.appendChild(userLi);
 
     if (userStr === 'You') {
+      if (thisUserAdmin) {
+        userLi.classList.add('admin-user-li');
+      }
       return;
     }
 
@@ -1325,8 +1397,11 @@ window.onload = function init() {
       return;
     }
 
-    const adminName = res;
-    let thisUserAdmin = false;
+    // set the admin's name
+    adminName = res;
+
+    console.log(adminName);
+
     if (adminName.toLowerCase() === username.toLowerCase()) {
       // we're looking for the 'You' element
       thisUserAdmin = true;
@@ -1345,7 +1420,7 @@ window.onload = function init() {
       }
 
       // style the 'You' element if this user is the admin
-      if (element.innerText === 'You' || thisUserAdmin) {
+      if (element.innerText === 'You' && thisUserAdmin) {
         element.classList.add('admin-user-li');
       }
     });
