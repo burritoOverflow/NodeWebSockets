@@ -263,10 +263,6 @@ function updatePmLiElement(username) {
   });
 }
 
-// Runs when the file selection event is emitted
-const onSelectFile = () => uploadFile(fileInput.files[0]);
-fileInput.addEventListener('change', onSelectFile, false);
-
 /**
  * Fetch previous message from the room the user is currently in
  * Messages are :
@@ -1180,8 +1176,10 @@ function setKeybindings() {
     }
 
     if (eventCharCode === 102) {
-      // focus on the 'filter messages element'
-      document.getElementById('filter-messages').focus();
+      // focus on the 'filter messages element' with 'f'
+      event.preventDefault();
+      const filterMessEl = document.getElementById('filter-messages');
+      filterMessEl.focus();
       return;
     }
 
@@ -1238,6 +1236,7 @@ function setKeybindings() {
 
     if (eventCharCode === 109) {
       // focus on messages
+      event.preventDefault();
       msgInput.focus();
       return;
     }
@@ -1310,6 +1309,10 @@ window.onload = function init() {
       localStorage.setItem('colorChoice', colorHex);
     });
   }
+
+  // Runs when the file selection event is emitted
+  const onSelectFile = () => uploadFile(fileInput.files[0]);
+  fileInput.addEventListener('change', onSelectFile, false);
 
   // last, we'll set up the keybindings
   setKeybindings();
