@@ -154,7 +154,8 @@ router.post(
       appendToLog(JSON.stringify(s3Response));
 
       // build the public URL
-      const filePublicURL = `https://ws-app-storage.s3.amazonaws.com/${uploadFilename}`;
+      const publicURLPrefix = process.env.PUBLIC_S3_URL;
+      const filePublicURL = `${publicURLPrefix}${uploadFilename}`;
 
       // on success, return the public url in the response
       res.status(201).send({
