@@ -983,13 +983,19 @@ function addUserToUserList(usersArr) {
 
     // click handler for each li element
     userLi.addEventListener('click', () => {
-      const userNameStr = userLi.innerText;
+      // considering the added tooltip on hover, we only need the
+      // text content for the first child node
+      const userNameStr = userLi.childNodes[0].data.trim();
 
+      // toggle back to the empty string state on subsequent
+      // click
       if (filterMsgsInput.value === userNameStr) {
         filterMsgsInput.value = '';
         // restore the state to show all messages
         filterMsgSearch('');
       } else {
+        // default state: populate empty element with the
+        // username string
         filterMsgsInput.value = userNameStr;
         filterMsgSearch(userNameStr);
       }
