@@ -9,7 +9,10 @@ const verifyUserJWT = require('../utils/verifyJWT');
 
 // add a new user
 router.post('/users', async (req, res) => {
-  const user = new User(req.body);
+  const userObj = req.body;
+  // enforce all usernames must be lowercase
+  userObj.name = userObj.name.toLowerCase();
+  const user = new User(userObj);
 
   if (!user) {
     // creation failed

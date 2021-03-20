@@ -1057,6 +1057,7 @@ socket.on('chatMessage', (message) => {
         setInterval(() => {
           let updateTime = Number(child.innerText.split(' ')[2]);
           --updateTime;
+          // eslint-disable-next-line no-param-reassign
           child.innerText = `Remains for: ${updateTime}`;
         }, 1000);
       }
@@ -1138,7 +1139,6 @@ socket.on('userLeft', (message) => {
 // store the PM when recv'd
 socket.on('private message', (pm) => {
   const fromNameLower = pm.fromName.toLowerCase();
-
   const pmsg = {
     content: pm.content,
     date: new Date().toLocaleString(),
