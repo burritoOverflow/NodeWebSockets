@@ -57,7 +57,41 @@ const getUsersInRoom = async (roomName) => {
   throw new Error('Invalid room name provided');
 };
 
+/**
+ * Check if the provided username is the admin for the room
+ *
+ * @param {string} roomName
+ * @param {string} username
+ * @returns
+ */
+async function checkIfUserAdmin(roomName, username) {
+  // need the user's ObjectID to verify if the rooom's admin is that user
+  const room = await Room.findOne({ name: roomName });
+  if (!room) {
+    return false;
+  }
+
+  const user = await User.findOne({ name: username });
+  if (!user) {
+    return false;
+  }
+
+  // eslint-disable-next-line no-underscore-dangle
+  const userId = user._id;
+
+  // see if the room even has an admin
+  if (room.admin) {
+    // MDB OIDS must use equals; ops dont work
+    if (room.admin.equals(userId)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 module.exports = {
+  checkIfUserAdmin,
   findRoomByName,
   getAllRoomNames,
   getCountOfUsersinRoom,

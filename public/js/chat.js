@@ -662,6 +662,7 @@ function createLiMessageElement(message, showNotification) {
   // Initial right click to create quoted message
   li.oncontextmenu = (event) => {
     event.preventDefault();
+    // quote the message and add it as the text field input
     const quotedMsg = makeQuotedMessage(li);
     document.getElementById('message-text').value = `${quotedMsg} \n\n`;
   };
@@ -675,7 +676,7 @@ function createLiMessageElement(message, showNotification) {
 }
 
 /**
- * Build a quote string for replies
+ * Build and return quote string for replies
  *
  * @param {HTMLElement} messageElement - the message li element
  * @returns - string containing the quoted message
@@ -851,6 +852,8 @@ msgInput.addEventListener('keypress', (e) => {
   // entered a space
   if (key === ' ') {
     const enteredTokens = msgInput.value.trim().split(' ');
+
+    // modify the styling if the first token is for an expiring message
     if (enteredTokens[0] === '/explode' || enteredTokens[0] === '/expire') {
       msgInput.style.color = 'red';
     } else {

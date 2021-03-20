@@ -22,6 +22,8 @@ const {
   addSIDToUserAndJoinRoom,
 } = require('./db/updateDb');
 
+const { getUsersInRoom, checkIfUserAdmin } = require('./db/queryDb');
+
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
@@ -43,6 +45,9 @@ app.use('/api', require('./routes/messages'));
 
 const allUsers = new Users();
 const sioRoomMap = new SidMap();
+
+// track the muted users
+const mutedUsersSet = new Set();
 
 // without a user logged in, send the user the login page, otherwise, send the choose room page
 app.get('/', async (req, res) => {
@@ -177,6 +182,7 @@ function sendConnectedClientCount(room) {
 /**
  *
  * @param {string} room - the room to broadcast the user list to
+ *
  * @return array of all the usernames in the room
  */
 function getAllUsernamesInRoom(room) {
@@ -190,6 +196,78 @@ function getAllUsernamesInRoom(room) {
         [],
       )
   );
+}
+
+/**
+ * Mute the user (if a valid user is provided)
+ *
+ * @param {string} userReqMute - the username of the user requesting the mute
+ * @param {string} message - mute user message
+ * @param {string} room - the room the users are in
+ * @returns - true if the user is now muted
+ */
+async function muteUser(userReqMute, message, room) {
+  let userNowMuted = false;
+
+  // check first that the user attempting to mute is admin
+  const validMuteReq = await checkIfUserAdmin(room, userReqMute);
+  if (!validMuteReq) {
+    // done here if invaluid
+    return;
+  }
+
+  // check first that it's a valid message
+  const msgTokens = message.split(' ');
+
+  // get all the usernames; we need to check we're attempting to mute a valid user
+  const usernames = await getUsersInRoom(room);
+  const providedUsername = msgTokens[1].trim();
+
+  const isValidMute =
+    msgTokens[0].trim() === '/mute' || usernames.includes(providedUsername);
+
+  if (isValidMute) {
+    // if the username is already in the set, nothing changes
+    mutedUsersSet.add(providedUsername);
+    userNowMuted = true;
+  }
+
+  return userNowMuted;
+}
+
+/**
+ * Unmute the user (if a valid user is provided and user attempting is admin for the room)
+ *
+ * @param {string} userReqMute - the username of the user requesting the mute
+ * @param {string} message - mute user message
+ * @param {string} room - the room the users are in
+ * @returns - true if the user is now unmuted
+ */
+async function unmuteUser(userReqMute, message, room) {
+  let userNowUnmuted = false;
+
+  // check if admin making request
+  const validUnMuteRequest = await checkIfUserAdmin(room, userReqMute);
+  if (!validUnMuteRequest) {
+    return;
+  }
+  const msgTokens = message.split(' ');
+
+  // get all the usernames; we need to check we're attempting to mute a valid user
+  const usernames = await getUsersInRoom(room);
+  const providedUsername = msgTokens[1].trim();
+  const firstToken = msgTokens[0].trim();
+
+  const isValidUnmute =
+    firstToken === '/mute' || usernames.includes(providedUsername);
+
+  if (isValidUnmute && mutedUsersSet.has(providedUsername)) {
+    // if the username is already in the set, nothing changes
+    mutedUsersSet.delete(providedUsername);
+    userNowUnmuted = true;
+  }
+
+  return userNowUnmuted;
 }
 
 /**
@@ -213,7 +291,7 @@ function sendUsernamesListForRoom(room) {
  * given one of the reserved messages, perform the corresponding action
  * @param {*} messageObj
  * @param {string} room - the room to send the message to
- * @return {boolean}- boolean indicating if the message was a valid tweak
+ * @return {string}- the valid tweak message
  */
 function tweaksMessage(messageObj, room) {
   const { message } = messageObj;
@@ -327,15 +405,21 @@ io.on('connection', (socket) => {
 
   // on client chat event - emitted when a user sends a message
   // eslint-disable-next-line consistent-return
-  socket.on('clientChat', (msgObj, callback) => {
+  socket.on('clientChat', async (msgObj, callback) => {
     const filter = new Filter();
     appendToLog(`${JSON.stringify(msgObj)}\n`);
 
     const { message } = msgObj;
+
     // determine if the message is inappropriate
     if (filter.isProfane(message)) {
       appendToLog(`Profanity detected: '${message}'`);
       return callback('Watch your language');
+    }
+
+    if (mutedUsersSet.has(socket.username)) {
+      // muted user is informed of their message
+      return callback('Sorry, you are muted');
     }
 
     // if not, send the message to the user's room
@@ -355,11 +439,29 @@ io.on('connection', (socket) => {
       );
 
       // let's determine if it's an 'expiring' message
-      if (
-        message.split(' ')[0] === '/expire' ||
-        message.split(' ')[0] === '/explode'
-      ) {
+      const firstToken = message.split(' ')[0];
+
+      if (firstToken === '/expire' || firstToken === '/explode') {
         expireMsg = true;
+      } else if (firstToken === '/mute') {
+        // perform the mute operation if valid
+        const { room, username } = socket;
+        const isMutedNow = await muteUser(username, message, room);
+
+        // mute success
+        if (isMutedNow) {
+          const mutedUser = message.split(' ')[1].trim();
+          msgObj.message = `Admin ${username} has muted ${mutedUser}`;
+        }
+      } else if (firstToken === '/unmute') {
+        const { room, username } = socket;
+        const isUnmutedNow = await unmuteUser(username, message, room);
+
+        // valid unmute
+        if (isUnmutedNow) {
+          const unmutedUser = message.split(' ')[1].trim();
+          msgObj.message = `Admin ${username} has unmuted ${unmutedUser}`;
+        }
       } else if (validTweak) {
         // eslint-disable-next-line no-param-reassign
         msgObj.message = validTweak;
