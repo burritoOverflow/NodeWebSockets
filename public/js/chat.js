@@ -889,6 +889,28 @@ function addMsgToThread(message) {
   const li = createLiMessageElement(message, true);
   msgThread.appendChild(li);
 
+  li.childNodes.forEach((node) => {
+    if (node.classList && node.classList.contains('username-span')) {
+      // get the username
+      const username = node.innerText.trim();
+      // get the username and update the corresponding element in the user's list's span
+      document.getElementById('users-list').childNodes.forEach((child) => {
+        // exit on the text element
+        if (!child.innerText) {
+          return;
+        }
+
+        // found the matching element
+        if (username === child.innerText.trim()) {
+          // same so update the data element with the latest timestamp
+          const timeNow = +new Date();
+          // eslint-disable-next-line no-param-reassign
+          child.dataset.lastSeenTime = timeNow;
+        }
+      });
+    }
+  });
+
   // once the message is added to the DOM, scroll to the latest
   // don't if the message thread is hovered or focused
   if (!isElementHoveredOrFocused(msgThread)) {
@@ -950,12 +972,16 @@ function addUserToUserList(usersArr) {
     const userLi = document.createElement('li');
 
     userLi.innerText = userStr;
+    // create a timestamp
+    userLi.dataset.lastSeenTime = +new Date();
+    userLi.dataset.username = userStr;
 
     // always check case insensitivity
     if (userStr === adminName) {
       userLi.classList.add('admin-user-li');
     }
 
+    // click handler for each li element
     userLi.addEventListener('click', () => {
       const userNameStr = userLi.innerText;
 
@@ -967,6 +993,31 @@ function addUserToUserList(usersArr) {
         filterMsgsInput.value = userNameStr;
         filterMsgSearch(userNameStr);
       }
+    });
+
+    userLi.addEventListener('mouseenter', () => {
+      const tooltip = document.createElement('p');
+      tooltip.classList.add('active-tooltip');
+      // calculate the difference
+      const timeNow = +new Date();
+      const timeSince = timeNow - userLi.dataset.lastSeenTime;
+      const elapsedTime = timeSince / 1000 / 60;
+
+      const minutesStr = Math.floor(elapsedTime);
+      if (minutesStr === 0) {
+        tooltip.innerText = 'Last Seen: Just Now';
+      } else if (minutesStr === 1) {
+        tooltip.innerText = `Last Seen: ${minutesStr} minute ago`;
+      } else {
+        tooltip.innerText = `Last Seen: ${minutesStr} minutes ago`;
+      }
+
+      userLi.appendChild(tooltip);
+    });
+
+    userLi.addEventListener('mouseleave', () => {
+      // remove the child(ren) node (tooltip) there's only one
+      userLi.textContent = userLi.dataset.username;
     });
 
     usersList.appendChild(userLi);
