@@ -10,6 +10,7 @@ const cookieParser = require('cookie-parser');
 
 // user defined
 const { Users } = require('./utils/Users');
+const { MutedUsers } = require('./utils/MutedUsers');
 const { SidMap } = require('./utils/SidMap');
 const verifyUserJWT = require('./utils/verifyJWT');
 const { appendToLog } = require('./utils/logging');
@@ -47,7 +48,7 @@ const allUsers = new Users();
 const sioRoomMap = new SidMap();
 
 // track the muted users
-const mutedUsersSet = new Set();
+const mutedUsers = new MutedUsers();
 
 // without a user logged in, send the user the login page, otherwise, send the choose room page
 app.get('/', async (req, res) => {
@@ -228,7 +229,7 @@ async function muteUser(userReqMute, message, room) {
 
   if (isValidMute) {
     // if the username is already in the set, nothing changes
-    mutedUsersSet.add(providedUsername);
+    mutedUsers.addMutedUser(providedUsername, room);
     userNowMuted = true;
   }
 
@@ -254,16 +255,22 @@ async function unmuteUser(userReqMute, message, room) {
   const msgTokens = message.split(' ');
 
   // get all the usernames; we need to check we're attempting to mute a valid user
-  const usernames = await getUsersInRoom(room);
+  let usernames = await getUsersInRoom(room);
   const providedUsername = msgTokens[1].trim();
   const firstToken = msgTokens[0].trim();
 
-  const isValidUnmute =
+  let isValidUnmute =
     firstToken === '/mute' || usernames.includes(providedUsername);
 
-  if (isValidUnmute && mutedUsersSet.has(providedUsername)) {
-    // if the username is already in the set, nothing changes
-    mutedUsersSet.delete(providedUsername);
+  // edge case; change usernames to lowercase
+  usernames = usernames.map((username) => username.toLowerCase());
+
+  // check one more time, with the usernames in lowercase
+  isValidUnmute = usernames.includes(providedUsername);
+
+  if (isValidUnmute) {
+    // remove the muted user from the st
+    mutedUsers.removeMutedUser(providedUsername, room);
     userNowUnmuted = true;
   }
 
@@ -417,8 +424,8 @@ io.on('connection', (socket) => {
       return callback('Watch your language');
     }
 
-    if (mutedUsersSet.has(socket.username)) {
-      // muted user is informed of their message
+    if (mutedUsers.isUserMuted(socket.username.toLowerCase(), socket.room)) {
+      // if muted, user is informed of their message
       return callback('Sorry, you are muted');
     }
 
