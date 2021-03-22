@@ -385,7 +385,8 @@ function filterMsgSearch(e) {
 /**
  * Fetch older messages (after the most recent 10) from the database for the room
  *
- * @param {number} countOfReq  - the number of previous requests since page load
+ * @param {number} countOfReq  - the number of previous requests since page load--used for the num
+ * of previous messages to skip (in intervals of 10)
  */
 function fetchOlderMessages(countOfReq) {
   // first check if the 'clear' secret has been invoked, if so, just call the default fetch messages
@@ -446,7 +447,8 @@ function showUserToast(message) {
 }
 
 /**
- * Emit the message to connected clients
+ * Emit the message to connected clients.
+ *
  * @param {*} message - The string contents from the input element
  */
 function sendMessage(message) {
@@ -481,6 +483,7 @@ function sendDelayedMessage(message) {
 
 /**
  * Create and return a message element
+ *
  * @param {*} message - a message object, used for creating the message element
  * @param {*} showNotification - boolean to show the notification
  */
@@ -684,12 +687,10 @@ function createLiMessageElement(message, showNotification) {
 function makeQuotedMessage(messageElement) {
   let messageUsername;
   let messageContents;
-
   const msgElChildren = messageElement.childNodes;
 
   msgElChildren.forEach((childElement) => {
     // if it has the class for username
-
     // text element
     if (!childElement.classList) {
       return;
@@ -714,10 +715,9 @@ function makeQuotedMessage(messageElement) {
   if (messageUsername) {
     quoteStr = `Reply to @${messageUsername} '${messageContents}': `;
   } else {
-    // from the
+    // add to the user's previous message
     quoteStr = `Adding to previous message '${messageContents}'`;
   }
-
   return quoteStr;
 }
 
@@ -831,8 +831,10 @@ filterMsgsInput.addEventListener('input', (e) => {
 // allow for enter key in the text input to send a message
 msgInput.addEventListener('keypress', (e) => {
   const { key } = e;
+
   if (key === 'Enter') {
     const msgStr = msgInput.value.trim();
+
     if (msgStr !== '') {
       if (determineIfDelayedMessage(msgStr)) {
         sendDelayedMessage(msgStr);
@@ -860,7 +862,6 @@ msgInput.addEventListener('keypress', (e) => {
       const primaryColorHex = getComputedStyle(
         document.documentElement,
       ).getPropertyValue('--primaryColor');
-
       msgInput.style.color = primaryColorHex;
     }
   }
@@ -883,6 +884,7 @@ document.getElementById('pm-send-button').addEventListener('click', () => {
 
 /**
  * append individual messages to the message thread, used when a message is recieved
+ *
  * @param {*} message
  */
 function addMsgToThread(message) {
@@ -918,6 +920,86 @@ function addMsgToThread(message) {
   }
 
   return li;
+}
+
+/**
+ * Invoked on the chatMessage event. Style the element appropriately if an expiring message
+ *
+ * @param {string} message - the message contents
+ */
+function chatMessageReceived(message) {
+  // create the list element from the message
+  const createdLi = addMsgToThread(message);
+
+  // set the message to expire according to the duration, where applicable
+  // and style appropriately
+  if (message.expireDuration) {
+    createdLi.classList.add('expire-msg');
+
+    createdLi.childNodes.forEach((child) => {
+      if (!child.classList) {
+        return;
+      }
+
+      // ignore the date element
+      if (!child.classList.contains('date-span')) {
+        child.style.backgroundColor = 'white';
+      } else {
+        // former date element
+        const secondsExpire = Number(message.expireDuration) / 1000;
+        child.innerText = `Remains for: ${secondsExpire}`;
+
+        // update the remaining time on the message once per second
+        setInterval(() => {
+          let updateTime = Number(child.innerText.split(' ')[2]);
+          --updateTime;
+          // eslint-disable-next-line no-param-reassign
+          child.innerText = `Remains for: ${updateTime}`;
+        }, 1000);
+      }
+    });
+
+    // remove the message from the dom based on the expiration timer
+    setTimeout(() => {
+      createdLi.remove();
+    }, Number(message.expireDuration));
+  } // not an expiring message
+}
+
+/**
+ * Handler for the userLeft event
+ *
+ * @param {string} message - the message to display when a user leaves
+ */
+function userLeftHandler(message) {
+  // we'll just get the first token from the message (that's the username of the client that left)
+  const usernameToRemove = message.split(' ')[0];
+  const usersList = document.getElementById('users-list');
+  const pmUsersList = document.getElementById('pm-users-list');
+
+  usersList.childNodes.forEach((node) => {
+    // skip the text node
+    if (!node.innerText) {
+      return;
+    }
+
+    if (node.innerText.includes(usernameToRemove)) {
+      usersList.removeChild(node);
+    }
+  });
+
+  // repeat for the PM users list
+  pmUsersList.childNodes.forEach((node) => {
+    if (node.textContent.includes(usernameToRemove)) {
+      pmUsersList.removeChild(node);
+    }
+  });
+
+  if (document.hidden) {
+    displayNotification(message);
+  } else {
+    showUserToast(message);
+  }
 }
 
 /**
@@ -1042,7 +1124,6 @@ function addUserToUserList(usersArr) {
     // click handler for each username li element
     userPmLi.addEventListener('click', () => {
       const pmList = document.getElementById('pm-list');
-
       pmList.style.visibility = 'visible';
       userPmLi.classList.remove('new-pm');
 
@@ -1089,43 +1170,7 @@ socket.on('currentRoomUsers', (usersArr) => {
 });
 
 // event listener for incoming events
-socket.on('chatMessage', (message) => {
-  // check if expire message
-  const createdLi = addMsgToThread(message);
-
-  // set the message to expire according to the duration
-  if (message.expireDuration) {
-    createdLi.classList.add('expire-msg');
-
-    createdLi.childNodes.forEach((child) => {
-      if (!child.classList) {
-        return;
-      }
-
-      // ignore the date element
-      if (!child.classList.contains('date-span')) {
-        child.style.backgroundColor = 'white';
-      } else {
-        // former date element
-        const secondsExpire = Number(message.expireDuration) / 1000;
-        child.innerText = `Remains for: ${secondsExpire}`;
-
-        // update the remaining time on the message once per second
-        setInterval(() => {
-          let updateTime = Number(child.innerText.split(' ')[2]);
-          --updateTime;
-          // eslint-disable-next-line no-param-reassign
-          child.innerText = `Remains for: ${updateTime}`;
-        }, 1000);
-      }
-    });
-
-    // remove the message from the dom based on the expiration timer
-    setTimeout(() => {
-      createdLi.remove();
-    }, Number(message.expireDuration));
-  }
-});
+socket.on('chatMessage', (message) => chatMessageReceived(message));
 
 // server emits tweak event when a special message is detected
 socket.on('tweak', (messageObj) => {
@@ -1163,34 +1208,7 @@ socket.on('newUserMessage', (message) => {
 // display the toast when a client leaves, if the page
 // is visible, else we'll use a notification
 socket.on('userLeft', (message) => {
-  // we'll just get the first token from the message (that's the username of the client that left)
-  const usernameToRemove = message.split(' ')[0];
-  const usersList = document.getElementById('users-list');
-  const pmUsersList = document.getElementById('pm-users-list');
-
-  usersList.childNodes.forEach((node) => {
-    // skip the text node
-    if (!node.innerText) {
-      return;
-    }
-
-    if (node.innerText.includes(usernameToRemove)) {
-      usersList.removeChild(node);
-    }
-  });
-
-  // repeat for the PM users list
-  pmUsersList.childNodes.forEach((node) => {
-    if (node.textContent.includes(usernameToRemove)) {
-      pmUsersList.removeChild(node);
-    }
-  });
-
-  if (document.hidden) {
-    displayNotification(message);
-  } else {
-    showUserToast(message);
-  }
+  userLeftHandler(message);
 });
 
 // store the PM when recv'd
@@ -1237,7 +1255,6 @@ socket.emit('join', parseQSParams(), (error) => {
   const { username, room } = parseQSParams();
   if (error) {
     window.location.href = '/';
-    // TODO handle the toast on login, perhaps
     showUserToast(`Failed to join ${room}`);
   } else {
     showUserToast(`You joined ${room}!`);
