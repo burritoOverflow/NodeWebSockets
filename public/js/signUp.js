@@ -25,7 +25,24 @@ class ApplicationState {
 
       if (mainHeadingHeightInt >= window.innerHeight) {
         // ho boy...
-        return this.killAllIntervals();
+        this.killAllIntervals();
+        return (() => {
+          const indexHeader = document.getElementById('index-header');
+          indexHeader.innerText = '';
+          const outputStr = 'Join us.';
+          let idx = 0;
+          setInterval(() => {
+            console.log(idx, outputStr.length);
+            indexHeader.innerHTML += `<span>${outputStr.charAt(idx++)}</span>`;
+            if (idx === outputStr.length) {
+              indexHeader.childNodes.forEach((node) => {
+                node.style.color = '#9147ff';
+                node.style.fontSize = 'xxx-large';
+              });
+              return this.killAllIntervals();
+            }
+          }, 400);
+        })();
       }
     }, 3);
   }
