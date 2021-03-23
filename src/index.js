@@ -33,6 +33,7 @@ const port = process.env.PORT || 3000;
 const pubDirPath = path.join(__dirname, '..', 'public');
 
 app.use(express.static(pubDirPath));
+
 app.use(express.json());
 app.use(cookieParser());
 
@@ -68,8 +69,7 @@ app.get('/', async (req, res) => {
           sameSite: true,
         });
       }
-
-      // not http cookie, for ease of use
+      // not http cookie, for ease of use to get username
       res.cookie('displayname', userObj.name);
       res.sendFile(path.join(__dirname, '..', 'html', 'index.html'));
     } // no name invalid
@@ -144,6 +144,10 @@ app.get('/login', async (req, res) => {
 // api route for the current rooms
 app.get('/rooms', (req, res) => {
   res.json(allUsers.getAllOccupiedRoomsAndCount());
+});
+
+app.use((req, res) => {
+  res.send('404: Page not Found', 404);
 });
 
 /**

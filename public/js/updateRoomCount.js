@@ -85,16 +85,15 @@ function fetchRoomList() {
  */
 async function addNewRoom(roomName) {
   const roomObj = { name: roomName };
-
-  const roomRes = await fetch('/api/room', {
-    method: 'POST', // *GET, POST, PUT, DELETE, etc.
+  const roomRoute = '/api/room';
+  const roomRes = await fetch(roomRoute, {
+    method: 'POST',
     credentials: 'same-origin',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(roomObj),
   });
-
   // check response
   return roomRes.json();
 }
@@ -125,6 +124,16 @@ window.onload = async function initRooms() {
   createRoomButton.onclick = (event) => {
     event.preventDefault();
     document.getElementById('create-room-div').classList.toggle('hidden');
+    const roomCount = document.getElementById('room-count');
+    roomCount.classList.toggle('hidden');
+
+    const titleHeading = document.querySelectorAll('.title-heading')[0];
+    // with the create room element shown, make the logo text green
+    if (titleHeading.style.color === 'green') {
+      titleHeading.style.color = '#9147ff';
+    } else {
+      titleHeading.style.color = 'green';
+    }
   };
 
   submitRoomName.onclick = async () => {
@@ -145,11 +154,11 @@ window.onload = async function initRooms() {
     if (newRoomResponse.result) {
       // room created; display a message; fetch new data
       roomNameInput.value = '';
-
       // update the rooms to reflect the latest addition
       fetchRoomList();
     }
   };
 
+  // initial fetch
   fetchRoomList();
 };
