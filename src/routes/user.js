@@ -37,7 +37,7 @@ router.post('/users', async (req, res) => {
     res.status(201).send({ user: _user, token });
   } catch (error) {
     // return the appropriate error message to the client
-    if (error.errors.password) {
+    if (error.errors && error.errors.password) {
       return res.status(400).send({ status: error.errors.password.message });
     }
 

@@ -44,6 +44,7 @@ app.use(require('./middleware/maintenance'));
 app.use('/api', require('./routes/user'));
 app.use('/api', require('./routes/room'));
 app.use('/api', require('./routes/messages'));
+app.use('/api', require('./routes/channel'));
 
 const allUsers = new Users();
 const sioRoomMap = new SidMap();

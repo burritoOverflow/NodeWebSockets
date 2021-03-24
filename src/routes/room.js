@@ -32,7 +32,7 @@ router.post('/room', async (req, res) => {
 
     // abandon if room exists
     if (existingRoom) {
-      res.status(401).send({
+      res.status(400).send({
         error: `Cannot create. Room ${req.body.name} Exists`,
       });
     }
