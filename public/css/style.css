@@ -85,6 +85,7 @@ a {
 }
 
 #join-room-div {
+  margin-top: 11em;
   background-color: black;
   border: 0px solid white;
   padding: 2em;
@@ -124,10 +125,14 @@ a {
   padding: 1em;
 }
 
+#sign-up-form #submit-button {
+  margin-bottom: 2.1em;
+}
+
 #login-form {
   padding-bottom: 0;
   transition-duration: 1.33s;
-  height: 61%;
+  /* height: 61%; */
 }
 
 #login-form:hover,
@@ -140,6 +145,7 @@ a {
 #sign-up-form:hover,
 #join-room-div:hover,
 #room-count:hover {
+  border: none;
   background-color: rgb(37, 36, 36);
   transform: translate(-1%, -1%);
   transition-duration: 500ms;
@@ -446,6 +452,23 @@ a {
   font-weight: 800;
   margin-top: 1em;
   padding: 0.9em;
+}
+
+#login-form #submit-button {
+  margin-bottom: 2.1em;
+}
+
+#button-div {
+  margin-top: 0.3em;
+  margin-bottom: 0.2em;
+}
+
+#button-div #create-room-button {
+  margin-left: 1em;
+}
+
+#button-div #submit-button {
+  margin-top: 1em;
 }
 
 #create-room-button:focus {
