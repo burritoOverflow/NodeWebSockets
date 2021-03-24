@@ -16,14 +16,21 @@ const verifyUserJWT = require('./utils/verifyJWT');
 const { appendToLog } = require('./utils/logging');
 require('./db/mongoose');
 
-// models
+// models/query helpers
+const { User } = require('./models/user');
+const { Channel } = require('./models/channel');
+
 const {
   addMessage,
   removeUserOnDisconnect,
   addSIDToUserAndJoinRoom,
 } = require('./db/updateDb');
 
-const { getUsersInRoom, checkIfUserAdmin } = require('./db/queryDb');
+const {
+  getUsersInRoom,
+  checkIfUserAdmin,
+  getAdminForChannel,
+} = require('./db/queryDb');
 
 const app = express();
 const server = http.createServer(app);
@@ -147,8 +154,54 @@ app.get('/rooms', (req, res) => {
   res.json(allUsers.getAllOccupiedRoomsAndCount());
 });
 
+// channel page
+app.get('/channel', async (req, res) => {
+  // check that that room requested is a valid channel
+  if (req.cookies.token) {
+    const userObj = await verifyUserJWT(req.cookies.token);
+    if (!userObj.name) {
+      // not an authorized user
+      res.redirect('/login');
+    }
+
+    const { channelname } = req.query;
+    if (!channelname) {
+      res.status(404).send({ error: 'Missing Channel Name' });
+    }
+
+    const channel = Channel.findOne({ name: channelname });
+    if (!channel) {
+      res.status(404).send({ error: `No channel ${channelname}` });
+    }
+
+    // valid user; let's determine if they're the room's admin
+    const user = await User.findOne({ 'tokens.token': req.cookies.token });
+    const channelAdmin = await getAdminForChannel(channel.name);
+
+    // eslint-disable-next-line no-underscore-dangle
+    if (channelAdmin?._id.equals(user._id)) {
+      if (process.env.NODE_ENV === 'production') {
+        res.cookie('admin', 'true', {
+          httpOnly: true,
+          secure: true,
+          sameSite: true,
+        });
+      } else {
+        res.cookie('admin', 'true', {
+          httpOnly: true,
+          sameSite: true,
+        });
+      } // end cookie check for admin true
+    } // set cookie only on admin
+
+    res.sendFile(path.join(__dirname, '..', 'html', 'channel.html'));
+  } else {
+    res.redirect('/login');
+  }
+});
+
 app.use((req, res) => {
-  res.send('404: Page not Found', 404);
+  res.status(404).send('404: Page not Found');
 });
 
 /**

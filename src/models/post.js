@@ -37,6 +37,8 @@ PostSchema.methods.toJSON = function () {
   delete postObj.channel;
   delete postObj.updatedAt;
   delete postObj.createdAt;
+  // eslint-disable-next-line no-underscore-dangle
+  delete postObj.__v;
   return postObj;
 };
 

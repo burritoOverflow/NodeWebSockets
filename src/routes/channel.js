@@ -79,6 +79,7 @@ router.post('/channel/:channel/addpost', async (req, res) => {
     // since the channel exists, we'll need to determine if the
     // user making the request is the channel's admin/creator
     const user = await User.findOne({ 'tokens.token': req.cookies.token });
+
     // now see if this user is the channel's admin
     if (!user._id.equals(channel.admin)) {
       // unauthorized request
@@ -108,7 +109,7 @@ router.post('/channel/:channel/addpost', async (req, res) => {
 });
 
 /**
- * Return all posts from the channel with the name provided
+ * Return all posts from the channel with the name provided.
  *
  * */
 router.get('/channel/:channel', async (req, res) => {
@@ -127,13 +128,6 @@ router.get('/channel/:channel', async (req, res) => {
       return res
         .status(404)
         .send({ error: `No channel ${channelName} exists` });
-    }
-
-    const user = await User.findOne({ 'tokens.token': req.cookies.token });
-    if (!user._id.equals(channel.admin)) {
-      return res
-        .status(401)
-        .send({ error: "You don't have permission to add to this channel" });
     }
 
     // otherwise get the channel id

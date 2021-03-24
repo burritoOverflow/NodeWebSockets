@@ -1,5 +1,6 @@
 const { Room } = require('../models/room');
 const { User } = require('../models/user');
+const { Channel } = require('../models/channel');
 
 /**
  * Check if there exists a room by this name
@@ -90,10 +91,31 @@ async function checkIfUserAdmin(roomName, username) {
   return false;
 }
 
+/**
+ * Get the admin  for the channel.
+ * @param {string} channelName - the name of the channel
+ */
+async function getAdminForChannel(channelName) {
+  const channel = await Channel.find({ name: channelName });
+  // channel doesn't exist
+  if (!channel) {
+    return;
+  }
+
+  const adminId = channel.admin;
+  const user = await User.findById(adminId);
+  if (!user) {
+    return;
+  }
+
+  return user;
+}
+
 module.exports = {
   checkIfUserAdmin,
   findRoomByName,
   getAllRoomNames,
   getCountOfUsersinRoom,
   getUsersInRoom,
+  getAdminForChannel,
 };
