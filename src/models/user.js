@@ -8,11 +8,20 @@ const jwt = require('jsonwebtoken');
 // env vars
 require('dotenv').config();
 
+/**
+ * Username must be unique, is converted to lowercase, trimmed, and must
+ * be at least three characters in length.
+ *
+ * Emails must be unique.
+ *
+ * Password strength is required and enforced via the validator parameters.
+ */
 const UserSchema = new mongoose.Schema(
   {
     name: {
       type: String,
       unique: true,
+      lowercase: true,
       required: true,
       trim: true,
       minLength: 3,

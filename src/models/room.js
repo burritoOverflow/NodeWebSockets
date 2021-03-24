@@ -1,6 +1,14 @@
 /* eslint-disable no-underscore-dangle */
 const mongoose = require('mongoose');
 
+/**
+ * Rooms must be unique, at least three characters, are trimmed
+ * and are converted to lowercase.
+ * When users are present, their userIDs are stored in the
+ * users array.
+ *
+ * The Admin is the room's creator
+ */
 const RoomSchema = new mongoose.Schema(
   {
     name: {
