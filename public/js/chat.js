@@ -86,9 +86,10 @@ function setPMReciever(username) {
 function toggleDisplayFocusMode() {
   const headingEl = document.getElementById('heading');
   const activeUserList = document.getElementById('active-users-list');
-  const btnContainer = document.getElementById('button-div');
+  const btnContainer = document.getElementById('chat-button-div');
   const dropdownMain = document.getElementById('dropdown');
   const pmDisplayBtn = document.getElementById('pm-display-button');
+  const chatTitleHeading = document.getElementById('chat-title-heading');
 
   const elementsToToggleDisplay = [
     headingEl,
@@ -96,6 +97,7 @@ function toggleDisplayFocusMode() {
     btnContainer,
     dropdownMain,
     pmDisplayBtn,
+    chatTitleHeading,
   ];
 
   // toggle the display width
