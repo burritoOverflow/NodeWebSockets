@@ -107,4 +107,47 @@ router.post('/channel/:channel/addpost', async (req, res) => {
   return res.status(401).send({ error: 'Unauthorized' });
 });
 
+/**
+ * Return all posts from the channel with the name provided
+ *
+ * */
+router.get('/channel/:channel', async (req, res) => {
+  if (req.cookies.token) {
+    const userObj = await verifyUserJWT(req.cookies.token);
+    if (!userObj.name) {
+      return res.status(401).send({ error: 'Unauthorized' });
+    }
+
+    // parameter is the room name
+    const channelName = req.params.channel;
+    // ensure that the channel exists first
+    const channel = await Channel.findOne({ name: channelName });
+
+    if (!channel) {
+      return res
+        .status(404)
+        .send({ error: `No channel ${channelName} exists` });
+    }
+
+    const user = await User.findOne({ 'tokens.token': req.cookies.token });
+    if (!user._id.equals(channel.admin)) {
+      return res
+        .status(401)
+        .send({ error: "You don't have permission to add to this channel" });
+    }
+
+    // otherwise get the channel id
+    const channelId = channel._id;
+    const channelPosts = await Post.find({
+      channel: channelId,
+    });
+
+    res.status(200).send({
+      channelPosts,
+    });
+  } else {
+    return res.status(401).send({ error: 'Unauthorized' });
+  }
+});
+
 module.exports = router;

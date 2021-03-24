@@ -27,6 +27,19 @@ const PostSchema = new mongoose.Schema(
   },
 );
 
+// eslint-disable-next-line func-names
+PostSchema.methods.toJSON = function () {
+  const post = this;
+  const postObj = post.toObject();
+  // eslint-disable-next-line no-underscore-dangle
+  delete postObj._id;
+  delete postObj.sender;
+  delete postObj.channel;
+  delete postObj.updatedAt;
+  delete postObj.createdAt;
+  return postObj;
+};
+
 const Post = mongoose.model('Post', PostSchema);
 
 module.exports = {
