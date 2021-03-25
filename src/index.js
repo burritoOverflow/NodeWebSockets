@@ -19,6 +19,7 @@ require('./db/mongoose');
 // models/query helpers
 const { User } = require('./models/user');
 const { Channel } = require('./models/channel');
+const { Room } = require('./models/room');
 
 const {
   addMessage,
@@ -113,16 +114,33 @@ app.get('/chat', async (req, res) => {
 
     // hmm attempted access with a different username
     if (req.query.username !== req.cookies.displayname) {
-      res.status(401).send({
+      return res.status(401).send({
         Error: 'Unauthorized',
       });
     }
     const userObj = await verifyUserJWT(req.cookies.token);
     if (userObj.name) {
-      // valid; join chat
+      // valid; can join chat
+      // first, check the qs params
+      const { username, room } = req.query;
+
+      if (username !== req.cookies.username) {
+        appendToLog(
+          `/chat : ${username} qs param with ${req.cookies.username}`,
+        );
+        return res.status(401).send({ error: 'Usernames not matching' });
+      }
+
+      // validate the room
+      // eslint-disable-next-line no-underscore-dangle
+      const _room = await Room.findOne({ name: room });
+      if (!_room) {
+        return res.status(401).send({ error: 'Invalid room requested' });
+      }
+
       res.sendFile(path.join(__dirname, '..', 'html', 'chat.html'));
     } else {
-      // not TODO
+      // not a valid user
       res.redirect('/signup');
     }
   } else {

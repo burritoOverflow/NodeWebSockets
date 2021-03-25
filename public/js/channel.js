@@ -73,6 +73,11 @@ class ChannelPosts {
   }
 }
 
+/**
+ * Get and return the name of the channel from the query string
+ *
+ * @returns {string} - the name of the channel
+ */
 function getChannelName() {
   const url = window.location.href;
   const params = url.split('?')[1];
@@ -174,12 +179,12 @@ window.onload = async function init() {
   const channelObj = new ChannelPosts(chanName, data, sender);
   channelObj.displayPosts(document.getElementById('channel-posts'));
 
+  window.onresize = addLinesToPosts;
+  const elArr = [document.getElementById('title')];
+
   const svg = document.getElementById('canvas');
   svg.style.width = document.body.clientWidth;
   svg.style.height = document.body.clientHeight;
-
-  window.onresize = addLinesToPosts;
-  const elArr = [document.getElementById('title')];
 
   setTimeout(() => {
     const mouseOverEvent = new Event('mouseenter');
