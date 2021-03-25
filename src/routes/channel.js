@@ -109,6 +109,25 @@ router.post('/channel/:channel/addpost', async (req, res) => {
 });
 
 /**
+ * Get the names of the channels and the number of posts in that channel
+ */
+router.get('/channel', async (req, res) => {
+  if (req.cookies.token) {
+    const userObj = await verifyUserJWT(req.cookies.token);
+    if (!userObj.name) {
+      return res.status(401).send({ error: 'Unauthorized' });
+    }
+    const allChannels = await Channel.find();
+    const channels = allChannels.map((c) => ({
+      name: c.name,
+      numPosts: c.posts.length,
+    }));
+    return res.status(200).send({ channels });
+  }
+  return res.status(401).send({ error: 'Unauthorized' });
+});
+
+/**
  * Return all posts from the channel with the name provided.
  *
  * */
