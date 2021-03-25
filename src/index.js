@@ -169,9 +169,9 @@ app.get('/channel', async (req, res) => {
       res.status(404).send({ error: 'Missing Channel Name' });
     }
 
-    const channel = Channel.findOne({ name: channelname });
+    const channel = await Channel.findOne({ name: channelname });
     if (!channel) {
-      res.status(404).send({ error: `No channel ${channelname}` });
+      return res.status(404).send({ error: `No channel ${channelname}` });
     }
 
     // valid user; let's determine if they're the room's admin

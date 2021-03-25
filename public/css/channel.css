@@ -3,47 +3,73 @@ body {
   background-color: #303443;
 }
 
+#canvas {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+}
+
 #channel-main {
   height: 80%;
   background-color: var(--backgroundColor);
-  margin: 12em;
+  margin-top: 5em;
+  margin-left: 12em;
+  margin-right: 12em;
   border: 0.54px solid antiquewhite;
 }
 
 #channel-posts {
   list-style-type: none;
+  position: relative;
+  z-index: 1;
 }
 
 #title {
-  margin-left: 6em;
-  border: 0.54px solid var(--primaryColor);
+  z-index: 1;
   width: 15%;
+  transition-duration: 1.4s;
   text-align: center;
-  background-color: #303443;
+  position: relative;
+  padding: 1em;
+  margin-left: 6em;
   color: antiquewhite;
+  border: 0.54px solid var(--primaryColor);
+  background-color: #303443;
 }
 
 .post-element {
-  font-size: large;
-  padding: 2em;
-  margin: 5em;
   width: 45%;
-  color: antiquewhite;
-  background-color: #303443;
-  border: 0.54px solid var(--primaryColor);
   transition-duration: 1.4s;
+  padding: 2em;
+  margin-bottom: 5em;
+  margin-top: 5em;
+  font-size: large;
+  color: antiquewhite;
+  border: 0.54px solid var(--primaryColor);
+  background-color: #303443;
+}
+
+.post-element:nth-child(odd) {
+  margin-left: 11em;
+}
+
+.post-element:nth-child(even) {
+  margin-left: 7em;
 }
 
 .post-element > p {
   text-align: center;
+  font-size: larger;
 }
 
 .post-element > span {
+  transition-duration: 700ms;
   padding: 0.7em;
   border: 0.54px solid var(--primaryColor);
 }
 
-.post-element:hover {
+.post-element:hover,
+#title:hover {
   background-color: black;
   border: 1px solid antiquewhite;
 }
