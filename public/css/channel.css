@@ -10,12 +10,19 @@ body {
 }
 
 #channel-main {
-  height: 80%;
+  scrollbar-width: none;
+  overflow: scroll;
   background-color: var(--backgroundColor);
-  margin-top: 5em;
-  margin-left: 12em;
-  margin-right: 12em;
   border: 0.54px solid antiquewhite;
+  /* height: 80%; */
+  margin-left: 18%;
+  margin-right: 18%;
+  margin-top: 5em;
+  overflow: hidden;
+}
+
+#channel-main::-webkit-scrollbar {
+  display: none;
 }
 
 #channel-posts {
@@ -25,28 +32,30 @@ body {
 }
 
 #title {
-  z-index: 1;
-  width: 15%;
-  transition-duration: 1.4s;
-  text-align: center;
-  position: relative;
-  padding: 1em;
-  margin-left: 6em;
-  color: antiquewhite;
-  border: 0.54px solid var(--primaryColor);
   background-color: #303443;
+  border: 0.54px solid var(--primaryColor);
+  color: antiquewhite;
+  font-size: large;
+  margin-left: 6em;
+  overflow: hidden;
+  padding: 1.5em;
+  position: relative;
+  text-align: center;
+  transition-duration: 1.4s;
+  width: 15%;
+  z-index: 1;
 }
 
 .post-element {
-  width: 45%;
-  transition-duration: 1.4s;
-  padding: 2em;
+  background-color: #303443;
+  border: 0.54px solid var(--primaryColor);
+  color: antiquewhite;
+  font-size: medium;
   margin-bottom: 5em;
   margin-top: 5em;
-  font-size: large;
-  color: antiquewhite;
-  border: 0.54px solid var(--primaryColor);
-  background-color: #303443;
+  padding: 2em;
+  transition-duration: 1.4s;
+  width: 45%;
 }
 
 .post-element:nth-child(odd) {
@@ -58,20 +67,33 @@ body {
 }
 
 .post-element > p {
+  /* float: right; */
+  background-color: #23252f;
+  border: 1px solid whitesmoke;
+  font-size: medium;
+  margin-left: 38%;
+  padding-bottom: 5%;
+  padding-top: 5%;
   text-align: center;
-  font-size: larger;
+  width: 50%;
 }
 
+/* date element */
 .post-element > span {
-  transition-duration: 700ms;
-  padding: 0.7em;
   border: 0.54px solid var(--primaryColor);
+  display: block;
+  font-size: medium;
+  margin-right: 0;
+  padding: 0.7em;
+  text-align: center;
+  transition-duration: 700ms;
+  width: 50%;
 }
 
 .post-element:hover,
 #title:hover {
-  transform: translate(-1%, -1.7%);
-  box-shadow: 5px 6px 8px 5px #888888;
   background-color: black;
   border: 1px solid antiquewhite;
+  box-shadow: 5px 6px 8px 5px #888888;
+  transform: translate(-1%, -1.7%);
 }

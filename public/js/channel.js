@@ -1,9 +1,11 @@
 class ChannelPosts {
   channelName;
+  channelAdmin;
   posts;
 
-  constructor(channelName, posts) {
+  constructor(channelName, posts, channelAdmin) {
     this.channelName = channelName;
+    this.channelAdmin = channelAdmin;
     this.posts = posts;
   }
 
@@ -41,7 +43,33 @@ class ChannelPosts {
     });
 
     addLinesToPosts();
-    // last, lets do this for fun
+  }
+
+  /**
+   * Change the color of the title elements on an interval
+   */
+  changeColorTitle() {
+    let i = 0;
+    const title = document.getElementById('title');
+    const titleStrLen = title.innerText.length;
+    const defaultColor = 'antiquewhite';
+    let doDefault = false;
+
+    // set a property when invoked, for cancellation
+    this.intervalId = setInterval(() => {
+      const colorChoice = getComputedStyle(
+        document.documentElement,
+      ).getPropertyValue('--primaryColor');
+
+      doDefault
+        ? (title.childNodes[i++].style.color = defaultColor)
+        : (title.childNodes[i++].style.color = colorChoice);
+
+      if (i >= titleStrLen) {
+        i = 0;
+        doDefault = !doDefault;
+      }
+    }, 700);
   }
 }
 
@@ -55,8 +83,14 @@ function getChannelName() {
 async function getAllPostsInChannel(chanName) {
   const apiRoute = '/api/channel/' + chanName;
   const response = await fetch(apiRoute);
-  const data = await response.json();
-  return data['channelPosts'];
+  let data = await response.json();
+  const { sender } = data;
+  data = data['channelPosts'];
+  // convert dates to locale strings
+  data.forEach((d) => {
+    d.date = new Date(d.date).toLocaleString();
+  });
+  return { data, sender };
 }
 
 function findAbsolutePosition(htmlElement) {
@@ -73,6 +107,9 @@ function findAbsolutePosition(htmlElement) {
 }
 
 function drawLine(x1, y1, x2, y2) {
+  const color = getComputedStyle(document.documentElement).getPropertyValue(
+    '--primaryColor',
+  );
   const svg = document.getElementById('canvas');
   const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
   line.setAttribute('x1', x1);
@@ -80,7 +117,7 @@ function drawLine(x1, y1, x2, y2) {
   line.setAttribute('y1', y1);
   line.setAttribute('y2', y2);
   line.setAttributeNS(null, 'stroke-width', '2');
-  line.setAttributeNS(null, 'stroke', 'white');
+  line.setAttributeNS(null, 'stroke', color);
   svg.appendChild(line);
 }
 
@@ -93,7 +130,8 @@ function connectElements(first, second) {
   y1 += first.offsetHeight / 2;
 
   const secondPos = findAbsolutePosition(second);
-  const x2 = secondPos.x;
+  // avoid overlap
+  const x2 = secondPos.x + 3;
   let y2 = secondPos.y;
   y2 += second.offsetHeight / 2;
 
@@ -104,7 +142,6 @@ function addLinesToPosts() {
   // remove all previous
   const canvas = document.getElementById('canvas');
   canvas.innerHTML = '';
-
   const titleEl = document.getElementById('title');
   const postElements = document.getElementById('channel-posts').childNodes;
 
@@ -118,10 +155,23 @@ function addLinesToPosts() {
 }
 
 window.onload = async function init() {
+  const colorChoice = localStorage.getItem('colorChoice');
+  if (colorChoice) {
+    // if user has stored choice, set the style accordingly
+    document.documentElement.style.setProperty('--primaryColor', colorChoice);
+  }
+
   const chanName = getChannelName();
-  document.getElementById('title').innerText = chanName;
-  const posts = await getAllPostsInChannel(chanName);
-  const channelObj = new ChannelPosts(chanName, posts);
+  const title = document.getElementById('title');
+
+  for (let i = 0; i < chanName.length; ++i) {
+    const span = document.createElement('span');
+    span.innerText = chanName.charAt(i);
+    title.appendChild(span);
+  }
+
+  const { data, sender } = await getAllPostsInChannel(chanName);
+  const channelObj = new ChannelPosts(chanName, data, sender);
   channelObj.displayPosts(document.getElementById('channel-posts'));
 
   const svg = document.getElementById('canvas');
@@ -139,8 +189,8 @@ window.onload = async function init() {
     }
 
     elArr.forEach((el) => {
-      console.log(el);
       el.dispatchEvent(mouseOverEvent);
+      el.style.borderColor = 'whitesmoke';
     });
   }, 1200);
 
@@ -148,6 +198,17 @@ window.onload = async function init() {
     elArr.forEach((el) => {
       const mouseLeaveEvent = new Event('mouseleave');
       el.dispatchEvent(mouseLeaveEvent);
+      el.style.borderColor = getComputedStyle(
+        document.documentElement,
+      ).getPropertyValue('--primaryColor');
     });
   }, 2100);
+
+  setTimeout(() => {
+    channelObj.changeColorTitle();
+  }, 3000);
+
+  title.onclick = () => {
+    clearInterval(channelObj.intervalId);
+  };
 };

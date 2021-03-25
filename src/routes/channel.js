@@ -138,6 +138,7 @@ router.get('/channel/:channel', async (req, res) => {
 
     res.status(200).send({
       channelPosts,
+      sender: userObj.name,
     });
   } else {
     return res.status(401).send({ error: 'Unauthorized' });
