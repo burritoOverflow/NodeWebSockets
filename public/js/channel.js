@@ -41,6 +41,7 @@ class ChannelPosts {
     });
 
     addLinesToPosts();
+    // last, lets do this for fun
   }
 }
 
@@ -128,4 +129,25 @@ window.onload = async function init() {
   svg.style.height = document.body.clientHeight;
 
   window.onresize = addLinesToPosts;
+  const elArr = [document.getElementById('title')];
+
+  setTimeout(() => {
+    const mouseOverEvent = new Event('mouseenter');
+    const postEls = document.getElementsByClassName('post-element');
+    for (let i = 0; i < postEls.length; i++) {
+      elArr.push(postEls[i]);
+    }
+
+    elArr.forEach((el) => {
+      console.log(el);
+      el.dispatchEvent(mouseOverEvent);
+    });
+  }, 1200);
+
+  setTimeout(() => {
+    elArr.forEach((el) => {
+      const mouseLeaveEvent = new Event('mouseleave');
+      el.dispatchEvent(mouseLeaveEvent);
+    });
+  }, 2100);
 };

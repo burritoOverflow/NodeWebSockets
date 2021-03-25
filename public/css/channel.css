@@ -70,6 +70,8 @@ body {
 
 .post-element:hover,
 #title:hover {
+  transform: translate(-1%, -1.7%);
+  box-shadow: 5px 6px 8px 5px #888888;
   background-color: black;
   border: 1px solid antiquewhite;
 }
