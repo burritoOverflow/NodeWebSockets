@@ -25,14 +25,14 @@ async function addSocketIoIdToUser(
 
   if (!user) {
     appendToLog(
-      `addSocketIoIdToUser: User not found with token ${tokenCookieValue} and username ${usernameCookieValue}`,
+      `addSocketIoIdToUser: User not found with token ${tokenCookieValue} and username ${usernameCookieValue}\n`,
     );
   }
 
   const { socketIOIDs } = user;
   if (socketIOIDs.includes(socket.id)) {
     appendToLog(
-      `addSocketIoIdToUser: duplicate sid ${socket.id} provided for user ${user._id}`,
+      `addSocketIoIdToUser: duplicate sid ${socket.id} provided for user ${user._id}\n`,
     );
   }
 
