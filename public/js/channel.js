@@ -27,6 +27,10 @@ class ChannelPosts {
       postLi.appendChild(postContents);
       postLi.classList.add('post-element');
 
+      idx % 2 == 0
+        ? (postLi.style.marginLeft = '4em')
+        : (postLi.style.marginLeft = '8em');
+
       const backgroundColor = window.getComputedStyle(dateSpan).backgroundColor;
       const color = window.getComputedStyle(dateSpan).color;
 

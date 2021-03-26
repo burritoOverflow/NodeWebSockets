@@ -35,11 +35,12 @@ body {
   border: 0.54px solid var(--primaryColor);
   color: antiquewhite;
   font-size: large;
-  margin-left: 6em;
+  margin-left: 70%;
   overflow: hidden;
   padding: 1.5em;
-  position: relative;
+  position: sticky;
   text-align: center;
+  top: 0;
   transition-duration: 1.4s;
   width: 15%;
   z-index: 1;
