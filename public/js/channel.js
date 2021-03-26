@@ -14,6 +14,9 @@ class ChannelPosts {
    * @param {HTMLElement} ul - the unordered list to append the posts to
    */
   displayPosts(ul) {
+    let idx = 0;
+    let postLen = this.posts.length;
+
     this.posts.forEach((post) => {
       const postLi = document.createElement('li');
       const dateSpan = document.createElement('span');
@@ -39,10 +42,16 @@ class ChannelPosts {
         dateSpan.style.color = color;
       };
 
+      const lineDiv = document.createElement('div');
+      lineDiv.classList.add('line-div');
+
       ul.appendChild(postLi);
+      if (++idx < postLen) {
+        ul.appendChild(lineDiv);
+      }
     });
 
-    addLinesToPosts();
+    // addLinesToPosts();
   }
 
   /**
@@ -179,12 +188,12 @@ window.onload = async function init() {
   const channelObj = new ChannelPosts(chanName, data, sender);
   channelObj.displayPosts(document.getElementById('channel-posts'));
 
-  window.onresize = addLinesToPosts;
+  //   window.onresize = addLinesToPosts;
   const elArr = [document.getElementById('title')];
 
-  const svg = document.getElementById('canvas');
-  svg.style.width = document.body.clientWidth;
-  svg.style.height = document.body.clientHeight;
+  //   const svg = document.getElementById('canvas');
+  //   svg.style.width = document.body.clientWidth;
+  //   svg.style.height = document.body.clientHeight;
 
   setTimeout(() => {
     const mouseOverEvent = new Event('mouseenter');

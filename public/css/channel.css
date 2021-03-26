@@ -11,24 +11,23 @@ body {
 
 #channel-main {
   scrollbar-width: none;
-  overflow: scroll;
+  overflow-y: scroll;
   background-color: var(--backgroundColor);
-  border: 0.54px solid antiquewhite;
-  /* height: 80%; */
+  border: 0.54px solid #faebd7;
+  height: 80%;
   margin-left: 18%;
   margin-right: 18%;
-  margin-top: 5em;
-  overflow: hidden;
 }
 
-#channel-main::-webkit-scrollbar {
+#channel-main::-webkit-scrollbar,
+#channel-posts::-webkit-scrollbar {
   display: none;
 }
 
 #channel-posts {
+  scrollbar-width: none;
+  /* overflow-y: scroll; */
   list-style-type: none;
-  position: relative;
-  z-index: 1;
 }
 
 #title {
@@ -51,8 +50,8 @@ body {
   border: 0.54px solid var(--primaryColor);
   color: antiquewhite;
   font-size: medium;
-  margin-bottom: 5em;
-  margin-top: 5em;
+  /* margin-bottom: 5em; */
+  /* margin-top: 5em; */
   padding: 2em;
   transition-duration: 1.4s;
   width: 45%;
@@ -88,6 +87,14 @@ body {
   text-align: center;
   transition-duration: 700ms;
   width: 50%;
+}
+
+.line-div {
+  position: relative;
+  margin-left: 43%;
+  width: 3px;
+  height: 25px;
+  background-color: var(--primaryColor);
 }
 
 .post-element:hover,
