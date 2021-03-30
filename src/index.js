@@ -281,7 +281,7 @@ function getAllUsernamesInRoom(room) {
  * @param {string} userReqMute - the username of the user requesting the mute
  * @param {string} message - mute user message
  * @param {string} room - the room the users are in
- * @returns - true if the user is now muted
+ * @returns {boolean} - true if the user has been muted
  */
 async function muteUser(userReqMute, message, room) {
   let userNowMuted = false;
@@ -290,7 +290,7 @@ async function muteUser(userReqMute, message, room) {
   const validMuteReq = await checkIfUserAdmin(room, userReqMute);
   if (!validMuteReq) {
     // done here if invaluid
-    return;
+    return userNowMuted;
   }
 
   // check first that it's a valid message
@@ -318,7 +318,7 @@ async function muteUser(userReqMute, message, room) {
  * @param {string} userReqMute - the username of the user requesting the mute
  * @param {string} message - mute user message
  * @param {string} room - the room the users are in
- * @returns - true if the user is now unmuted
+ * @returns {boolean} - true if the user is now unmuted
  */
 async function unmuteUser(userReqMute, message, room) {
   let userNowUnmuted = false;
@@ -326,11 +326,11 @@ async function unmuteUser(userReqMute, message, room) {
   // check if admin making request
   const validUnMuteRequest = await checkIfUserAdmin(room, userReqMute);
   if (!validUnMuteRequest) {
-    return;
+    return userNowUnmuted;
   }
-  const msgTokens = message.split(' ');
 
   // get all the usernames; we need to check we're attempting to mute a valid user
+  const msgTokens = message.split(' ');
   let usernames = await getUsersInRoom(room);
   const providedUsername = msgTokens[1].trim();
   const firstToken = msgTokens[0].trim();
@@ -364,6 +364,7 @@ function getAllUsersInRoom(room) {
 
 /**
  * Send a list of the usernames in the room
+ *
  * @param {string} room - the room to send the client list to
  */
 function sendUsernamesListForRoom(room) {
@@ -405,6 +406,7 @@ function tweaksMessage(messageObj, room) {
 
 /**
  * parse the socket's ip address and port for addition to logs
+ *
  * @param {*} socket
  * @return  {string} - template literal ip addr
  */
@@ -557,7 +559,7 @@ io.on('connection', (socket) => {
 
     // update the db with the message sent
     if (expireMsg) {
-      // thirty seconds to start with
+      // 45 seconds to start with
       msgObj.expireDuration = 45000;
 
       // reassign the message to omit the notifier

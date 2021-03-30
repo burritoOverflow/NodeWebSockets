@@ -59,7 +59,7 @@ class ChannelPosts {
   }
 
   /**
-   * Change the color of the title elements on an interval
+   * Change the color of the title elements on an interval.
    */
   changeColorTitle() {
     let i = 0;
@@ -74,10 +74,12 @@ class ChannelPosts {
         document.documentElement,
       ).getPropertyValue('--primaryColor');
 
+      // use default color if true
       doDefault
         ? (title.childNodes[i++].style.color = defaultColor)
         : (title.childNodes[i++].style.color = colorChoice);
 
+      // change colors when all characters have been addressed
       if (i >= titleStrLen) {
         i = 0;
         doDefault = !doDefault;

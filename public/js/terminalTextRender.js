@@ -6,24 +6,24 @@
 (() => {
   let counter = 0;
   // get the room from the query string parameters
-  const message = `Welcome to ${
-    window.location.search.split('&')[1].split('=')[1]
-  }`;
+  const roomName = window.location.search.split('&')[1].split('=')[1];
+  const message = `Welcome to ${roomName}`;
   const typeWriterEl = document.getElementById('main-header');
   const inputTextArea = document.getElementById('message-text');
 
+  // make the input element size 75% of the message thread
   inputTextArea.style.height = `${
     document.getElementById('message-thread').clientHeight * 0.75
   }px`;
 
   const durationBetChar = 100;
-
   const terminalTextRender = () => {
     const currentChar = message.charAt(counter);
-
     if (counter < message.length) {
       typeWriterEl.innerHTML += currentChar;
       ++counter;
+      // add the next character every 100ms until each character
+      // is present
       setTimeout(terminalTextRender, durationBetChar);
     }
   };
@@ -31,9 +31,9 @@
   setTimeout(terminalTextRender, 1100);
 })();
 
+// toggle the appearance of the cursor at a fixed interval to
+// provide the appearance of a blinking cursor
 (() => {
-  // toggle the appearance of the cursor at a fixed interval to
-  // provide the appearance of cursor
   const consoleCursor = document.getElementById('console-cursor');
   let visible = true;
   setInterval(() => {
