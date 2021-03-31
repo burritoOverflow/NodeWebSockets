@@ -4,6 +4,8 @@ const http = require('http');
 
 // external deps
 const express = require('express');
+const compression = require('compression');
+
 const socketIo = require('socket.io');
 const Filter = require('bad-words');
 const cookieParser = require('cookie-parser');
@@ -40,6 +42,7 @@ const io = socketIo(server);
 const port = process.env.PORT || 3000;
 const pubDirPath = path.join(__dirname, '..', 'public');
 
+app.use(compression({ filter: shouldCompress }));
 app.use(express.static(pubDirPath));
 
 app.use(express.json());
@@ -59,6 +62,22 @@ const sioRoomMap = new SidMap();
 
 // track the muted users
 const mutedUsers = new MutedUsers();
+
+/**
+ * Borrowed from the express compression middleware docs.
+ * If request header is present, do not compress.
+ *
+ * @param {*} req - HTTP request
+ * @param {*} res - HTTP response
+ * @returns
+ */
+function shouldCompress(req, res) {
+  if (req.headers['x-no-compression']) {
+    return false;
+  }
+  // standard filter function
+  return compression.filter(req, res);
+}
 
 // without a user logged in, send the user the login page, otherwise, send the choose room page
 app.get('/', async (req, res) => {

@@ -445,7 +445,8 @@ a {
 }
 
 #submit-button {
-  margin-left: 20%;
+  padding: 1em;
+  margin-left: 0;
   width: 45%;
   background-color: var(--primaryColor);
   border-radius: 30px;
@@ -536,6 +537,7 @@ a {
   z-index: 0;
   width: 40%;
   margin-top: 1em;
+  margin-bottom: 0.7em;
   border: 1px solid black;
   border-radius: 30px;
   padding: 0.9em;
@@ -547,6 +549,7 @@ a {
 }
 
 #filter-messages {
+  margin-top: 5em;
   padding: 0.6em;
   border: 1px solid white;
   color: #ffffff;

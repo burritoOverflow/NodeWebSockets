@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "windowsDev" : "@powershell -Command $env:DEBUG='socket.io*'; npm run dev"
+    "windowsDev": "@powershell -Command $env:DEBUG='socket.io*'; npm run dev"
   },
   "author": "",
   "license": "ISC",
@@ -15,6 +15,7 @@
     "aws-sdk": "^2.848.0",
     "bad-words": "^3.0.4",
     "bcryptjs": "^2.4.3",
+    "compression": "^1.7.4",
     "cookie-parser": "^1.4.5",
     "debug": "^4.3.1",
     "dotenv": "^8.2.0",

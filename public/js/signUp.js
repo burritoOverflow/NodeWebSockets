@@ -47,6 +47,10 @@ class ApplicationState {
     }, 3);
   }
 
+  /**
+   * Secret UI interaction easter egg.
+   * Lots of fun. Hover on the header element for a few events to invoke it.
+   */
   easterEggWalkAway() {
     // random winner
     const coinFlip = Math.floor(Math.random() * 2);
@@ -126,7 +130,7 @@ function showSnackbarAndRedirect(message, success) {
 }
 
 /**
- * The form allowing the user to sign up.
+ * Send the data from the form allowing the user to sign up.
  *
  * @param {*} signUpObj - the sign up form's contents
  */
@@ -146,6 +150,8 @@ function sendSignUpData(signUpObj) {
         if (response.ok) {
           // successfully added user
           const userName = document.getElementById('name').value;
+          // remove the go to 'login' link (could change the z-idx, but... meh)
+          document.getElementsByTagName('a')[0].classList.add('hidden');
           showSnackbarAndRedirect(`Welcome ${userName}!`, true);
         } else {
           // sign up failed
@@ -156,6 +162,7 @@ function sendSignUpData(signUpObj) {
     })
     .catch((error) => console.error(error));
   setTimeout(() => {
+    // temporary blur effect
     signUpForm.classList.remove('blur-element');
   }, 800);
 }
@@ -185,12 +192,15 @@ window.onload = function init() {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
 
+    // if all parameters present, POST the data, otherwise there's nothing to do here
     if (name && email && password) {
       sendSignUpData({
         name,
         email,
         password,
       });
+    } else {
+      return;
     }
   });
 };
