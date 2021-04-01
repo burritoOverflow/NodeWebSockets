@@ -31,7 +31,7 @@
   setTimeout(terminalTextRender, 1100);
 })();
 
-// toggle the appearance of the cursor at a fixed interval to
+// toggle the visibility of the cursor at a fixed interval to
 // provide the appearance of a blinking cursor
 (() => {
   const consoleCursor = document.getElementById('console-cursor');

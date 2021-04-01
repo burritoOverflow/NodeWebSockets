@@ -128,6 +128,37 @@ router.get('/channel', async (req, res) => {
 });
 
 /**
+ * Get the admin for the channel provided in the param
+ */
+router.get('/channel/:channel/admin', async (req, res) => {
+  if (req.cookies.token) {
+    const userObj = await verifyUserJWT(req.cookies.token);
+    if (!userObj.name) {
+      return res.status(401).send({ error: 'Unauthorized' });
+    }
+
+    const channelName = req.params.channel;
+    const channel = await Channel.findOne({ name: channelName });
+
+    if (!channel) {
+      return res
+        .status(404)
+        .send({ error: `No channel ${channelName} exists` });
+    }
+
+    // get and return the admin's name
+    const adminId = channel.admin;
+    const channelAdmin = await User.findById(adminId);
+    const channelAdminName = channelAdmin.name;
+
+    return res.status(200).send({
+      channelAdminName,
+    });
+  }
+  return res.status(401).send({ error: 'Unauthorized' });
+});
+
+/**
  * Return all posts from the channel with the name provided.
  *
  * */

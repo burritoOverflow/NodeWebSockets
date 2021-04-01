@@ -100,17 +100,40 @@ function getChannelName() {
   return channelName;
 }
 
+/**
+ * Get all posts in the channel
+ *
+ * @param {string} chanName - the channel's name
+ * @returns {} - the data and the sender of the post in the channel
+ */
 async function getAllPostsInChannel(chanName) {
   const apiRoute = '/api/channel/' + chanName;
   const response = await fetch(apiRoute);
   let data = await response.json();
   const { sender } = data;
+
   data = data['channelPosts'];
   // convert dates to locale strings
   data.forEach((d) => {
     d.date = new Date(d.date).toLocaleString();
   });
   return { data, sender };
+}
+
+/**
+ * Determine if the current user is the admin for the channel
+ *
+ * @param {string} chanName - the channel name
+ * @returns - true if this user is the admin, false otherwise
+ */
+async function isAdmin(chanName) {
+  // get username from cookie
+  const username = document.cookie.split('=')[1];
+  const route = `/api/channel/${chanName}/admin`;
+  const res = await fetch(route);
+  const data = await res.json();
+  // determine if the user is the channel's admin
+  return data.channelAdminName.toLowerCase() === username.toLowerCase();
 }
 
 function findAbsolutePosition(htmlElement) {
@@ -200,6 +223,16 @@ window.onload = async function init() {
   //   const svg = document.getElementById('canvas');
   //   svg.style.width = document.body.clientWidth;
   //   svg.style.height = document.body.clientHeight;
+
+  const isUserAdmin = await isAdmin(chanName);
+  const channelInputEl = document.getElementById('channel-post-parent');
+  if (isUserAdmin) {
+    // if the user is the admin, show the textarea
+    channelInputEl.classList.remove('no-display');
+  } else {
+    // otherwise remove the element (non-admins cannot add channels)
+    channelInputEl.remove();
+  }
 
   setTimeout(() => {
     const mouseOverEvent = new Event('mouseenter');

@@ -3,6 +3,14 @@ body {
   background-color: #303443;
 }
 
+.hidden {
+  visibility: hidden;
+}
+
+.no-display {
+  display: none;
+}
+
 #canvas {
   position: absolute;
   left: 0px;
@@ -28,6 +36,21 @@ body {
   scrollbar-width: none;
   /* overflow-y: scroll; */
   list-style-type: none;
+}
+
+#channel-post-parent {
+  display: grid;
+  place-items: center;
+}
+
+#channel-post-input {
+  margin-top: 2.7em;
+  font-size: large;
+  width: 55%;
+  font-weight: 300;
+  padding: 0.5em;
+  background-color: black;
+  color: var(--primaryColor);
 }
 
 #title {
