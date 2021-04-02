@@ -10,6 +10,7 @@ class ChannelPosts {
   }
 
   /**
+   * Append each post from the channel to the DOM
    *
    * @param {HTMLElement} ul - the unordered list to append the posts to
    */
@@ -197,6 +198,56 @@ function addLinesToPosts() {
   }
 }
 
+/**
+ * Remove all child elements from the ul for the channel posts
+ */
+function resetChannelPosts() {
+  document.getElementById('channel-posts').textContent = '';
+}
+
+/**
+ * Add a post to the channel
+ *
+ * @param {string} channelName - the name of the channel the user is in
+ */
+async function addEnterHandlerTextArea(channelName, chanObj) {
+  const textArea = document.getElementById('channel-post-input');
+  const apiRoute = 'api/channel/' + channelName + '/addpost';
+
+  textArea.onkeypress = async function (event) {
+    const { key } = event;
+    if (key === 'Enter') {
+      const postcontents = textArea.value.trim();
+      if (postcontents !== '') {
+        // post the data to the channel route
+        const response = await fetch(apiRoute, {
+          method: 'POST',
+          body: JSON.stringify({ postcontents }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'same-origin',
+        });
+
+        if (response.ok) {
+          // clear the input area
+          textArea.value = '';
+          // fetch the latest contents and display
+          const { data } = await getAllPostsInChannel(channelName);
+          chanObj.posts = data;
+          resetChannelPosts();
+          chanObj.displayPosts(document.getElementById('channel-posts'));
+        } else {
+          // TODO handle error
+        }
+      } else {
+        // empty post contents
+        return;
+      }
+    } // key not enter
+  };
+}
+
 window.onload = async function init() {
   const colorChoice = localStorage.getItem('colorChoice');
   if (colorChoice) {
@@ -223,12 +274,14 @@ window.onload = async function init() {
   //   const svg = document.getElementById('canvas');
   //   svg.style.width = document.body.clientWidth;
   //   svg.style.height = document.body.clientHeight;
-
   const isUserAdmin = await isAdmin(chanName);
   const channelInputEl = document.getElementById('channel-post-parent');
   if (isUserAdmin) {
     // if the user is the admin, show the textarea
     channelInputEl.classList.remove('no-display');
+
+    // add the enter event listener for the text area
+    addEnterHandlerTextArea(chanName, channelObj);
   } else {
     // otherwise remove the element (non-admins cannot add channels)
     channelInputEl.remove();

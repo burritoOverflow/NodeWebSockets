@@ -14,15 +14,18 @@
     <h1 id="main-heading"><span class="title-heading">TelegraF</span></h1>
     <form action="/chat" method="GET">
       <div id="join-room-div">
-        <h1 id="index-header">Join a Room</h1>
-        <label for="userName">Display Name: </label>
-        <input class="join-input" type="text" name="username" id="username-input" required readonly="readonly" />
-        <label for="room-name">Room:</label>
-        <select name="room" id="room-select">
-        </select>
-        <div id="button-div">
+        <div id="button-parent">
+          <h1 id="index-header">Join a Room</h1>
+          <label for="userName">Display Name: </label>
+          <input class="join-input" type="text" name="username" id="username-input" required readonly="readonly" />
+          <label for="room-name">Room:</label>
+          <select name="room" id="room-select">
+          </select>
           <button id="submit-button">Join!</button>
+          <hr>
           <button id="create-room-button">Create a new Room</button>
+          <span id="or-span">or</span>
+          <button id="create-channel-button">Create a new Channel</button>
         </div>
       </div>
     </form>

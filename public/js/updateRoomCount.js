@@ -7,6 +7,11 @@
 let roomNameInput;
 let submitRoomName;
 let createRoomButton;
+let createChannelButton;
+let createMode = 'room';
+
+// true when initially set to hidden
+let elementsHidden = false;
 
 /**
  * Populate the select element with options for each room name
@@ -98,6 +103,37 @@ async function addNewRoom(roomName) {
   return roomRes.json();
 }
 
+/**
+ * Create a new channel by posting the channel name ot the create channel route
+ *
+ * @param {string} chanName - the user's channel
+ * @returns
+ */
+async function addNewChannel(chanName) {
+  const res = await fetch('/api/channel', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ name: chanName }),
+  });
+  return res.json();
+}
+
+/**
+ * Toggle the elements in the UI to hidden
+ */
+function toggleElementsHidden() {
+  const nameInput = document.getElementById('room-name-input');
+  nameInput.placeholder = `Enter ${
+    createMode.charAt(0).toUpperCase() + createMode.slice(1)
+  } name`;
+  document.getElementById('create-room-div').classList.toggle('hidden');
+  const roomCount = document.getElementById('room-count');
+  roomCount.classList.toggle('hidden');
+}
+
 window.onload = async function initRooms() {
   const usernameinput = document.getElementById('username-input');
   usernameinput.style.color = 'black';
@@ -120,12 +156,25 @@ window.onload = async function initRooms() {
   roomNameInput = document.getElementById('room-name-input');
   submitRoomName = document.getElementById('submit-room-name');
   createRoomButton = document.getElementById('create-room-button');
+  createChannelButton = document.getElementById('create-channel-button');
 
   createRoomButton.onclick = (event) => {
     event.preventDefault();
-    document.getElementById('create-room-div').classList.toggle('hidden');
-    const roomCount = document.getElementById('room-count');
-    roomCount.classList.toggle('hidden');
+    if (createMode === 'room') {
+      toggleElementsHidden();
+      elementsHidden = !elementsHidden;
+      return;
+    }
+
+    createMode = 'room';
+    roomNameInput.placeholder = `Enter ${
+      createMode.charAt(0).toUpperCase() + createMode.slice(1)
+    } name`;
+
+    if (!elementsHidden) {
+      toggleElementsHidden();
+      elementsHidden = !elementsHidden;
+    }
 
     const titleHeading = document.querySelectorAll('.title-heading')[0];
     // with the create room element shown, make the logo text green
@@ -133,6 +182,26 @@ window.onload = async function initRooms() {
       titleHeading.style.color = '#9147ff';
     } else {
       titleHeading.style.color = 'green';
+    }
+  };
+
+  createChannelButton.onclick = (event) => {
+    event.preventDefault();
+    if (createMode === 'channel') {
+      toggleElementsHidden();
+      elementsHidden = !elementsHidden;
+
+      return;
+    }
+
+    createMode = 'channel';
+    roomNameInput.placeholder = `Enter ${
+      createMode.charAt(0).toUpperCase() + createMode.slice(1)
+    } name`;
+
+    if (!elementsHidden) {
+      toggleElementsHidden();
+      elementsHidden = !elementsHidden;
     }
   };
 
@@ -147,15 +216,27 @@ window.onload = async function initRooms() {
       // error; several tokens
       return;
     }
-    // otherwise, POST the data that's been submitted; all roomnames are lowercase only
-    const newRoomResponse = await addNewRoom(inputString);
 
-    // handle response
-    if (newRoomResponse.result) {
-      // room created; display a message; fetch new data
-      roomNameInput.value = '';
-      // update the rooms to reflect the latest addition
-      fetchRoomList();
+    if (createMode === 'room') {
+      // otherwise, POST the data that's been submitted; all roomnames are lowercase only
+      const newRoomResponse = await addNewRoom(inputString);
+
+      // handle response
+      if (newRoomResponse.result) {
+        // room created; display a message; fetch new data
+        roomNameInput.value = '';
+        // update the rooms to reflect the latest addition
+        fetchRoomList();
+      }
+    }
+
+    if (createMode === 'channel') {
+      // create new channel
+      const newChannelResJson = await addNewChannel(inputString);
+      if (newChannelResJson.result) {
+        roomNameInput.value = '';
+      }
+      console.log(newChannelResJson);
     }
   };
 
