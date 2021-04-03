@@ -112,13 +112,31 @@ async function getAllPostsInChannel(chanName) {
   const response = await fetch(apiRoute);
   let data = await response.json();
   const { sender } = data;
-
   data = data['channelPosts'];
   // convert dates to locale strings
   data.forEach((d) => {
     d.date = new Date(d.date).toLocaleString();
   });
   return { data, sender };
+}
+
+async function setPollingInterval(chanObj) {
+  const numPosts = chanObj.posts.length;
+  const { channelName } = chanObj;
+  setInterval(async () => {
+    const { data } = await getAllPostsInChannel(channelName);
+    console.log(numPosts, data.length);
+    if (numPosts === data.length) {
+      console.log('same');
+      return;
+    } else {
+      // update the ui with the latest posts
+      chanObj.posts = data;
+      resetChannelPosts();
+      chanObj.displayPosts(document.getElementById('channel-posts'));
+    }
+    // poll every 30 seconds
+  }, 30 * 1000);
 }
 
 /**
@@ -283,6 +301,10 @@ window.onload = async function init() {
     // add the enter event listener for the text area
     addEnterHandlerTextArea(chanName, channelObj);
   } else {
+    // non admins poll for changes; admins the elements are updated when they
+    // update the posts in the channel
+    setPollingInterval(channelObj);
+
     // otherwise remove the element (non-admins cannot add channels)
     channelInputEl.remove();
   }
