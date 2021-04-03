@@ -3,12 +3,14 @@ class ChannelPosts {
   channelAdmin;
   posts;
   latestUpdateTime;
+  userAdmin;
 
-  constructor(channelName, posts, channelAdmin, latestUpdateTime) {
+  constructor(channelName, posts, channelAdmin, latestUpdateTime, userAdmin) {
     this.channelName = channelName;
     this.channelAdmin = channelAdmin;
     this.posts = posts;
     this.latestUpdateTime = latestUpdateTime;
+    this.userAdmin = userAdmin;
   }
 
   /**
@@ -30,35 +32,39 @@ class ChannelPosts {
       const postContents = document.createElement('p');
       postContents.innerText = post.contents;
 
+      // create the reaction elements
       const likes = document.createElement('span');
       likes.classList.add('emoji');
       likes.innerHTML = String.fromCodePoint(0x1f44d) + ' ' + post.likes;
-
-      likes.addEventListener('click', async () => {
-        const res = await addReaction(post._id, 'like', chanName);
-        if (res) {
-          console.log(res);
-          const likeCounter = likes.innerHTML[likes.innerHTML.length - 1];
-          let counter = parseInt(likeCounter);
-          ++counter;
-          likes.innerHTML = String.fromCodePoint(0x1f44d) + ' ' + counter;
-        }
-      });
 
       const dislikes = document.createElement('span');
       dislikes.classList.add('emoji');
       dislikes.innerHTML = String.fromCodePoint(0x1f44e) + ' ' + post.dislikes;
 
-      dislikes.addEventListener('click', async () => {
-        const res = await addReaction(post._id, 'dislike', chanName);
-        if (res) {
-          const dislikeCounter =
-            dislikes.innerHTML[dislikes.innerHTML.length - 1];
-          let counter = parseInt(dislikeCounter);
-          ++counter;
-          dislikes.innerHTML = String.fromCodePoint(0x1f44d) + ' ' + counter;
-        }
-      });
+      // only allow reactions for non-admin users
+      if (!this.userAdmin) {
+        likes.addEventListener('click', async () => {
+          const res = await addReaction(post._id, 'like', chanName);
+          if (res) {
+            console.log(res);
+            const likeCounter = likes.innerHTML[likes.innerHTML.length - 1];
+            let counter = parseInt(likeCounter);
+            ++counter;
+            likes.innerHTML = String.fromCodePoint(0x1f44d) + ' ' + counter;
+          }
+        });
+
+        dislikes.addEventListener('click', async () => {
+          const res = await addReaction(post._id, 'dislike', chanName);
+          if (res) {
+            const dislikeCounter =
+              dislikes.innerHTML[dislikes.innerHTML.length - 1];
+            let counter = parseInt(dislikeCounter);
+            ++counter;
+            dislikes.innerHTML = String.fromCodePoint(0x1f44d) + ' ' + counter;
+          }
+        });
+      }
 
       const div = document.createElement('div');
       div.classList.add('emoji-div');
@@ -143,6 +149,14 @@ function getChannelName() {
   return channelName;
 }
 
+function scrollToBottomPosts() {
+  const posts = document.getElementsByClassName('post-element');
+  posts[posts.length - 1].scrollIntoView({
+    block: 'end',
+    behavior: 'smooth',
+  });
+}
+
 async function getLatestUpdateTime(chanName) {
   const updateTimeRoute = '/api/channel/' + chanName + '/updatetime';
   const response = await fetch(updateTimeRoute);
@@ -206,6 +220,7 @@ async function setPollingInterval(chanObj) {
       chanObj.latestUpdateTime = latestUpdate;
       resetChannelPosts();
       chanObj.displayPosts(document.getElementById('channel-posts'));
+      scrollToBottomPosts();
     } else {
       console.log('old');
       return;
@@ -331,10 +346,13 @@ async function addEnterHandlerTextArea(channelName, chanObj) {
           chanObj.posts.push({
             contents: postcontents,
             date: new Date().toLocaleString(),
+            likes: 0,
+            dislikes: 0,
           });
 
           resetChannelPosts();
           chanObj.displayPosts(document.getElementById('channel-posts'));
+          scrollToBottomPosts();
         } else {
           // TODO handle error
         }
@@ -359,7 +377,13 @@ window.onload = async function init() {
   const { data, sender } = await getAllPostsInChannel(chanName);
   const latestUpdate = await getLatestUpdateTime(chanName);
   const isUserAdmin = await isAdmin(chanName);
-  const channelObj = new ChannelPosts(chanName, data, sender, latestUpdate);
+  const channelObj = new ChannelPosts(
+    chanName,
+    data,
+    sender,
+    latestUpdate,
+    isUserAdmin,
+  );
 
   // create the channel header
   const finalName = isUserAdmin
@@ -373,6 +397,7 @@ window.onload = async function init() {
   }
 
   channelObj.displayPosts(document.getElementById('channel-posts'));
+  scrollToBottomPosts();
 
   //   window.onresize = addLinesToPosts;
   const elArr = [document.getElementById('title')];
