@@ -2,11 +2,13 @@ class ChannelPosts {
   channelName;
   channelAdmin;
   posts;
+  latestUpdateTime;
 
-  constructor(channelName, posts, channelAdmin) {
+  constructor(channelName, posts, channelAdmin, latestUpdateTime) {
     this.channelName = channelName;
     this.channelAdmin = channelAdmin;
     this.posts = posts;
+    this.latestUpdateTime = latestUpdateTime;
   }
 
   /**
@@ -101,6 +103,13 @@ function getChannelName() {
   return channelName;
 }
 
+async function getLatestUpdateTime(chanName) {
+  const updateTimeRoute = '/api/channel/' + chanName + '/updatetime';
+  const response = await fetch(updateTimeRoute);
+  const data = await response.json();
+  return data.updateTime;
+}
+
 /**
  * Get all posts in the channel
  *
@@ -120,21 +129,31 @@ async function getAllPostsInChannel(chanName) {
   return { data, sender };
 }
 
+/**
+ * For non-admins, set the interval to poll the server for updates
+ *
+ * @param {Object} chanObj - the channel object, representing the
+ * channel state
+ */
 async function setPollingInterval(chanObj) {
-  const numPosts = chanObj.posts.length;
   const { channelName } = chanObj;
   setInterval(async () => {
-    const { data } = await getAllPostsInChannel(channelName);
-    console.log(numPosts, data.length);
-    if (numPosts === data.length) {
-      console.log('same');
-      return;
-    } else {
+    // check the timestamp
+    const latestUpdate = await getLatestUpdateTime(channelName);
+    if (latestUpdate > chanObj.latestUpdateTime) {
+      console.log('new');
+      // otherwise, fetch the data
+      const { data } = await getAllPostsInChannel(channelName);
       // update the ui with the latest posts
       chanObj.posts = data;
+      chanObj.latestUpdateTime = latestUpdate;
       resetChannelPosts();
       chanObj.displayPosts(document.getElementById('channel-posts'));
+    } else {
+      console.log('old');
+      return;
     }
+
     // poll every 30 seconds
   }, 30 * 1000);
 }
@@ -250,9 +269,13 @@ async function addEnterHandlerTextArea(channelName, chanObj) {
         if (response.ok) {
           // clear the input area
           textArea.value = '';
-          // fetch the latest contents and display
-          const { data } = await getAllPostsInChannel(channelName);
-          chanObj.posts = data;
+
+          // add the post to the channel posts
+          chanObj.posts.push({
+            contents: postcontents,
+            date: new Date().toLocaleString(),
+          });
+
           resetChannelPosts();
           chanObj.displayPosts(document.getElementById('channel-posts'));
         } else {
@@ -283,7 +306,8 @@ window.onload = async function init() {
   }
 
   const { data, sender } = await getAllPostsInChannel(chanName);
-  const channelObj = new ChannelPosts(chanName, data, sender);
+  const latestUpdate = await getLatestUpdateTime(chanName);
+  const channelObj = new ChannelPosts(chanName, data, sender, latestUpdate);
   channelObj.displayPosts(document.getElementById('channel-posts'));
 
   //   window.onresize = addLinesToPosts;

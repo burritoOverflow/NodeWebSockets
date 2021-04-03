@@ -7,6 +7,48 @@ const verifyUserJWT = require('../utils/verifyJWT');
 
 const router = express.Router();
 
+// store the channel name with the date of the latest post
+let channelsLastUpdate;
+
+/**
+ * Update the channel time map with the latest timestamp for
+ * each channel's latest update
+ */
+async function setLatestPostTimes() {
+  channelsLastUpdate = new Map();
+  const channelMap = new Map();
+  const channels = await Channel.find({});
+  const channelIds = new Array();
+
+  // get all channel ids
+  for (let idx = 0; idx < channels.length; idx++) {
+    const { _id, name } = channels[idx];
+    channelMap.set(_id.toString(), name);
+    channelIds.push(_id);
+  }
+
+  // create a query for each
+  const queries = new Array();
+  channelIds.forEach((ch) => {
+    // we only need the latest post from each channel
+    const getPostsQuery = Post.find({ channel: ch })
+      .sort({
+        date: -1,
+      })
+      .limit(1);
+    queries.push(getPostsQuery.exec());
+  });
+
+  Promise.all(queries).then((response) => {
+    response.forEach((doc) => {
+      const { date, channel } = doc[0];
+      // get the channel name from the channel id
+      const chanName = channelMap.get(channel.toString());
+      channelsLastUpdate.set(chanName, +new Date(date));
+    });
+  });
+}
+
 // create new channel route
 router.post('/channel', async (req, res) => {
   if (req.cookies.token) {
@@ -100,6 +142,10 @@ router.post('/channel/:channel/addpost', async (req, res) => {
 
     // add the post (id) to the channel
     channel.posts.push(savedPost._id);
+
+    // update the map to reflect the update
+    channelsLastUpdate.set(channelName, +new Date());
+
     await channel.save();
     return res.status(201).send({ result: 'Post Added' });
 
@@ -194,5 +240,33 @@ router.get('/channel/:channel', async (req, res) => {
     return res.status(401).send({ error: 'Unauthorized' });
   }
 });
+
+router.get('/channel/:channel/updatetime', async (req, res) => {
+  if (req.cookies.token) {
+    const userObj = await verifyUserJWT(req.cookies.token);
+    if (!userObj.name) {
+      // invalid token provided
+      return res.status(401).send({ error: 'Unauthorized' });
+    }
+
+    // parameter is the room name
+    const channelName = req.params.channel;
+    if (!channelsLastUpdate.has(channelName)) {
+      return res
+        .status(404)
+        .send({ error: `No channel ${channelName} exists` });
+    }
+
+    // return the latest update for the channel
+    return res.status(200).send({
+      updateTime: channelsLastUpdate.get(channelName),
+    });
+  }
+  return res.status(401).send({ error: 'Unauthorized' });
+});
+
+(async () => {
+  await setLatestPostTimes();
+})();
 
 module.exports = router;
