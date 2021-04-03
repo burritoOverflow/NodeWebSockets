@@ -266,13 +266,12 @@ router.get('/channel/:channel', async (req, res) => {
       channel: channelId,
     });
 
-    res.status(200).send({
+    return res.status(200).send({
       channelPosts,
       sender: userObj.name,
     });
-  } else {
-    return res.status(401).send({ error: 'Unauthorized' });
   }
+  return res.status(401).send({ error: 'Unauthorized' });
 });
 
 router.get('/channel/:channel/updatetime', async (req, res) => {

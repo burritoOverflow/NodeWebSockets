@@ -45,6 +45,12 @@ body {
   background-color: black;
 }
 
+.emoji:hover {
+  transition-duration: 0.88s;
+  background-color: var(--primaryColor);
+  border: none;
+}
+
 #channel-main::-webkit-scrollbar,
 #channel-posts::-webkit-scrollbar {
   display: none;
