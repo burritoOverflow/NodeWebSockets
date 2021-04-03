@@ -356,15 +356,22 @@ window.onload = async function init() {
   const chanName = getChannelName();
   const title = document.getElementById('title');
 
-  for (let i = 0; i < chanName.length; ++i) {
+  const { data, sender } = await getAllPostsInChannel(chanName);
+  const latestUpdate = await getLatestUpdateTime(chanName);
+  const isUserAdmin = await isAdmin(chanName);
+  const channelObj = new ChannelPosts(chanName, data, sender, latestUpdate);
+
+  // create the channel header
+  const finalName = isUserAdmin
+    ? `Your channel: ${chanName}`
+    : `${sender}'s channel:\n\n${chanName}`;
+
+  for (let i = 0; i < finalName.length; ++i) {
     const span = document.createElement('span');
-    span.innerText = chanName.charAt(i);
+    span.innerText = finalName.charAt(i);
     title.appendChild(span);
   }
 
-  const { data, sender } = await getAllPostsInChannel(chanName);
-  const latestUpdate = await getLatestUpdateTime(chanName);
-  const channelObj = new ChannelPosts(chanName, data, sender, latestUpdate);
   channelObj.displayPosts(document.getElementById('channel-posts'));
 
   //   window.onresize = addLinesToPosts;
@@ -373,7 +380,7 @@ window.onload = async function init() {
   //   const svg = document.getElementById('canvas');
   //   svg.style.width = document.body.clientWidth;
   //   svg.style.height = document.body.clientHeight;
-  const isUserAdmin = await isAdmin(chanName);
+
   const channelInputEl = document.getElementById('channel-post-parent');
   if (isUserAdmin) {
     // if the user is the admin, show the textarea

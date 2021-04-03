@@ -266,9 +266,10 @@ router.get('/channel/:channel', async (req, res) => {
       channel: channelId,
     });
 
+    const { name } = await User.findById({ _id: channel.admin });
     return res.status(200).send({
       channelPosts,
-      sender: userObj.name,
+      sender: name,
     });
   }
   return res.status(401).send({ error: 'Unauthorized' });
