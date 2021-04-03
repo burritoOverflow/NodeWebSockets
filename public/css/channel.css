@@ -27,6 +27,24 @@ body {
   margin-right: 18%;
 }
 
+.emoji-div {
+  text-align: center;
+  border: 0.54px solid var(--primaryColor);
+  padding: 1em;
+  border-bottom: none;
+  border-left: none;
+  border-right: none;
+  margin: 0;
+}
+
+.emoji {
+  margin: 5%;
+  font-size: large;
+  border: 1px solid antiquewhite;
+  padding: 1%;
+  background-color: black;
+}
+
 #channel-main::-webkit-scrollbar,
 #channel-posts::-webkit-scrollbar {
   display: none;
@@ -76,7 +94,10 @@ body {
   font-size: medium;
   /* margin-bottom: 5em; */
   /* margin-top: 5em; */
-  padding: 2em;
+  padding-top: 2em;
+  padding-right: 0;
+  padding-left: 0;
+  padding-bottom: 0;
   transition-duration: 1.4s;
   width: 45%;
 }

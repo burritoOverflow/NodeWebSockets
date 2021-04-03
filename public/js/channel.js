@@ -16,18 +16,58 @@ class ChannelPosts {
    *
    * @param {HTMLElement} ul - the unordered list to append the posts to
    */
-  displayPosts(ul) {
+  async displayPosts(ul) {
     let idx = 0;
     let postLen = this.posts.length;
+    const chanName = getChannelName();
 
     this.posts.forEach((post) => {
       const postLi = document.createElement('li');
       const dateSpan = document.createElement('span');
+      dateSpan.style.margin = '1em';
       dateSpan.innerText = post.date;
+
       const postContents = document.createElement('p');
       postContents.innerText = post.contents;
+
+      const likes = document.createElement('span');
+      likes.classList.add('emoji');
+      likes.innerHTML = String.fromCodePoint(0x1f44d) + ' ' + post.likes;
+
+      likes.addEventListener('click', async () => {
+        const res = await addReaction(post._id, 'like', chanName);
+        if (res) {
+          console.log(res);
+          const likeCounter = likes.innerHTML[likes.innerHTML.length - 1];
+          let counter = parseInt(likeCounter);
+          ++counter;
+          likes.innerHTML = String.fromCodePoint(0x1f44d) + ' ' + counter;
+        }
+      });
+
+      const dislikes = document.createElement('span');
+      dislikes.classList.add('emoji');
+      dislikes.innerHTML = String.fromCodePoint(0x1f44e) + ' ' + post.dislikes;
+
+      dislikes.addEventListener('click', async () => {
+        const res = await addReaction(post._id, 'dislike', chanName);
+        if (res) {
+          console.log(res);
+          const likeCounter = dislikes.innerHTML[dislikes.innerHTML.length - 1];
+          let counter = parseInt(likeCounter);
+          ++counter;
+          dislikes.innerHTML = String.fromCodePoint(0x1f44d) + ' ' + counter;
+        }
+      });
+
+      const div = document.createElement('div');
+      div.classList.add('emoji-div');
+      div.appendChild(likes);
+      div.appendChild(dislikes);
+
       postLi.appendChild(dateSpan);
       postLi.appendChild(postContents);
+      postLi.appendChild(div);
       postLi.classList.add('post-element');
 
       idx % 2 == 0
@@ -108,6 +148,23 @@ async function getLatestUpdateTime(chanName) {
   const response = await fetch(updateTimeRoute);
   const data = await response.json();
   return data.updateTime;
+}
+
+async function addReaction(postid, reaction, chanName) {
+  const apiRoute = '/api/channel/' + chanName + '/reaction';
+  const response = await fetch(apiRoute, {
+    method: 'POST',
+    body: JSON.stringify({ reaction, postid }),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'same-origin',
+  });
+  const jsonData = await response.json();
+
+  if (response.ok) {
+    return jsonData;
+  }
 }
 
 /**

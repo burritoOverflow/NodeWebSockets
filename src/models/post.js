@@ -21,6 +21,14 @@ const PostSchema = new mongoose.Schema(
       required: true,
       ref: 'Channel',
     },
+    likes: {
+      type: Number,
+      default: 0,
+    },
+    dislikes: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,
@@ -32,7 +40,6 @@ PostSchema.methods.toJSON = function () {
   const post = this;
   const postObj = post.toObject();
   // eslint-disable-next-line no-underscore-dangle
-  delete postObj._id;
   delete postObj.sender;
   delete postObj.channel;
   delete postObj.updatedAt;

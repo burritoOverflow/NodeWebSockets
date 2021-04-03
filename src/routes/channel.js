@@ -154,6 +154,40 @@ router.post('/channel/:channel/addpost', async (req, res) => {
   return res.status(401).send({ error: 'Unauthorized' });
 });
 
+router.post('/channel/:channel/reaction', async (req, res) => {
+  if (req.cookies.token) {
+    const userObj = await verifyUserJWT(req.cookies.token);
+    if (!userObj.name) {
+      // invalid token provided
+      return res.status(401).send({ error: 'Unauthorized' });
+    }
+
+    const { reaction, postid } = req.body;
+    // we only need this to see if it's a valid channel
+    const channelName = req.params.channel;
+    const postToUpdate = await Post.findById({ _id: postid });
+
+    if (!channelsLastUpdate.has(channelName) || !postToUpdate) {
+      return res.status(404).send({ error: 'Invalid post or channel' });
+    }
+
+    // update the metric
+    switch (reaction) {
+      case 'like':
+        postToUpdate.likes += 1;
+        await postToUpdate.save();
+        return res.status(201).send({ updated: postToUpdate.likes });
+      case 'dislike':
+        postToUpdate.dislikes += 1;
+        await postToUpdate.save();
+        return res.status(201).send({ updated: postToUpdate.dislikes });
+      default:
+        return res.status(400).send({ error: 'invalid reaction provided' });
+    }
+  }
+  return res.status(401).send({ error: 'Unauthorized' });
+});
+
 /**
  * Get the names of the channels and the number of posts in that channel
  */
