@@ -1121,7 +1121,7 @@ function addUserToUserList(usersArr) {
 
     // otherwise add to the PM elements
     const userPmLi = document.createElement('li');
-    userPmLi.innerText = userStr;
+    userPmLi.innerHTML = userStr;
 
     // click handler for each username li element
     userPmLi.addEventListener('click', () => {

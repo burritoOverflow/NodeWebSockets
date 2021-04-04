@@ -47,7 +47,7 @@ class ChannelPosts {
           const res = await addReaction(post._id, 'like', chanName);
           if (res) {
             console.log(res);
-            const likeCounter = likes.innerHTML[likes.innerHTML.length - 1];
+            const likeCounter = likes.innerHTML.slice(3);
             let counter = parseInt(likeCounter);
             ++counter;
             likes.innerHTML = String.fromCodePoint(0x1f44d) + ' ' + counter;
@@ -57,8 +57,7 @@ class ChannelPosts {
         dislikes.addEventListener('click', async () => {
           const res = await addReaction(post._id, 'dislike', chanName);
           if (res) {
-            const dislikeCounter =
-              dislikes.innerHTML[dislikes.innerHTML.length - 1];
+            const dislikeCounter = dislikes.innerHTML.slice(3);
             let counter = parseInt(dislikeCounter);
             ++counter;
             dislikes.innerHTML = String.fromCodePoint(0x1f44d) + ' ' + counter;
