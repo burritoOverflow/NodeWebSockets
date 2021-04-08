@@ -1224,8 +1224,12 @@ socket.on('private message', (pm) => {
     date: new Date().toLocaleString(),
   };
 
+  // create the new PM and store it
   const privMsg = new PrivateMessage('You', pmsg.date, pmsg.content);
   pmMap.addPM(fromNameLower, privMsg);
+  const { room } = parseQSParams();
+  const lsPMStr = `pms${room}`;
+  pmMap.setLocalStorage(lsPMStr);
 
   const message = `PM from ${pm.fromName}`;
   // add the corresponding class

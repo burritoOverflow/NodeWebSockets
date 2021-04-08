@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /* eslint-disable no-underscore-dangle */
 const express = require('express');
 const { Channel } = require('../models/channel');
@@ -23,6 +24,8 @@ async function setLatestPostTimes() {
   // get all channel ids
   for (let idx = 0; idx < channels.length; idx++) {
     const { _id, name } = channels[idx];
+    // channel map contains channel's id as key and the channel's
+    // name as the value
     channelMap.set(_id.toString(), name);
     channelIds.push(_id);
   }
@@ -41,11 +44,27 @@ async function setLatestPostTimes() {
 
   Promise.all(queries).then((response) => {
     response.forEach((doc) => {
-      const { date, channel } = doc[0];
-      // get the channel name from the channel id
-      const chanName = channelMap.get(channel.toString());
-      channelsLastUpdate.set(chanName, +new Date(date));
+      if (doc.length) {
+        const { date, channel } = doc[0];
+        // get the channel name from the channel id
+        const chanName = channelMap.get(channel.toString());
+        // for handling the case where there is a channel w/o posts
+        channelMap.delete(channel.toString());
+        channelsLastUpdate.set(chanName, +new Date(date));
+      }
     });
+    // check for any remaining keys in the channel map
+    // these are for leftover channels not covered by the query
+    // those with 0 posts
+    const channelIdKeys = [...channelMap.keys()];
+    // we have a channel w/o posts
+    if (channelIdKeys.length) {
+      // eslint-disable-next-line no-unused-vars
+      for (const [_, cName] of channelMap) {
+        // set the channel with no posts to no update time
+        channelsLastUpdate.set(cName, null);
+      }
+    }
   });
 }
 
@@ -73,14 +92,18 @@ router.post('/channel', async (req, res) => {
     const channelAdmin = _id;
 
     // create the new channel object
+    const channelName = req.body.name;
     const newChannelObj = {
-      name: req.body.name,
+      name: channelName,
       admin: channelAdmin,
     };
 
     try {
+      // save the new channel and set the
+      // latest post time to null
       const channel = new Channel(newChannelObj);
       await channel.save();
+      channelsLastUpdate.set(channelName, null);
     } catch (error) {
       // eslint-disable-next-line no-underscore-dangle
       const _error = error?.errors?.name?.message;
@@ -88,7 +111,7 @@ router.post('/channel', async (req, res) => {
     }
 
     return res.status(201).send({
-      result: `Channel ${req.body.name} created`,
+      result: `Channel ${channelName} created`,
     });
   }
   // no token

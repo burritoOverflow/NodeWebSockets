@@ -150,10 +150,12 @@ function getChannelName() {
 
 function scrollToBottomPosts() {
   const posts = document.getElementsByClassName('post-element');
-  posts[posts.length - 1].scrollIntoView({
-    block: 'end',
-    behavior: 'smooth',
-  });
+  if (posts.length) {
+    posts[posts.length - 1].scrollIntoView({
+      block: 'end',
+      behavior: 'smooth',
+    });
+  }
 }
 
 async function getLatestUpdateTime(chanName) {
