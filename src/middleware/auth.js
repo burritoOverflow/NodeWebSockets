@@ -4,7 +4,7 @@ const { User } = require('../models/user');
 // jwt env var
 require('dotenv').config();
 
-// auth middleware, used to verify the JWT in a typical pattern.
+// auth middleware, used to verify the JWT in a typical pattern (via header).
 const auth = async (req, res, next) => {
   // attempt to validate user
   try {

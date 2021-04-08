@@ -183,6 +183,9 @@ function sendPM() {
 
   const pm = new PrivateMessage(toNameLower, msgDate, content);
   pmMap.addPM(toNameLower, pm);
+  const { room } = parseQSParams();
+  const lsPMStr = `pms${room}`;
+  pmMap.setLocalStorage(lsPMStr);
 
   // create the indicidual message element and append to the pm list
   const pmList = document.getElementById('pm-list');
@@ -1418,8 +1421,15 @@ window.onload = function init() {
   socket.auth = { username: userObj.username, room: userObj.room };
   socket.connect();
 
+  // get the username and room from the query string
+  const { room, username } = parseQSParams();
+
   // set the accent color if the user has one saved
   const colorChoice = localStorage.getItem('colorChoice');
+
+  // check for PMs
+  const lsPMStr = `pms${room}`;
+  const hasStoredPMs = pmMap.parseFromlocalStorage(lsPMStr);
 
   if (colorChoice) {
     // if user has stored choice, set the style accordingly
@@ -1469,7 +1479,6 @@ window.onload = function init() {
   setKeybindings();
 
   // and check if the room has an admin
-  const { room, username } = parseQSParams();
   getAdminNameForRoom(room).then((res) => {
     if (res === 'none') {
       // no admin; nothing to do here

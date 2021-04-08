@@ -5,6 +5,7 @@ require('dotenv').config();
 
 const mongoURL = process.env.MLAB_URL;
 
+// set the original connection to MDB during application start
 mongoose
   .connect(mongoURL, {
     useNewUrlParser: true,

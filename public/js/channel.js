@@ -63,7 +63,7 @@ class ChannelPosts {
             dislikes.innerHTML = String.fromCodePoint(0x1f44d) + ' ' + counter;
           }
         });
-      }
+      } // end user admin check
 
       const div = document.createElement('div');
       div.classList.add('emoji-div');
