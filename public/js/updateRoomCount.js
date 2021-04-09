@@ -15,6 +15,7 @@ class RoomChannelCount {
   constructor() {
     this.roomCount = new Array();
     this.channelCount = new Array();
+    this.usersChannels = new Array();
   }
 
   /**
@@ -124,6 +125,7 @@ class RoomChannelCount {
       a.innerText = `Visit ${chanName}`;
       p.appendChild(a);
       p.classList.add('channel-counter');
+      p.dataset.channelname = chanName;
       channelCountDiv.appendChild(p);
     }
   }
@@ -182,6 +184,19 @@ function toggleElementsHidden() {
   channelCount.classList.toggle('hidden');
 }
 
+/**
+ * Get all channels that the user is admin of
+ *
+ * @param {string} username - the username for the current user
+ * @returns - array of strings--channels names
+ */
+async function getListOfChannelsAdmin(username) {
+  const adminapiURL = `/api/channel/getchannels/${username}`;
+  const channelList = await fetch(adminapiURL);
+  const jsonContents = await channelList.json();
+  return jsonContents;
+}
+
 window.onload = async function initRooms() {
   // set the application state
   const rcCount = new RoomChannelCount();
@@ -192,8 +207,11 @@ window.onload = async function initRooms() {
   usernameinput.style.textAlign = 'center';
   const cookieArr = document.cookie.split('=');
   const displayname = cookieArr[cookieArr.indexOf('displayname') + 1];
+
+  // set the display name in the input; prevent changes
   if (displayname) {
     usernameinput.value = displayname;
+    rcCount.usersChannels = await getListOfChannelsAdmin(displayname);
   } else {
     usernameinput.getElementById('username-input').removeAttribute('readonly');
   }
@@ -297,4 +315,29 @@ window.onload = async function initRooms() {
   // initial fetch
   rcCount.fetchRoomList();
   rcCount.fetchChannelList();
+  console.log(rcCount);
+
+  // set the keypress binding for the secret filtering
+  document.addEventListener('keypress', (event) => {
+    const keyName = event.key;
+    // filter admin for channels
+    if (keyName === 'a') {
+      // collect all elements for the channels
+      const channelElements = document.getElementsByClassName(
+        'channel-counter',
+      );
+
+      const allShown =
+        channelElements.length === rcCount.usersChannels.usersChannels.length;
+
+      const uChans = new Array(...rcCount.usersChannels.usersChannels);
+      for (let i = 0; i < channelElements.length; i++) {
+        // hide this element
+        if (!uChans.includes(channelElements[i].dataset.channelname)) {
+          // if not a user's owned channel, hide the element
+          channelElements[i].classList.toggle('no-display');
+        }
+      }
+    }
+  });
 };

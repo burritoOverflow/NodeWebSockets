@@ -41,6 +41,11 @@ class ChannelPosts {
       dislikes.classList.add('emoji');
       dislikes.innerHTML = String.fromCodePoint(0x1f44e) + ' ' + post.dislikes;
 
+      const div = document.createElement('div');
+      div.classList.add('emoji-div');
+      div.appendChild(likes);
+      div.appendChild(dislikes);
+
       // only allow reactions for non-admin users
       if (!this.userAdmin) {
         likes.addEventListener('click', async () => {
@@ -51,6 +56,15 @@ class ChannelPosts {
             let counter = parseInt(likeCounter);
             ++counter;
             likes.innerHTML = String.fromCodePoint(0x1f44d) + ' ' + counter;
+
+            // toggle the liked class style on like
+            div.classList.add('liked');
+            postLi.classList.add('liked-border');
+            setTimeout(() => {
+              // remove after 900 ms
+              div.classList.remove('liked');
+              postLi.classList.remove('liked-border');
+            }, 900);
           }
         });
 
@@ -61,15 +75,18 @@ class ChannelPosts {
             let counter = parseInt(dislikeCounter);
             ++counter;
             dislikes.innerHTML = String.fromCodePoint(0x1f44d) + ' ' + counter;
+
+            div.classList.add('disliked');
+            postLi.classList.add('disliked-border');
+            setTimeout(() => {
+              div.classList.remove('disliked');
+              postLi.classList.remove('disliked-border');
+            }, 940);
           }
         });
       } // end user admin check
 
-      const div = document.createElement('div');
-      div.classList.add('emoji-div');
-      div.appendChild(likes);
-      div.appendChild(dislikes);
-
+      // add all created elements to the parent element
       postLi.appendChild(dateSpan);
       postLi.appendChild(postContents);
       postLi.appendChild(div);

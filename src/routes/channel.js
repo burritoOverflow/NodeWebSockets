@@ -262,6 +262,37 @@ router.get('/channel/:channel/admin', async (req, res) => {
 });
 
 /**
+ * Find all channels that the user provided is admin of
+ * Returns an arr of names of the channels that the user is admin
+ * of
+ */
+router.get('/channel/getchannels/:adminname', async (req, res) => {
+  if (req.cookies.token) {
+    // verify that the user is valid
+    const userObj = await verifyUserJWT(req.cookies.token);
+    if (!userObj.name) {
+      return res.status(401).send({ error: 'Unauthorized' });
+    }
+
+    const username = req.params.adminname;
+
+    // we need the user's id in order to determine which
+    // channels they admin
+    const userId = await User.findOne({ name: username });
+    if (!userId) {
+      return res.status(404).send({ error: `No user ${username}` });
+    }
+
+    // otherwise, find all channels where the user provided is admin
+    const { _id } = userId;
+    const usersChannels = await Channel.find({ admin: _id });
+    // just return the names of the channels
+    return res.send({ usersChannels: usersChannels.map((ch) => ch.name) });
+  }
+  return res.status(401).send({ error: 'Unauthorized' });
+});
+
+/**
  * Return all posts from the channel with the name provided.
  *
  * */
