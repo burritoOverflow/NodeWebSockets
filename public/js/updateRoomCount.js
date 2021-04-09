@@ -327,15 +327,23 @@ window.onload = async function initRooms() {
         'channel-counter',
       );
 
-      const allShown =
-        channelElements.length === rcCount.usersChannels.usersChannels.length;
-
       const uChans = new Array(...rcCount.usersChannels.usersChannels);
       for (let i = 0; i < channelElements.length; i++) {
         // hide this element
         if (!uChans.includes(channelElements[i].dataset.channelname)) {
           // if not a user's owned channel, hide the element
           channelElements[i].classList.toggle('no-display');
+        } else {
+          // elements not to hide--the user's channels
+          if (channelElements[i].childNodes[0].innerText.includes('Visit')) {
+            // elements are being actively hidden
+            channelElements[i].childNodes[0].innerText =
+              channelElements[i].dataset.channelname;
+          } else {
+            channelElements[
+              i
+            ].childNodes[0].innerText = `Visit ${channelElements[i].dataset.channelname}`;
+          }
         }
       }
     }
