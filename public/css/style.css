@@ -180,6 +180,19 @@ hr {
   box-shadow: rgba(199, 194, 194, 0.35) 0px 5px 15px;
 }
 
+#channel-count:hover {
+  background-color: rgb(46, 44, 44);
+  border: none;
+  box-shadow: rgba(179, 173, 173, 0.35) 0px 5px 15px;
+  color: whitesmoke;
+  transform: translate(-2%, -2%);
+  transition-duration: 700ms;
+}
+
+#room-count:hover {
+  color: white;
+}
+
 #main-container {
   height: 100%;
   display: grid;
@@ -824,8 +837,17 @@ hr {
   border-radius: 20px;
 }
 
-#room-count {
-  padding-top: 0.3em;
+#counter-parent {
+  height: auto;
+  display: grid;
+  grid-gap: 7rem;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+#room-count,
+#channel-count {
+  border: 1px solid var(--primaryColor);
+  padding-top: 1.3em;
   padding-left: 3em;
   padding-right: 3em;
   scrollbar-width: none;
@@ -834,24 +856,28 @@ hr {
   overflow: scroll;
   text-align: center;
   font-weight: bold;
-  border-radius: 12px;
+  border-radius: 1px;
   background-color: whitesmoke;
 }
 
-#room-count .room-counter {
+#room-count .room-counter,
+#channel-count .channel-counter {
   transition: background-color;
   transition-duration: 1.3s;
 }
 
-#room-count .room-counter:hover {
+#room-count .room-counter:hover,
+#channel-count .channel-counter:hover {
   background-color: black;
 }
 
-#room-count::-webkit-scrollbar {
+#room-count::-webkit-scrollbar,
+#channel-count::-webkit-scrollbar {
   display: none;
 }
 
-.room-counter {
+.room-counter,
+.channel-counter {
   font-weight: 600;
   padding: 0.7em;
   border-radius: 16px;

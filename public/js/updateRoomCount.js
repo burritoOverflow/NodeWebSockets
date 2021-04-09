@@ -1,8 +1,15 @@
 /* eslint-disable no-console */
 /**
- * Fetch data from the 'rooms' route and
- * display it on the main page: {count} in {room}
  */
+
+let roomNameInput;
+let submitRoomName;
+let createRoomButton;
+let createChannelButton;
+let createMode = 'room';
+
+// true when initially set to hidden
+let elementsHidden = false;
 
 class RoomChannelCount {
   constructor() {
@@ -99,17 +106,28 @@ class RoomChannelCount {
     const chanRes = await fetch('/api/channel');
     const channelList = await chanRes.json();
     this.channelCount = channelList.channels;
+    this.updateChannelList();
+  }
+
+  /**
+   * Update the UI with the list of the channels
+   * Each element contains the URL for visiting the channel
+   */
+  updateChannelList() {
+    const channelCountDiv = document.getElementById('channel-count');
+    channelCountDiv.innerText = 'View a channel:';
+    for (let i = 0; i < this.channelCount.length; i += 1) {
+      const p = document.createElement('p');
+      const a = document.createElement('a');
+      const chanName = this.channelCount[i].name;
+      a.href = `/channel?channelname=${chanName}`;
+      a.innerText = `Visit ${chanName}`;
+      p.appendChild(a);
+      p.classList.add('channel-counter');
+      channelCountDiv.appendChild(p);
+    }
   }
 }
-
-let roomNameInput;
-let submitRoomName;
-let createRoomButton;
-let createChannelButton;
-let createMode = 'room';
-
-// true when initially set to hidden
-let elementsHidden = false;
 
 /**
  * POST the created room name, creating a new room
@@ -159,7 +177,9 @@ function toggleElementsHidden() {
   } name`;
   document.getElementById('create-room-div').classList.toggle('hidden');
   const roomCount = document.getElementById('room-count');
+  const channelCount = document.getElementById('channel-count');
   roomCount.classList.toggle('hidden');
+  channelCount.classList.toggle('hidden');
 }
 
 window.onload = async function initRooms() {
@@ -268,6 +288,8 @@ window.onload = async function initRooms() {
         roomNameInput.value = '';
       }
       console.log(newChannelResJson);
+
+      // get the updated data after creation
       rcCount.fetchChannelList();
     }
   };
