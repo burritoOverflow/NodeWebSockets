@@ -249,11 +249,10 @@ function showPMsListUser(username) {
       const pmLi = document.createElement('li');
       pmLi.innerText = `${pmsg.date} ${pmsg.contents}`;
 
-      // style sent messages
+      // style sent messages seperately
       if (pmsg.to !== 'You') {
         pmLi.classList.add('sent-pm-li');
       }
-
       pmList.appendChild(pmLi);
     });
   }

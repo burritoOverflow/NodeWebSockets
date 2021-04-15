@@ -1,3 +1,6 @@
+/**
+ * For storing the state of the channel posts
+ */
 class ChannelPosts {
   channelName;
   channelAdmin;
@@ -124,7 +127,7 @@ class ChannelPosts {
   }
 
   /**
-   * Change the color of the title elements on an interval.
+   * Change the color of the title's individual character elements on an interval.
    */
   changeColorTitle() {
     let i = 0;
@@ -165,6 +168,9 @@ function getChannelName() {
   return channelName;
 }
 
+/**
+ * Scroll down to the latest post displayed in the channel
+ */
 function scrollToBottomPosts() {
   const posts = document.getElementsByClassName('post-element');
   if (posts.length) {
@@ -175,6 +181,13 @@ function scrollToBottomPosts() {
   }
 }
 
+/**
+ * Fetch the channel's latest timestamp
+ *
+ * @param {string} chanName - the name of the channel from which to
+ * get the latest update timestamp
+ * @returns  - the timestamp for the channel
+ */
 async function getLatestUpdateTime(chanName) {
   const updateTimeRoute = '/api/channel/' + chanName + '/updatetime';
   const response = await fetch(updateTimeRoute);
@@ -182,20 +195,33 @@ async function getLatestUpdateTime(chanName) {
   return data.updateTime;
 }
 
+/**
+ *  POST a reaction to the post
+ *
+ * @param {ObjectId} postid - the id of post to update the reaction to
+ * @param {string} reaction - 'like' or 'dislike', shared from the event handler
+ * @param {string} chanName - the name of the channel
+ * @returns
+ */
 async function addReaction(postid, reaction, chanName) {
   const apiRoute = '/api/channel/' + chanName + '/reaction';
-  const response = await fetch(apiRoute, {
-    method: 'POST',
-    body: JSON.stringify({ reaction, postid }),
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'same-origin',
-  });
-  const jsonData = await response.json();
+  try {
+    const response = await fetch(apiRoute, {
+      method: 'POST',
+      body: JSON.stringify({ reaction, postid }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'same-origin',
+    });
 
-  if (response.ok) {
-    return jsonData;
+    const jsonData = await response.json();
+    if (response.ok) {
+      return jsonData;
+    }
+  } catch (err) {
+    // failed request
+    return err;
   }
 }
 
@@ -230,7 +256,6 @@ async function setPollingInterval(chanObj) {
     // check the timestamp
     const latestUpdate = await getLatestUpdateTime(channelName);
     if (latestUpdate > chanObj.latestUpdateTime) {
-      console.log('new');
       // otherwise, fetch the data
       const { data } = await getAllPostsInChannel(channelName);
       // update the ui with the latest posts
@@ -240,7 +265,6 @@ async function setPollingInterval(chanObj) {
       chanObj.displayPosts(document.getElementById('channel-posts'));
       scrollToBottomPosts();
     } else {
-      console.log('old');
       return;
     }
 
@@ -382,6 +406,9 @@ async function addEnterHandlerTextArea(channelName, chanObj) {
   };
 }
 
+/**
+ * init - set admin status, get posts, set timestamp, ste UI elements (header)
+ */
 window.onload = async function init() {
   const colorChoice = localStorage.getItem('colorChoice');
   if (colorChoice) {
@@ -440,6 +467,7 @@ window.onload = async function init() {
     channelInputEl.remove();
   }
 
+  // brief styling by firing hover events
   setTimeout(() => {
     const mouseOverEvent = new Event('mouseenter');
     const postEls = document.getElementsByClassName('post-element');
@@ -453,6 +481,7 @@ window.onload = async function init() {
     });
   }, 1200);
 
+  // revert the style from the change above at a smaller interval
   setTimeout(() => {
     elArr.forEach((el) => {
       const mouseLeaveEvent = new Event('mouseleave');

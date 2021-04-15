@@ -38,8 +38,13 @@ router.post('/room', async (req, res) => {
     }
 
     // otherwise create the new room
-    const room = new Room(newRoomObj);
-    await room.save();
+    try {
+      const room = new Room(newRoomObj);
+      await room.save();
+    } catch (error) {
+      // validation error
+      return res.status(400).send(error);
+    }
 
     res.status(201).send({
       result: `${req.body.name} created`,

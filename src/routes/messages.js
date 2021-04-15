@@ -99,7 +99,7 @@ router.get('/messages/:room', async (req, res) => {
 // multer config, for file uploads
 const upload = multer({
   limits: {
-    // 1MB limit for these photos (1MB == 1,000,000 B)
+    // 5MB limit for these photos (5MB == 5,000,000 B)
     fileSize: 5000 ** 2,
   },
   fileFilter(req, file, cb) {
@@ -116,7 +116,6 @@ router.post(
     // verify the user
     if (req.cookies.token) {
       const userObj = await verifyUserJWT(req.cookies.token);
-
       if (!userObj.name) {
         // invalid token
         res.status(401).send({ error: 'Unauthorized' });

@@ -18,10 +18,12 @@ let channelsLastUpdate;
 async function setLatestPostTimes() {
   channelsLastUpdate = new Map();
   const channelMap = new Map();
+
+  // first get all channels
   const channels = await Channel.find({});
   const channelIds = new Array();
 
-  // get all channel ids
+  // collect all channel ids
   for (let idx = 0; idx < channels.length; idx++) {
     const { _id, name } = channels[idx];
     // channel map contains channel's id as key and the channel's
@@ -30,7 +32,7 @@ async function setLatestPostTimes() {
     channelIds.push(_id);
   }
 
-  // create a query for each
+  // create a query for each channel id to get the latest post
   const queries = new Array();
   channelIds.forEach((ch) => {
     // we only need the latest post from each channel
@@ -42,6 +44,7 @@ async function setLatestPostTimes() {
     queries.push(getPostsQuery.exec());
   });
 
+  // handle all queries simultaneously
   Promise.all(queries).then((response) => {
     response.forEach((doc) => {
       if (doc.length) {
@@ -53,9 +56,10 @@ async function setLatestPostTimes() {
         channelsLastUpdate.set(chanName, +new Date(date));
       }
     });
+
     // check for any remaining keys in the channel map
     // these are for leftover channels not covered by the query
-    // those with 0 posts
+    // (those with 0 posts)
     const channelIdKeys = [...channelMap.keys()];
     // we have a channel w/o posts
     if (channelIdKeys.length) {
@@ -104,6 +108,7 @@ router.post('/channel', async (req, res) => {
       const channel = new Channel(newChannelObj);
       await channel.save();
       channelsLastUpdate.set(channelName, null);
+      // errors occur as a result of invalid parameters wrt to schema requirements
     } catch (error) {
       // eslint-disable-next-line no-underscore-dangle
       const _error = error?.errors?.name?.message;
@@ -118,10 +123,13 @@ router.post('/channel', async (req, res) => {
   return res.status(401).send({ error: 'Unauthorized' });
 });
 
-// add posted contents to the channel
-// {
-//     "postcontents" : "foo bar"
-// }
+/**
+ *  add posted contents to the channel
+ * Example
+ * {
+ *     "postcontents" : "foo bar"
+ * }
+ */
 router.post('/channel/:channel/addpost', async (req, res) => {
   if (req.cookies.token) {
     const userObj = await verifyUserJWT(req.cookies.token);
@@ -162,21 +170,19 @@ router.post('/channel/:channel/addpost', async (req, res) => {
     });
 
     const savedPost = await post.save();
-
     // add the post (id) to the channel
     channel.posts.push(savedPost._id);
-
     // update the map to reflect the update
     channelsLastUpdate.set(channelName, +new Date());
-
     await channel.save();
     return res.status(201).send({ result: 'Post Added' });
-
-    // get the post content
   }
   return res.status(401).send({ error: 'Unauthorized' });
 });
 
+/**
+ * Add the supplied reaction to the target post
+ */
 router.post('/channel/:channel/reaction', async (req, res) => {
   if (req.cookies.token) {
     const userObj = await verifyUserJWT(req.cookies.token);
@@ -220,11 +226,15 @@ router.get('/channel', async (req, res) => {
     if (!userObj.name) {
       return res.status(401).send({ error: 'Unauthorized' });
     }
+    // get the names of all channels
     const allChannels = await Channel.find();
+
+    // return only the number of posts in the channel and the name
     const channels = allChannels.map((c) => ({
       name: c.name,
       numPosts: c.posts.length,
     }));
+
     return res.status(200).send({ channels });
   }
   return res.status(401).send({ error: 'Unauthorized' });
@@ -329,6 +339,9 @@ router.get('/channel/:channel', async (req, res) => {
   return res.status(401).send({ error: 'Unauthorized' });
 });
 
+/**
+ * Return the update timestamp for the channel supplied
+ */
 router.get('/channel/:channel/updatetime', async (req, res) => {
   if (req.cookies.token) {
     const userObj = await verifyUserJWT(req.cookies.token);
@@ -354,6 +367,7 @@ router.get('/channel/:channel/updatetime', async (req, res) => {
 });
 
 (async () => {
+  // run the queries on server start
   await setLatestPostTimes();
 })();
 

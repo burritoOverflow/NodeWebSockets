@@ -23,6 +23,7 @@ class RoomChannelCount {
    * and display the contents
    */
   fetchRoomList() {
+    // eslint-disable-next-line no-underscore-dangle
     const _this = this;
 
     fetch('/api/room')
@@ -132,6 +133,34 @@ class RoomChannelCount {
 }
 
 /**
+ *
+ * @param {string} textContents - the contents to show in the toast
+ * @param {boolean} success - display style according to success or fail
+ */
+function displayToastNotification(textContents, success) {
+  const toastElement = document.createElement('div');
+  toastElement.classList.add('toastElement');
+  const resultClass = success ? 'toastSuccess' : 'toastFail';
+  toastElement.classList.add(resultClass);
+
+  toastElement.innerText = textContents;
+  toastElement.style.opacity = '100%';
+  document.body.appendChild(toastElement);
+
+  // we need the reference to this, else the interval will
+  // continue even without the element present
+  const opacityInterval = setInterval(() => {
+    toastElement.style.opacity = toastElement.style.opacity - 0.05;
+  }, 200);
+
+  setTimeout(() => {
+    // once it's totally opaque, remove it
+    toastElement.remove();
+    clearInterval(opacityInterval);
+  }, 200 * 10);
+}
+
+/**
  * POST the created room name, creating a new room
  *
  * @param {string} roomName  - the name of the room to create, populated by the input element
@@ -227,6 +256,7 @@ window.onload = async function initRooms() {
   createRoomButton = document.getElementById('create-room-button');
   createChannelButton = document.getElementById('create-channel-button');
 
+  // click handler for the create room button
   createRoomButton.onclick = (event) => {
     event.preventDefault();
     if (createMode === 'room') {
@@ -254,12 +284,12 @@ window.onload = async function initRooms() {
     }
   };
 
+  // click handler for the create channel button
   createChannelButton.onclick = (event) => {
     event.preventDefault();
     if (createMode === 'channel') {
       toggleElementsHidden();
       elementsHidden = !elementsHidden;
-
       return;
     }
 
@@ -274,15 +304,16 @@ window.onload = async function initRooms() {
     }
   };
 
+  // click handler for the submit room/channel name button
   submitRoomName.onclick = async () => {
     // check that the input is populated with only a single token
     const inputString = roomNameInput.value.trim().toLowerCase();
-
     if (!inputString || inputString === '') {
       return;
     }
+
+    // error; several tokens
     if (inputString.split(' ') > 1) {
-      // error; several tokens
       return;
     }
 
@@ -296,14 +327,27 @@ window.onload = async function initRooms() {
         roomNameInput.value = '';
         // update the rooms to reflect the latest addition
         rcCount.fetchRoomList();
+        displayToastNotification('Room Created!', true);
+      } else {
+        const errMsg = newRoomResponse.errors?.name?.message;
+        const outputStr = errMsg
+          ? `Room Creation Failed ${errMsg}`
+          : 'Room Creation Failed';
+        displayToastNotification(outputStr, false);
       }
     }
 
+    // add new channel
     if (createMode === 'channel') {
       // create new channel
       const newChannelResJson = await addNewChannel(inputString);
+      // success
       if (newChannelResJson.result) {
         roomNameInput.value = '';
+        displayToastNotification('Channel Created!', true);
+      } else {
+        // create fail toast
+        displayToastNotification('Channel Creation Failed', false);
       }
       console.log(newChannelResJson);
 

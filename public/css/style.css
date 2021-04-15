@@ -989,6 +989,29 @@ hr {
   text-align: center;
 }
 
+.toastElement {
+  font-size: large;
+  background: var(--primaryColor);
+  border-radius: 30px;
+  color: whitesmoke;
+  height: auto;
+  left: 50%;
+  padding: 1em 2em;
+  position: fixed;
+  text-align: center;
+  top: 5%;
+  transform: translateX(-50%);
+  z-index: 999;
+}
+
+.toastSuccess {
+  background-color: green;
+}
+
+.toastFail {
+  background-color: red;
+}
+
 #blue-option {
   background-color: var(--blueChoice);
 }
