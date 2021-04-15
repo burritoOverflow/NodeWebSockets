@@ -339,6 +339,7 @@ hr {
 }
 
 #message-text {
+  margin-top: 25%;
   width: 83%;
   color: var(--primaryColor);
   caret-color: var(--primaryColor);
@@ -479,20 +480,18 @@ hr {
 }
 
 #submit-button {
-  margin-top: 2em;
-  margin-bottom: 2em;
-  font-size: large;
-  font-weight: bold;
-  display: block;
-  padding: 1em;
-  margin-left: 0;
-  width: 65%;
   background-color: var(--primaryColor);
   border-radius: 5px;
   border: 1px solid black;
   color: antiquewhite;
+  display: block;
+  font-size: large;
   font-weight: 600;
+  font-weight: bold;
+  margin: 0;
   padding: 0.9em;
+  padding: 1em;
+  width: 54%;
 }
 
 #create-room-button {
@@ -580,10 +579,6 @@ hr {
 #create-room-button:hover,
 #create-channel-button:hover {
   background-color: rgb(19, 18, 19);
-}
-
-#submit-button:focus {
-  background-color: rgb(20, 19, 20);
 }
 
 #fetch-older-messages {
@@ -832,11 +827,6 @@ hr {
   display: none;
 }
 
-.moving {
-  animation: moveAround 2s infinite;
-  border-radius: 20px;
-}
-
 #counter-parent {
   height: 37%;
   display: grid;
@@ -846,23 +836,24 @@ hr {
 
 #room-count {
   margin-left: 10%;
-  margin-right: 15%;
+  margin-right: 28%;
 }
 
 #channel-count {
-  margin-left: 15%;
+  margin-left: 28%;
   margin-right: 10%;
 }
 
 #room-count,
 #channel-count {
+  /* transition-duration: 400ms; */
   background-color: whitesmoke;
   border-radius: 1px;
   border: 1px solid var(--primaryColor);
-  font-weight: bold;
+  font-weight: normal;
   overflow: scroll;
-  padding-left: 7em;
-  padding-right: 7em;
+  padding-left: 3em;
+  padding-right: 3em;
   padding-top: 1.3em;
   scrollbar-width: none;
   text-align: center;
@@ -876,6 +867,7 @@ hr {
 
 #room-count .room-counter:hover,
 #channel-count .channel-counter:hover {
+  font-weight: bold;
   background-color: black;
 }
 
@@ -886,13 +878,24 @@ hr {
 
 .room-counter,
 .channel-counter {
-  font-weight: 600;
   padding: 0.7em;
   border-radius: 16px;
   background-color: var(--primaryColor);
   font-size: larger;
   text-align: center;
   color: antiquewhite;
+}
+
+.channel-counter,
+a {
+  font-weight: normal;
+}
+
+.channel-counter,
+a:hover {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
 }
 
 #room-select {
@@ -907,7 +910,6 @@ hr {
   width: 65%;
   max-width: 100%;
   box-sizing: border-box;
-  /* margin: 0; */
   border: 1px solid rgb(19, 18, 18);
   box-shadow: 0 1px 0 1px rgba(0, 0, 0, 0.04);
   border-radius: 0.5em;

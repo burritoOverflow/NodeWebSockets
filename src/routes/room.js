@@ -18,7 +18,7 @@ router.post('/room', async (req, res) => {
 
     if (!userObj.name) {
       // token invalid
-      res.status(401).send({ error: 'Unauthorized' });
+      return res.status(401).send({ error: 'Unauthorized' });
     }
 
     // we need the user's id
@@ -32,7 +32,7 @@ router.post('/room', async (req, res) => {
 
     // abandon if room exists
     if (existingRoom) {
-      res.status(400).send({
+      return res.status(400).send({
         error: `Cannot create. Room ${req.body.name} Exists`,
       });
     }
@@ -46,13 +46,12 @@ router.post('/room', async (req, res) => {
       return res.status(400).send(error);
     }
 
-    res.status(201).send({
+    return res.status(201).send({
       result: `${req.body.name} created`,
     });
-  } else {
-    // no token provided
-    res.status(401).send({ error: 'Unauthorized' });
   }
+  // no token provided
+  return res.status(401).send({ error: 'Unauthorized' });
 });
 
 // accessible globally
@@ -123,13 +122,12 @@ router.get('/room/admin/:room', async (req, res) => {
       const adminUser = await User.findById(room.admin);
 
       // return the admin user's name
-      res.status(200).send({
+      return res.status(200).send({
         admin: adminUser.name,
       });
-    } else {
-      // no admin for the room
-      res.status(404).send({ admin: 'none' });
     }
+    // no admin for the room
+    return res.status(404).send({ admin: 'none' });
   }
 });
 
