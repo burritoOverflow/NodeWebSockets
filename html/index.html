@@ -10,6 +10,7 @@
 </head>
 
 <body>
+  <div id="toastElement"></div>
   <main id="index-main">
     <h1 id="main-heading"><span class="title-heading">TelegraF</span></h1>
     <form action="/chat" method="GET">
@@ -34,12 +35,11 @@
       <input type="text" name="room-name" id="room-name-input" placeholder="Enter a room name">
       <button id="submit-room-name">Create</button>
     </div>
-    <div id="counter-parent">
-      <div id="room-count"></div>
-      <div id="channel-count"></div>
-      <div id="toastElement">Toast</div>
-    </div>
   </main>
+  <div id="counter-parent">
+    <div id="room-count"></div>
+    <div id="channel-count"></div>
+  </div>
 
   <script src="./js/updateRoomCount.js"></script>
   <script src="./js/logout.js"></script>

@@ -838,10 +838,20 @@ hr {
 }
 
 #counter-parent {
-  height: auto;
+  height: 37%;
   display: grid;
   grid-gap: 7rem;
   grid-template-columns: repeat(2, 1fr);
+}
+
+#room-count {
+  margin-left: 10%;
+  margin-right: 15%;
+}
+
+#channel-count {
+  margin-left: 15%;
+  margin-right: 10%;
 }
 
 #room-count,
@@ -850,11 +860,9 @@ hr {
   border-radius: 1px;
   border: 1px solid var(--primaryColor);
   font-weight: bold;
-  height: 54%;
-  margin-bottom: 12%;
   overflow: scroll;
-  padding-left: 3em;
-  padding-right: 3em;
+  padding-left: 7em;
+  padding-right: 7em;
   padding-top: 1.3em;
   scrollbar-width: none;
   text-align: center;

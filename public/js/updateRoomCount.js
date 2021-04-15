@@ -361,7 +361,6 @@ window.onload = async function initRooms() {
   // initial fetch
   rcCount.fetchRoomList();
   rcCount.fetchChannelList();
-  console.log(rcCount);
 
   // set the keypress binding for the secret filtering
   document.addEventListener('keypress', (event) => {
