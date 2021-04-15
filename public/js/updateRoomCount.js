@@ -328,6 +328,7 @@ window.onload = async function initRooms() {
         // update the rooms to reflect the latest addition
         rcCount.fetchRoomList();
         displayToastNotification('Room Created!', true);
+        toggleElementsHidden();
       } else {
         const errMsg = newRoomResponse.errors?.name?.message;
         const outputStr = errMsg
@@ -345,6 +346,7 @@ window.onload = async function initRooms() {
       if (newChannelResJson.result) {
         roomNameInput.value = '';
         displayToastNotification('Channel Created!', true);
+        toggleElementsHidden();
       } else {
         // create fail toast
         displayToastNotification('Channel Creation Failed', false);
