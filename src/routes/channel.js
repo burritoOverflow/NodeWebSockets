@@ -175,7 +175,9 @@ router.post('/channel/:channel/addpost', async (req, res) => {
     // update the map to reflect the update
     channelsLastUpdate.set(channelName, +new Date());
     await channel.save();
-    return res.status(201).send({ result: 'Post Added' });
+    return res
+      .status(201)
+      .send({ result: 'Post Added', postId: savedPost._id });
   }
   return res.status(401).send({ error: 'Unauthorized' });
 });

@@ -18,13 +18,14 @@ body {
 }
 
 #channel-main {
-  scrollbar-width: none;
-  overflow-y: scroll;
   background-color: var(--backgroundColor);
   border: 0.54px solid #faebd7;
   height: 80%;
   margin-left: 18%;
   margin-right: 18%;
+  overflow-y: scroll;
+  scrollbar-width: none;
+  transition-duration: 400ms;
 }
 
 .emoji-div {
@@ -78,6 +79,12 @@ body {
   margin-top: 0;
 }
 
+.delete-border {
+  border: 3px solid red;
+  background-color: black;
+  opacity: 0.55;
+}
+
 .emoji:hover {
   transition-duration: 0.88s;
   background-color: var(--primaryColor);
@@ -91,7 +98,7 @@ body {
 
 #channel-posts {
   scrollbar-width: none;
-  /* overflow-y: scroll; */
+  transition-duration: 400ms;
   list-style-type: none;
 }
 

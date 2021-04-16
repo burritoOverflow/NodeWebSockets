@@ -103,7 +103,25 @@ class ChannelPosts {
           const res = await deletePost(post._id, channelName);
           // if success, we need to delete the post (the parent element containing all post contents)
           if (res) {
+            // remove the line element between this post and the previous
+            if (postLi.previousSibling) {
+              postLi.previousSibling.remove();
+            } else {
+              // this is the first post element
+              // so we also need it's next sibling
+              if (postLi.nextSibling) {
+                postLi.nextSibling.remove();
+              }
+            }
+            // finally, remove the post itself
             postLi.remove();
+
+            // we'll do a quick styling on success
+            const channelPosts = document.getElementById('channel-main');
+            channelPosts.classList.add('delete-border');
+            setTimeout(() => {
+              channelPosts.classList.remove('delete-border');
+            }, 1200);
           }
         };
       }
@@ -415,8 +433,11 @@ async function addEnterHandlerTextArea(channelName, chanObj) {
           // clear the input area
           textArea.value = '';
 
+          // we need the JSON contents for the id
+          const jsonRes = await response.json();
           // add the post to the channel posts
           chanObj.posts.push({
+            _id: jsonRes.postId,
             contents: postcontents,
             date: new Date().toLocaleString(),
             likes: 0,
