@@ -53,6 +53,8 @@ class ChannelPosts {
       if (!this.userAdmin) {
         likes.addEventListener('click', async () => {
           const res = await addReaction(post._id, 'like', chanName);
+          // if the request fails, the user is most likely looking at a stale post
+          // eg the admin deleted the post while it still exists on this client
           if (res) {
             console.log(res);
             const likeCounter = likes.innerHTML.slice(3);
@@ -99,6 +101,7 @@ class ChannelPosts {
 
         // need the click handler to delete the post
         const { channelName } = this;
+        const _this = this;
         deletePostSpan.onclick = async function () {
           const res = await deletePost(post._id, channelName);
           // if success, we need to delete the post (the parent element containing all post contents)
@@ -115,6 +118,7 @@ class ChannelPosts {
             }
             // finally, remove the post itself
             postLi.remove();
+            _this.deletePost(post._id);
 
             // we'll do a quick styling on success
             const channelPosts = document.getElementById('channel-main');
@@ -190,6 +194,16 @@ class ChannelPosts {
         doDefault = !doDefault;
       }
     }, 700);
+  }
+
+  /**
+   *
+   * @param {string} postId  - remove from posts the post with the provided ID
+   */
+  deletePost(postId) {
+    this.posts = this.posts.filter(function (p) {
+      return p._id !== postId;
+    });
   }
 }
 
