@@ -272,6 +272,49 @@ router.get('/channel/:channel/admin', async (req, res) => {
 });
 
 /**
+ * Delete the post associated with postid
+ */
+router.delete('/channel/:channel/:postid', async (req, res) => {
+  // user validation
+  if (req.cookies.token) {
+    const userObj = await verifyUserJWT(req.cookies.token);
+    if (!userObj.name) {
+      return res.status(401).send({ error: 'Unauthorized' });
+    }
+
+    // determine if the user making the request is the admin of the channel
+    const channel = await Channel.findOne({ name: req.params.channel });
+    if (!channel) {
+      return res
+        .status(400)
+        .send({ error: `Channel ${req.params.channel} does not exist` });
+    }
+
+    // provided a valid channel, check that the user is the admin of the channel
+    const { admin } = channel;
+    const user = await User.findOne({ 'tokens.token': req.cookies.token });
+
+    // now see if this user is the channel's admin
+    if (!user._id.equals(admin)) {
+      return res.status(401).send({
+        error: "You don't have permission to delete posts from this channel",
+      });
+    }
+
+    // we have a valid user, now we need to delete the post
+    const post = await Post.findOneAndDelete({ _id: req.params.postid });
+    if (!post) {
+      return res.status(400).send({ error: 'Invalid Post id provided' });
+    }
+
+    // since the post has been deleted update the channel's latest update time
+    channelsLastUpdate.set(req.params.channel, +new Date());
+    return res.status(200).send({ result: 'Post deleted' });
+  } // invalid
+  return res.status(401).send({ error: 'Unauthorized' });
+});
+
+/**
  * Find all channels that the user provided is admin of
  * Returns an arr of names of the channels that the user is admin
  * of

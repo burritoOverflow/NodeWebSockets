@@ -87,7 +87,26 @@ class ChannelPosts {
             }, 940);
           }
         });
-      } // end user admin check
+      } else {
+        // end user admin check
+        // user admins get the delete post element
+        const deletePostSpan = document.createElement('span');
+        deletePostSpan.classList.add('delete-post');
+        deletePostSpan.innerText = 'X';
+        postLi.appendChild(deletePostSpan);
+        // change the padding on the top for a better appearance
+        postLi.style.paddingTop = 0;
+
+        // need the click handler to delete the post
+        const { channelName } = this;
+        deletePostSpan.onclick = async function () {
+          const res = await deletePost(post._id, channelName);
+          // if success, we need to delete the post (the parent element containing all post contents)
+          if (res) {
+            postLi.remove();
+          }
+        };
+      }
 
       // add all created elements to the parent element
       postLi.appendChild(dateSpan);
@@ -179,6 +198,18 @@ function scrollToBottomPosts() {
       behavior: 'smooth',
     });
   }
+}
+
+/**
+ * Delete the post (if admin)
+ *
+ * @param {string} postId - the id of the post to delete
+ */
+async function deletePost(postId, channelName) {
+  const deletePostRoute = '/api/channel/' + channelName + '/' + postId;
+  const response = await fetch(deletePostRoute, { method: 'DELETE' });
+  const jsonRes = await response.json();
+  return jsonRes;
 }
 
 /**

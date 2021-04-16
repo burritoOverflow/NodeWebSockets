@@ -66,6 +66,18 @@ body {
   background-color: black;
 }
 
+.delete-post {
+  background-color: red !important;
+  border: 2px solid black !important;
+  color: black !important;
+  font-weight: 800;
+  font-size: xx-large;
+  padding: 0.3%;
+  width: 5% !important;
+  margin-left: 92%;
+  margin-top: 0;
+}
+
 .emoji:hover {
   transition-duration: 0.88s;
   background-color: var(--primaryColor);
