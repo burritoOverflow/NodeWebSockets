@@ -288,7 +288,7 @@ router.delete('/channel/:channel/:postid', async (req, res) => {
     const channel = await Channel.findOne({ name: req.params.channel });
     if (!channel) {
       return res
-        .status(400)
+        .status(404)
         .send({ error: `Channel ${req.params.channel} does not exist` });
     }
 
@@ -305,14 +305,15 @@ router.delete('/channel/:channel/:postid', async (req, res) => {
 
     // we have a valid user, now we need to delete the post
     const post = await Post.findOneAndDelete({ _id: req.params.postid });
+    // post doesn't exist
     if (!post) {
-      return res.status(400).send({ error: 'Invalid Post id provided' });
+      return res.status(404).send({ error: 'Invalid Post id provided' });
     }
 
     // since the post has been deleted update the channel's latest update time
     channelsLastUpdate.set(req.params.channel, +new Date());
     return res.status(200).send({ result: 'Post deleted' });
-  } // invalid
+  } // invalid user token provided
   return res.status(401).send({ error: 'Unauthorized' });
 });
 
@@ -362,7 +363,6 @@ router.get('/channel/:channel', async (req, res) => {
     const channelName = req.params.channel;
     // ensure that the channel exists first
     const channel = await Channel.findOne({ name: channelName });
-
     if (!channel) {
       return res
         .status(404)
@@ -371,6 +371,8 @@ router.get('/channel/:channel', async (req, res) => {
 
     // otherwise get the channel id
     const channelId = channel._id;
+
+    // and all posts from the channel
     const channelPosts = await Post.find({
       channel: channelId,
     });
@@ -403,7 +405,8 @@ router.get('/channel/:channel/updatetime', async (req, res) => {
         .send({ error: `No channel ${channelName} exists` });
     }
 
-    // return the latest update for the channel
+    // otherwise, return the latest update for the channel
+    res.set('Keep-Alive', 'timeout=31, max=100');
     return res.status(200).send({
       updateTime: channelsLastUpdate.get(channelName),
     });

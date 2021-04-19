@@ -65,8 +65,9 @@ class ChannelPosts {
             // toggle the liked class style on like
             div.classList.add('liked');
             postLi.classList.add('liked-border');
+
+            // change the style for a brief period
             setTimeout(() => {
-              // remove after 900 ms
               div.classList.remove('liked');
               postLi.classList.remove('liked-border');
             }, 900);
@@ -90,18 +91,20 @@ class ChannelPosts {
           }
         });
       } else {
-        // end user admin check
-        // user admins get the delete post element
+        // end user admin check--this branch is admin users
+        // only user admins get the delete post element
         const deletePostSpan = document.createElement('span');
         deletePostSpan.classList.add('delete-post');
         deletePostSpan.innerText = 'X';
         postLi.appendChild(deletePostSpan);
-        // change the padding on the top for a better appearance
+
+        // change the padding on the top for a better appearance w/ new element
         postLi.style.paddingTop = 0;
 
         // need the click handler to delete the post
         const { channelName } = this;
         const _this = this;
+
         deletePostSpan.onclick = async function () {
           const res = await deletePost(post._id, channelName);
           // if success, we need to delete the post (the parent element containing all post contents)
@@ -111,18 +114,22 @@ class ChannelPosts {
               postLi.previousSibling.remove();
             } else {
               // this is the first post element
-              // so we also need it's next sibling
+              // so we also need its next sibling
               if (postLi.nextSibling) {
                 postLi.nextSibling.remove();
               }
             }
             // finally, remove the post itself
             postLi.remove();
+
+            // and update the state
             _this.deletePost(post._id);
 
             // we'll do a quick styling on success
             const channelPosts = document.getElementById('channel-main');
             channelPosts.classList.add('delete-border');
+
+            // revert
             setTimeout(() => {
               channelPosts.classList.remove('delete-border');
             }, 1200);
@@ -413,14 +420,15 @@ function addLinesToPosts() {
 }
 
 /**
- * Remove all child elements from the ul for the channel posts
+ * Remove all child elements from the ul for the channel posts.
  */
 function resetChannelPosts() {
   document.getElementById('channel-posts').textContent = '';
 }
 
 /**
- * Add a post to the channel
+ * Add a post to the channel when a user presses enter
+ * if contents are present in the textarea
  *
  * @param {string} channelName - the name of the channel the user is in
  */
@@ -488,6 +496,8 @@ window.onload = async function init() {
   const { data, sender } = await getAllPostsInChannel(chanName);
   const latestUpdate = await getLatestUpdateTime(chanName);
   const isUserAdmin = await isAdmin(chanName);
+
+  // for the application's state
   const channelObj = new ChannelPosts(
     chanName,
     data,

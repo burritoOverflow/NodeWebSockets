@@ -93,11 +93,13 @@ async function checkIfUserAdmin(roomName, username) {
 
 /**
  * Get the admin  for the channel.
+ *
  * @param {string} channelName - the name of the channel
+ * @returns {?user} - optional user; returned if user exists;
  */
 async function getAdminForChannel(channelName) {
   const channel = await Channel.find({ name: channelName });
-  // channel doesn't exist
+  // channel doesn't exist, nothing else to do
   if (!channel) {
     return;
   }
