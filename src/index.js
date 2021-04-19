@@ -16,6 +16,7 @@ const { MutedUsers } = require('./utils/MutedUsers');
 const { SidMap } = require('./utils/SidMap');
 const verifyUserJWT = require('./utils/verifyJWT');
 const { appendToLog } = require('./utils/logging');
+const { RedisUtils } = require('./db/RedisUtils');
 require('./db/mongoose');
 
 // models/query helpers
@@ -42,7 +43,7 @@ const io = socketIo(server);
 const port = process.env.PORT || 3000;
 const pubDirPath = path.join(__dirname, '..', 'public');
 
-app.use(compression({ filter: shouldCompress }));
+// app.use(compression({ filter: shouldCompress }));
 app.use(express.static(pubDirPath));
 
 app.use(express.json());
@@ -62,6 +63,14 @@ const sioRoomMap = new SidMap();
 
 // track the muted users
 const mutedUsers = new MutedUsers();
+
+// create redis connection for publishing
+const redisPublishClient = new RedisUtils(
+  process.env.REDIS_HOSTNAME,
+  process.env.REDIS_PORT,
+  process.env.REDIS_PASSWORD,
+);
+redisPublishClient.connectToRedis();
 
 /**
  * Borrowed from the express compression middleware docs.
@@ -235,6 +244,47 @@ app.get('/channel', async (req, res) => {
   } else {
     res.redirect('/login');
   }
+});
+
+//
+app.get('/updates', async (req, res) => {
+  const redisSubscriberClient = new RedisUtils(
+    process.env.REDIS_HOSTNAME,
+    process.env.REDIS_PORT,
+    process.env.REDIS_PASSWORD,
+  );
+  redisSubscriberClient.connectToRedis();
+  redisSubscriberClient.subscribeForUpdates();
+
+  redisSubscriberClient.client.on('error', (err) => {
+    console.log(`Redis Error: ${err}`);
+  });
+
+  redisSubscriberClient.client.on('connect', () => {
+    console.log('Connected to pub client via updates route');
+  });
+
+  redisSubscriberClient.client.on('message', (channel, message) => {
+    console.log(message);
+    res.write(`data: ${message}\n\n`);
+
+    if (res.flush && message.match(/\n\n$/)) {
+      res.flush();
+    }
+  });
+  // send headers for event-stream connection
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    Connection: 'keep-alive',
+  });
+
+  res.write('\n');
+
+  req.on('close', () => {
+    redisSubscriberClient.closeAndCleanUp();
+    console.log('Disconnecting from redis; client left');
+  });
 });
 
 app.use((req, res) => {
@@ -474,6 +524,8 @@ io.on('connection', (socket) => {
       `join event from ${socket.id} in room ${room} with username ${username}\n`,
     );
 
+    redisPublishClient.setUpdate(`${username} just joined ${room}`);
+
     // add user to room on room join event
     const { error } = allUsers.addUser({ id: socket.id, username, room });
 
@@ -593,6 +645,9 @@ io.on('connection', (socket) => {
 
     // emit the message
     io.to(socketUser.room).emit('chatMessage', msgObj);
+    redisPublishClient.setUpdate(
+      `${socketUser.username} sent a message in ${socketUser.room}`,
+    );
   }); // end client chat
 
   // a client has send lat lng from geolocation api
@@ -640,6 +695,8 @@ io.on('connection', (socket) => {
     if (user) {
       // show the 'user left' toast on the client
       io.to(user.room).emit('userLeft', `${user.username} has left the chat.`);
+      redisPublishClient.setUpdate(`${user.username} has left ${socket.room}.`);
+
       appendToLog(
         `Client removed: ${getIpAddrPortStr(socket)}. ${
           allUsers.getUsersInRoom(user.room).length
@@ -654,3 +711,10 @@ io.on('connection', (socket) => {
 
 // start server
 server.listen(port, () => appendToLog(`Server running on port ${port}\n`));
+
+const redisClient = new RedisUtils(
+  process.env.REDIS_HOSTNAME,
+  process.env.REDIS_PORT,
+  process.env.REDIS_PASSWORD,
+);
+redisClient.connectToRedis();

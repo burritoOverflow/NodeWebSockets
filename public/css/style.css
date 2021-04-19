@@ -113,11 +113,42 @@ hr {
 }
 
 #join-room-div {
-  margin-top: 11em;
   background-color: black;
-  border: 0px solid white;
-  padding: 2em;
   border-radius: 30px;
+  border: 0px solid white;
+  margin-top: 11em;
+  padding: 2em;
+}
+
+#updates-list {
+  background-color: black;
+  border: 1px solid antiquewhite;
+  list-style-type: none;
+  overflow-y: scroll;
+  padding-right: 3em;
+  scrollbar-width: none;
+}
+
+#updates-list::-webkit-scrollbar {
+  display: none;
+}
+
+#updates-list li {
+  background-color: #303443;
+  border: 1px solid white;
+  color: var(--primaryColor);
+  font-size: medium;
+  font-weight: 700;
+  margin: 1.5em;
+  padding: 1em;
+}
+
+#updates-list li:first-of-type {
+  background-color: black;
+  color: var(--primaryColor);
+  font-size: large;
+  font-weight: 900;
+  text-align: center;
 }
 
 .join-input {
@@ -160,7 +191,6 @@ hr {
 #login-form {
   padding-bottom: 0;
   transition-duration: 1.33s;
-  /* height: 61%; */
 }
 
 #login-form:hover,
@@ -831,10 +861,10 @@ hr {
   height: 37%;
   display: grid;
   grid-gap: 7rem;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
 }
 
-#room-count {
+/* #room-count {
   margin-left: 10%;
   margin-right: 28%;
 }
@@ -842,7 +872,7 @@ hr {
 #channel-count {
   margin-left: 28%;
   margin-right: 10%;
-}
+} */
 
 #room-count,
 #channel-count {

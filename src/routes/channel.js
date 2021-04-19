@@ -5,11 +5,28 @@ const { Channel } = require('../models/channel');
 const { Post } = require('../models/post');
 const { User } = require('../models/user');
 const verifyUserJWT = require('../utils/verifyJWT');
+const { RedisUtils } = require('../db/RedisUtils');
 
 const router = express.Router();
 
 // store the channel name with the date of the latest post
 let channelsLastUpdate;
+
+/**
+ * Send an update to redis
+ *
+ * @param {string} updateStr - the string to publish
+ */
+function doRedisUpdate(updateStr) {
+  const pubClient = new RedisUtils(
+    process.env.REDIS_HOSTNAME,
+    process.env.REDIS_PORT,
+    process.env.REDIS_PASSWORD,
+  );
+  pubClient.connectToRedis();
+  pubClient.setUpdate(updateStr);
+  pubClient.closeAndCleanUp();
+}
 
 /**
  * Update the channel time map with the latest timestamp for
@@ -115,6 +132,9 @@ router.post('/channel', async (req, res) => {
       return res.status(400).send({ error: _error });
     }
 
+    // publish the update
+    doRedisUpdate(`New channel ${channelName} created.`);
+
     return res.status(201).send({
       result: `Channel ${channelName} created`,
     });
@@ -174,7 +194,11 @@ router.post('/channel/:channel/addpost', async (req, res) => {
     channel.posts.push(savedPost._id);
     // update the map to reflect the update
     channelsLastUpdate.set(channelName, +new Date());
+
+    // update the database and publish the update to redis
     await channel.save();
+    doRedisUpdate(`Post added to ${channelName}`);
+
     return res
       .status(201)
       .send({ result: 'Post Added', postId: savedPost._id });
