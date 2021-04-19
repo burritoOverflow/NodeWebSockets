@@ -43,7 +43,7 @@ const io = socketIo(server);
 const port = process.env.PORT || 3000;
 const pubDirPath = path.join(__dirname, '..', 'public');
 
-// app.use(compression({ filter: shouldCompress }));
+app.use(compression({ filter: shouldCompress }));
 app.use(express.static(pubDirPath));
 
 app.use(express.json());
@@ -81,7 +81,7 @@ redisPublishClient.connectToRedis();
  * @returns
  */
 function shouldCompress(req, res) {
-  if (req.headers['x-no-compression']) {
+  if (req.headers['x-no-compression'] || req.path === '/updates') {
     return false;
   }
   // standard filter function
@@ -369,8 +369,7 @@ async function muteUser(userReqMute, message, room) {
   const usernames = await getUsersInRoom(room);
   const providedUsername = msgTokens[1].trim();
 
-  const isValidMute =
-    msgTokens[0].trim() === '/mute' || usernames.includes(providedUsername);
+  const isValidMute = msgTokens[0].trim() === '/mute' || usernames.includes(providedUsername);
 
   if (isValidMute) {
     // if the username is already in the set, nothing changes
@@ -404,8 +403,7 @@ async function unmuteUser(userReqMute, message, room) {
   const providedUsername = msgTokens[1].trim();
   const firstToken = msgTokens[0].trim();
 
-  let isValidUnmute =
-    firstToken === '/mute' || usernames.includes(providedUsername);
+  let isValidUnmute = firstToken === '/mute' || usernames.includes(providedUsername);
 
   // edge case; change usernames to lowercase
   usernames = usernames.map((username) => username.toLowerCase());
