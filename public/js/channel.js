@@ -103,9 +103,8 @@ class ChannelPosts {
 
         // need the click handler to delete the post
         const { channelName } = this;
-        const _this = this;
 
-        deletePostSpan.onclick = async function () {
+        deletePostSpan.onclick = async () => {
           const res = await deletePost(post._id, channelName);
           // if success, we need to delete the post (the parent element containing all post contents)
           if (res) {
@@ -123,13 +122,13 @@ class ChannelPosts {
             postLi.remove();
 
             // and update the state
-            _this.deletePost(post._id);
+            this.deletePost(post._id);
 
             // we'll do a quick styling on success
             const channelPosts = document.getElementById('channel-main');
             channelPosts.classList.add('delete-border');
 
-            // revert
+            // revert the styling
             setTimeout(() => {
               channelPosts.classList.remove('delete-border');
             }, 1200);
