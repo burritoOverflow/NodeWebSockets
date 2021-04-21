@@ -134,7 +134,6 @@ router.post('/channel', async (req, res) => {
 
     // publish the update
     doRedisUpdate(`New channel ${channelName} created.`);
-
     return res.status(201).send({
       result: `Channel ${channelName} created`,
     });
