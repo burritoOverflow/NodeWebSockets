@@ -146,6 +146,7 @@ class ChannelPosts {
         ? (postLi.style.marginLeft = '4em')
         : (postLi.style.marginLeft = '8em');
 
+      // store the background and color to restore after the style duration is over
       const backgroundColor = window.getComputedStyle(dateSpan).backgroundColor;
       const color = window.getComputedStyle(dateSpan).color;
 

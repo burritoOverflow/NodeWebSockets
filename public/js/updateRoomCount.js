@@ -2,13 +2,12 @@
 /**
  */
 
+// UI elements and some application state
 let roomNameInput;
 let submitRoomName;
 let createRoomButton;
 let createChannelButton;
 let createMode = 'room';
-
-// true when initially set to hidden
 let elementsHidden = false;
 
 class RoomChannelCount {
@@ -37,8 +36,8 @@ class RoomChannelCount {
       .then((jsonResp) => {
         // empty object (no rooms occupied), nothing to do
         if (
-          Object.keys(jsonResp).length === 0 &&
-          jsonResp.constructor === Object
+          Object.keys(jsonResp).length === 0
+          && jsonResp.constructor === Object
         ) {
           return;
         }
@@ -382,8 +381,7 @@ window.onload = async function initRooms() {
           // elements not to hide--the user's channels
           if (channelElements[i].childNodes[0].innerText.includes('Visit')) {
             // elements are being actively hidden
-            channelElements[i].childNodes[0].innerText =
-              channelElements[i].dataset.channelname;
+            channelElements[i].childNodes[0].innerText = channelElements[i].dataset.channelname;
           } else {
             channelElements[
               i

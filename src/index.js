@@ -36,6 +36,9 @@ const {
   getAdminForChannel,
 } = require('./db/queryDb');
 
+// check that the env vars are all provided
+envCheck();
+
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
@@ -369,7 +372,8 @@ async function muteUser(userReqMute, message, room) {
   const usernames = await getUsersInRoom(room);
   const providedUsername = msgTokens[1].trim();
 
-  const isValidMute = msgTokens[0].trim() === '/mute' || usernames.includes(providedUsername);
+  const isValidMute =
+    msgTokens[0].trim() === '/mute' || usernames.includes(providedUsername);
 
   if (isValidMute) {
     // if the username is already in the set, nothing changes
@@ -403,7 +407,8 @@ async function unmuteUser(userReqMute, message, room) {
   const providedUsername = msgTokens[1].trim();
   const firstToken = msgTokens[0].trim();
 
-  let isValidUnmute = firstToken === '/mute' || usernames.includes(providedUsername);
+  let isValidUnmute =
+    firstToken === '/mute' || usernames.includes(providedUsername);
 
   // edge case; change usernames to lowercase
   usernames = usernames.map((username) => username.toLowerCase());
@@ -707,12 +712,35 @@ io.on('connection', (socket) => {
   });
 }); // end socket io block
 
+/**
+ * Check for required env vars
+ * If any are missing, exit. This is a sanity check so issues
+ * don't show up later when a service fails from a lack of configuration
+ */
+function envCheck() {
+  const requiredEnvVars = [
+    process.env.MLAB_URL,
+    process.env.JWT_SECRET,
+    process.env.NODE_ENV,
+    process.env.S3_BUCKET_NAME,
+    process.env.AWS_ACCESS_KEY_ID,
+    process.env.AWS_SECRET_ACCESS_KEY,
+    process.env.PUBLIC_S3_URL,
+    process.env.REDIS_PORT,
+    process.env.REDIS_PASSWORD,
+    process.env.REDIS_HOSTNAME,
+  ];
+
+  // any empty strings?
+  const envVarsProvided = requiredEnvVars.filter((envVar) => !envVar);
+
+  // error, we're missing at least one
+  if (envVarsProvided.length) {
+    const errStr = `Missing ${envVarsProvided.length} env vars\n`;
+    console.log(errStr);
+    throw new Error(errStr);
+  }
+}
+
 // start server
 server.listen(port, () => appendToLog(`Server running on port ${port}\n`));
-
-const redisClient = new RedisUtils(
-  process.env.REDIS_HOSTNAME,
-  process.env.REDIS_PORT,
-  process.env.REDIS_PASSWORD,
-);
-redisClient.connectToRedis();
