@@ -648,12 +648,15 @@ io.on('connection', (socket) => {
 
     // emit the message
     io.to(socketUser.room).emit('chatMessage', msgObj);
+
+    // publish the update to redis
     redisPublishClient.setUpdate(
       `${socketUser.username} sent a message in ${socketUser.room}`,
     );
   }); // end client chat
 
   // a client has send lat lng from geolocation api
+  // build a google maps url and emit that. Just for fun.
   socket.on('userLocation', (latLngObj, callback) => {
     callback('Location Shared Successfully');
     appendToLog(
@@ -661,7 +664,19 @@ io.on('connection', (socket) => {
         latLngObj,
       )}\n`,
     );
-  });
+    const { room, username } = socket;
+    const { latitude, longitude } = latLngObj;
+    const gMapsURL = `https://www.google.com/maps/search/?api=1&query=${latitude},-${longitude}`;
+    const msgObj = {
+      username,
+      message: `${username} is at ${gMapsURL}`,
+      msgSendDate: +new Date(),
+    };
+
+    // store and emit the message
+    addMessage(socket, msgObj, room);
+    io.to(room).emit('chatMessage', msgObj);
+  }); // end userlocation event
 
   // private chat
   socket.on('private message', ({ content, to }) => {
@@ -709,7 +724,7 @@ io.on('connection', (socket) => {
       sendConnectedClientCount(user.room);
       sendUsernamesListForRoom(user.room);
     }
-  });
+  }); // end disconnect block
 }); // end socket io block
 
 /**

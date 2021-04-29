@@ -460,6 +460,10 @@ function sendMessage(message) {
   // callback is invoked when profanity is detected
   socket.emit('clientChat', msgObj, (serverMsg) => {
     showUserToast(serverMsg);
+    // if it fails, let's be nice and restore the user's message
+    if (serverMsg) {
+      msgInput.value = message;
+    }
   });
 }
 
@@ -479,7 +483,6 @@ function sendDelayedMessage(message) {
   const finalMessage = msgTokens.slice(2).join(' ');
 
   showUserToast(`Your message will be sent in ${msgTokens[1]} seconds`);
-
   setTimeout(() => {
     sendMessage(finalMessage);
   }, delay);
@@ -647,6 +650,8 @@ function createLiMessageElement(message, showNotification) {
   // dynamically change the style on hover events
   li.addEventListener('mouseover', () => {
     msgThread.style.backgroundColor = 'black';
+
+    // make all elements other than the one that fired this event blurry
     document.querySelectorAll('.message').forEach((msgEl) => {
       if (msgEl !== li) {
         msgEl.classList.add('blurry-text');
@@ -805,6 +810,8 @@ sendLocButton.addEventListener('click', () => {
   sendLocButton.classList.add('blurry-text');
 
   if (!navigator.geolocation) {
+    // remove button
+    sendLocButton.remove();
     return;
   }
 
@@ -817,6 +824,7 @@ sendLocButton.addEventListener('click', () => {
     socket.emit('userLocation', latLng, (serverAckMessage) => {
       showUserToast(serverAckMessage);
       sendLocButton.enabled = true;
+      sendLocButton.classList.remove('blurry-text');
     });
   });
 });
@@ -939,7 +947,6 @@ function chatMessageReceived(message) {
   // and style appropriately
   if (message.expireDuration) {
     createdLi.classList.add('expire-msg');
-
     createdLi.childNodes.forEach((child) => {
       if (!child.classList) {
         return;
@@ -947,10 +954,12 @@ function chatMessageReceived(message) {
 
       // ignore the date element
       if (!child.classList.contains('date-span')) {
+        // eslint-disable-next-line no-param-reassign
         child.style.backgroundColor = 'white';
       } else {
         // former date element
         const secondsExpire = Number(message.expireDuration) / 1000;
+        // eslint-disable-next-line no-param-reassign
         child.innerText = `Remains for: ${secondsExpire}`;
 
         // update the remaining time on the message once per second

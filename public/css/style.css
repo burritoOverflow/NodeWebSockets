@@ -713,20 +713,20 @@ hr {
 }
 
 #message-thread > li:nth-child(odd) > .message-element-span {
-  text-align: center;
+  /* text-align: center; */
   border-radius: 30px;
   background-color: whitesmoke;
   color: #18181b;
 }
 
 #message-thread > li:nth-child(even) > .message-element-span {
-  text-align: center;
+  /* text-align: center; */
   border-radius: 30px;
   background-color: var(--primaryColor);
 }
 
 .message {
-  width: 54%;
+  width: 48%;
   font-size: large;
   transition: transform 0.45s ease-in-out;
   border: 1px solid black;
@@ -759,23 +759,36 @@ hr {
 }
 
 .message:hover {
-  border: 1px solid whitesmoke;
+  /* border: 1px solid whitesmoke; */
   transform: translate(1px, -7px);
 }
 
 .message-element-span {
+  width: 75%;
+  display: block;
   font-weight: bolder;
-  padding-top: 0.7em;
-  padding-bottom: 0.5em;
   margin-top: 1em;
   overflow: hidden;
-  display: block;
-  padding-left: 1em;
+  padding-bottom: 0.5em;
+  padding-left: 2em;
   padding-right: 1em;
+  padding-top: 0.7em;
+  text-align: left;
+  margin-right: 0.3em;
+  transition-duration: 1800ms;
+}
+
+.message-element-span:hover {
+  border: 2px solid black;
 }
 
 .message-element-span > a {
   color: #18181b;
+  font-weight: bolder;
+}
+
+.message-element-span > a:hover {
+  color: #35353a;
   font-weight: bolder;
 }
 
@@ -805,20 +818,21 @@ hr {
 }
 
 #message-thread {
+  animation: 1s ease-out 0s 1 slideInFromRight;
+  background-color: #18181b;
+  border-radius: 50px;
+  border: 1px solid black;
   grid-column: 2 / 5;
   grid-row: 2 / 5;
-  animation: 1s ease-out 0s 1 slideInFromRight;
-  border: 1px solid black;
-  border-radius: 50px;
+  height: 89%;
+  list-style: none;
+  margin-left: 2em;
+  overflow-y: scroll;
   padding-left: 0.5em;
   padding-right: 0.5em;
-  margin-left: 2em;
-  background-color: #18181b;
   scrollbar-width: none;
-  overflow-y: scroll;
-  height: 89%;
+  transition-duration: 350ms;
   width: 83%;
-  list-style: none;
 }
 
 #pm-list {
