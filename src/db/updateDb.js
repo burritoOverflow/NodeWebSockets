@@ -1,10 +1,11 @@
 /* eslint-disable no-console */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-param-reassign */
-const { User } = require('../models/user');
-const { Message } = require('../models/messages');
 const { appendToLog } = require('../utils/logging');
+const { Message } = require('../models/messages');
+const { RedisUtils } = require('./RedisUtils');
 const { Room } = require('../models/room');
+const { User } = require('../models/user');
 
 /**
  * Add a socket io id to the corresponding user. Used when a user joins a room.
@@ -268,12 +269,59 @@ async function addSIDToUserAndJoinRoom(
   }
 }
 
+/**
+ *Increment the count in the room
+ *
+ * @param {string} roomName  - the name of the room to decrement the counter for
+ */
+function incrementRoomCounter(roomName) {
+  const redisCache = new RedisUtils(
+    process.env.REDIS_HOSTNAME,
+    process.env.REDIS_PORT,
+    process.env.REDIS_PASSWORD,
+  );
+  redisCache.connectToRedis();
+
+  redisCache.client.incr(roomName, (err, counter) => {
+    if (err) {
+      return err;
+    }
+    redisCache.closeAndCleanUp();
+    console.log(`Increment ${counter}`);
+    return counter;
+  });
+}
+
+/**
+ *Decrement the counter for the provided room
+ *
+ * @param {string} roomName  - the name of the room to decrement the counter for
+ */
+function decrementRoomCounter(roomName) {
+  const redisCache = new RedisUtils(
+    process.env.REDIS_HOSTNAME,
+    process.env.REDIS_PORT,
+    process.env.REDIS_PASSWORD,
+  );
+  redisCache.connectToRedis();
+
+  redisCache.client.decr(roomName, (err, counter) => {
+    if (err) return err;
+
+    redisCache.closeAndCleanUp();
+    console.log(`Decrement ${counter}`);
+    return counter;
+  });
+}
+
 module.exports = {
+  addMessage,
   addSIDToUserAndJoinRoom,
   addSocketIoIdToUser,
-  addMessage,
-  removeSocketIoIdFromUser,
   addUserToRoom,
+  decrementRoomCounter,
+  incrementRoomCounter,
+  removeSocketIoIdFromUser,
   removeUserFromRoom,
   removeUserOnDisconnect,
 };

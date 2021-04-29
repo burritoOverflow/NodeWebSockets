@@ -33,14 +33,40 @@ class RedisUtils {
   }
 
   /**
-   * Publish the latest update
+   * Publish the latest update.
    */
   setUpdate(updateString) {
     this.client.publish('updates', updateString);
   }
 
   /**
-   * Tidy up when exiting
+   * Set the key to the value
+   *
+   * @param {string} key
+   * @param {string} value
+   * @returns - reply from the redis client
+   */
+  setValue(key, value) {
+    return this.client.set(key, value, (err, reply) => {
+      if (err) return err;
+      return reply.toString();
+    });
+  }
+
+  /**
+   * Return the value from the key
+   *
+   * @param {string} key - get the value from this key
+   */
+  getValue(key) {
+    this.client.get(key, (err, reply) => {
+      if (err) return err;
+      return reply.toString();
+    });
+  }
+
+  /**
+   * Tidy up when exiting.
    */
   closeAndCleanUp() {
     this.client.unsubscribe();

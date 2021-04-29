@@ -28,6 +28,8 @@ const {
   addMessage,
   removeUserOnDisconnect,
   addSIDToUserAndJoinRoom,
+  incrementRoomCounter,
+  decrementRoomCounter,
 } = require('./db/updateDb');
 
 const {
@@ -522,6 +524,8 @@ io.on('connection', (socket) => {
   // eslint-disable-next-line consistent-return
   socket.on('join', ({ username, room }, callback) => {
     sioRoomMap.addSidRoomMapping(socket.id, room);
+    // update the redis cache to reflect the latest user
+    incrementRoomCounter(room);
 
     appendToLog(
       `join event from ${socket.id} in room ${room} with username ${username}\n`,
@@ -723,6 +727,7 @@ io.on('connection', (socket) => {
       // update clients' UI to reflect disconnect
       sendConnectedClientCount(user.room);
       sendUsernamesListForRoom(user.room);
+      decrementRoomCounter(socket.room);
     }
   }); // end disconnect block
 }); // end socket io block

@@ -502,7 +502,6 @@ function createLiMessageElement(message, showNotification) {
 
   let containsURL = false;
   const urlIdxs = [];
-
   const anchorElements = [];
 
   // check if a single string in the message is a valid HTTP(S) url
@@ -542,6 +541,7 @@ function createLiMessageElement(message, showNotification) {
     li.innerText = 'From ';
   }
 
+  // add the created elements to the parent (for the username and date)
   li.appendChild(userNameSpan);
   li.appendChild(dateSpan);
 

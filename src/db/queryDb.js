@@ -103,13 +103,11 @@ async function getAdminForChannel(channelName) {
   if (!channel) {
     return;
   }
-
   const adminId = channel.admin;
   const user = await User.findById(adminId);
   if (!user) {
     return;
   }
-
   return user;
 }
 
