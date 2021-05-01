@@ -198,7 +198,6 @@ body {
 
 #char-count-parent {
   margin-bottom: 0.3em;
-  float: right;
   font-weight: 700;
   color: var(--primaryColor);
 }
@@ -210,4 +209,19 @@ body {
 .char-max {
   color: red !important;
   font-weight: bolder;
+}
+
+#submit-btn {
+  margin-left: 3em;
+  font-weight: 600;
+  background-color: var(--primaryColor);
+  border-radius: 20px;
+  border: none;
+  display: inline;
+  font-size: large;
+  padding: 0.6em;
+}
+
+#submit-btn:hover {
+  background-color: whitesmoke;
 }

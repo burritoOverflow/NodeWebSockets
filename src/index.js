@@ -200,11 +200,6 @@ app.get('/login', async (req, res) => {
   }
 });
 
-// api route for the current rooms
-app.get('/rooms', (req, res) => {
-  res.json(allUsers.getAllOccupiedRoomsAndCount());
-});
-
 // channel page
 app.get('/channel', async (req, res) => {
   // check that that room requested is a valid channel
@@ -212,14 +207,16 @@ app.get('/channel', async (req, res) => {
     const userObj = await verifyUserJWT(req.cookies.token);
     if (!userObj.name) {
       // not an authorized user
-      res.redirect('/login');
+      return res.redirect('/login');
     }
 
+    // get the channel name from the querystr params
     const { channelname } = req.query;
     if (!channelname) {
-      res.status(404).send({ error: 'Missing Channel Name' });
+      return res.status(404).send({ error: 'Missing Channel Name' });
     }
 
+    // query for the channel
     const channel = await Channel.findOne({ name: channelname });
     if (!channel) {
       return res.status(404).send({ error: `No channel ${channelname}` });
@@ -251,13 +248,14 @@ app.get('/channel', async (req, res) => {
   }
 });
 
-//
+// set up the route for the updates stream
 app.get('/updates', async (req, res) => {
   const redisSubscriberClient = new RedisUtils(
     process.env.REDIS_HOSTNAME,
     process.env.REDIS_PORT,
     process.env.REDIS_PASSWORD,
   );
+
   redisSubscriberClient.connectToRedis();
   redisSubscriberClient.subscribeForUpdates();
 
@@ -283,7 +281,6 @@ app.get('/updates', async (req, res) => {
     'Cache-Control': 'no-cache',
     Connection: 'keep-alive',
   });
-
   res.write('\n');
 
   req.on('close', () => {
@@ -292,6 +289,7 @@ app.get('/updates', async (req, res) => {
   });
 });
 
+// 404 handler
 app.use((req, res) => {
   res.status(404).send('404: Page not Found');
 });
