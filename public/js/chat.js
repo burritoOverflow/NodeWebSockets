@@ -1382,9 +1382,8 @@ function setKeybindings() {
     // we'll scroll down by the approximate size of a child element
     if (eventCharCode === 106) {
       if (msgThread.childNodes.length > 0) {
-        // make sure there are even children
         const verticalScrollHeight = msgThread.childNodes[0].offsetHeight;
-        msgThread.scrollBy(0, -verticalScrollHeight);
+        msgThread.scrollBy(0, verticalScrollHeight);
       } else {
         return;
       }
@@ -1394,7 +1393,7 @@ function setKeybindings() {
       if (msgThread.childNodes.length > 0) {
         // make sure there are even children
         const verticalScrollHeight = msgThread.childNodes[0].offsetHeight;
-        msgThread.scrollBy(0, verticalScrollHeight);
+        msgThread.scrollBy(0, -verticalScrollHeight);
       } else {
         return;
       }
