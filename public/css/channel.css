@@ -108,7 +108,7 @@ body {
 }
 
 #channel-post-input {
-  margin-top: 2.7em;
+  margin-top: 0.56em;
   font-size: large;
   width: 55%;
   font-weight: 300;
@@ -194,4 +194,20 @@ body {
   border: 1px solid antiquewhite;
   box-shadow: 5px 6px 8px 5px #888888;
   transform: translate(-1%, -1.7%);
+}
+
+#char-count-parent {
+  margin-bottom: 0.3em;
+  float: right;
+  font-weight: 700;
+  color: var(--primaryColor);
+}
+
+#char-counter {
+  color: green;
+}
+
+.char-max {
+  color: red !important;
+  font-weight: bolder;
 }

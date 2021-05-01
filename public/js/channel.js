@@ -427,6 +427,31 @@ function resetChannelPosts() {
 }
 
 /**
+ *
+ */
+function updateCharCounter() {
+  const maxChars = 200;
+  // don't bother when the key is a space
+  const counterElement = document.getElementById('char-counter');
+  // we're just going to assume our users are good people and haven't messsed about with the element
+  const inputEl = document.getElementById('channel-post-input');
+  const inputContents = inputEl.value;
+  // strip all whitespace chars
+  const inputChars = inputContents.replace(/ /g, '');
+  const currentCharCount = inputChars.length;
+
+  if (currentCharCount > maxChars) {
+    counterElement.classList.add('char-max');
+  } else {
+    // not at max; remove class list if exists
+    if (counterElement.classList.contains('char-max'))
+      counterElement.classList.remove('char-max');
+  }
+  // update the state
+  counterElement.innerText = String(currentCharCount);
+}
+
+/**
  * Add a post to the channel when a user presses enter
  * if contents are present in the textarea
  *
@@ -435,48 +460,68 @@ function resetChannelPosts() {
 async function addEnterHandlerTextArea(channelName, chanObj) {
   const textArea = document.getElementById('channel-post-input');
   const apiRoute = 'api/channel/' + channelName + '/addpost';
+  const maxChars = 200;
+
+  textArea.onpaste = updateCharCounter;
+  textArea.onchange = updateCharCounter;
+  textArea.oninput = updateCharCounter;
 
   textArea.onkeypress = async function (event) {
     const { key } = event;
     if (key === 'Enter') {
       const postcontents = textArea.value.trim();
-      if (postcontents !== '') {
+      const postCharLen = postcontents.replace(/ /g, '').length;
+
+      // empty the textarea first
+      textArea.value = '';
+
+      if (postcontents !== '' && postCharLen <= maxChars) {
         // post the data to the channel route
-        const response = await fetch(apiRoute, {
-          method: 'POST',
-          body: JSON.stringify({ postcontents }),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'same-origin',
-        });
-
-        if (response.ok) {
-          // clear the input area
-          textArea.value = '';
-
-          // we need the JSON contents for the id
-          const jsonRes = await response.json();
-          // add the post to the channel posts
-          chanObj.posts.push({
-            _id: jsonRes.postId,
-            contents: postcontents,
-            date: new Date().toLocaleString(),
-            likes: 0,
-            dislikes: 0,
+        try {
+          const response = await fetch(apiRoute, {
+            method: 'POST',
+            body: JSON.stringify({ postcontents }),
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin',
           });
 
-          resetChannelPosts();
-          chanObj.displayPosts(document.getElementById('channel-posts'));
-          scrollToBottomPosts();
-        } else {
-          // TODO handle error
+          if (response.ok) {
+            // we need the JSON contents for the id
+            const jsonRes = await response.json();
+            // add the post to the channel posts
+            chanObj.posts.push({
+              _id: jsonRes.postId,
+              contents: postcontents,
+              date: new Date().toLocaleString(),
+              likes: 0,
+              dislikes: 0,
+            });
+
+            resetChannelPosts();
+            chanObj.displayPosts(document.getElementById('channel-posts'));
+            scrollToBottomPosts();
+
+            // restore the state of the char counter
+            const charCounterEl = document.getElementById('char-counter');
+            charCounterEl.classList.remove('char-max');
+            charCounterEl.innerText = '0';
+          } else {
+            // error restore the text area contents
+            textArea.value = postcontents;
+          }
+        } catch (error) {
+          textArea.value = postcontents;
         }
-      } else {
-        // empty post contents
         return;
+      } else {
+        // empty post contents or too many chars
       }
-    } // key not enter
+    } else {
+      // other key
+      if (key !== ' ') updateCharCounter(event);
+    }
   };
 }
 
@@ -528,10 +573,12 @@ window.onload = async function init() {
   //   svg.style.height = document.body.clientHeight;
 
   const channelInputEl = document.getElementById('channel-post-parent');
+  const channelInputParent = document.getElementById('char-count-parent');
+  const channelInputCounter = document.getElementById('char-counter');
+
   if (isUserAdmin) {
     // if the user is the admin, show the textarea
     channelInputEl.classList.remove('no-display');
-
     // add the enter event listener for the text area
     addEnterHandlerTextArea(chanName, channelObj);
   } else {
@@ -539,8 +586,10 @@ window.onload = async function init() {
     // update the posts in the channel
     setPollingInterval(channelObj);
 
-    // otherwise remove the element (non-admins cannot add channels)
+    // otherwise remove the elements (non-admins cannot add channels)
     channelInputEl.remove();
+    channelInputCounter.remove();
+    channelInputParent.remove();
   }
 
   // brief styling by firing hover events

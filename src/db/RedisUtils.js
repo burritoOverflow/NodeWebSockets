@@ -24,7 +24,7 @@ class RedisUtils {
     });
 
     this.client.on('connect', () => {
-      console.log('Connected');
+      console.log(`Connected to Redis ${new Date()}`);
     });
   }
 

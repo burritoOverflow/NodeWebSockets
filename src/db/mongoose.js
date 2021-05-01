@@ -7,10 +7,14 @@ const mongoURL = process.env.MLAB_URL;
 
 // set the original connection to MDB during application start
 mongoose
-  .connect(mongoURL, {
-    useNewUrlParser: true,
-    useCreateIndex: true,
-    useUnifiedTopology: true,
-    useFindAndModify: false,
-  })
+  .connect(
+    mongoURL,
+    {
+      useNewUrlParser: true,
+      useCreateIndex: true,
+      useUnifiedTopology: true,
+      useFindAndModify: false,
+    },
+    console.log(`Connected to MongoDB ${new Date()}`),
+  )
   .catch((error) => console.error(error));
