@@ -4,6 +4,7 @@ const { Room } = require('../models/room');
 const { User } = require('../models/user');
 const verifyUserJWT = require('../utils/verifyJWT');
 const { findRoomByName, getAllRoomNames } = require('../db/queryDb');
+const { RedisUtils } = require('../db/RedisUtils');
 
 const router = express.Router();
 
@@ -41,6 +42,18 @@ router.post('/room', async (req, res) => {
     try {
       const room = new Room(newRoomObj);
       await room.save();
+
+      // With the room saved, publish the update to redis
+      const pubClient = new RedisUtils(
+        process.env.REDIS_HOSTNAME,
+        process.env.REDIS_PORT,
+        process.env.REDIS_PASSWORD,
+      );
+
+      const updateStr = `New Room created: ${req.body.name}`;
+      pubClient.connectToRedis();
+      pubClient.setUpdate(updateStr);
+      pubClient.closeAndCleanUp();
     } catch (error) {
       // validation error
       return res.status(400).send(error);

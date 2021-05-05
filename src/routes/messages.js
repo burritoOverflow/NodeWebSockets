@@ -126,7 +126,6 @@ router.post(
 
       // get the data (file buffer) from multer
       const fileBuffer = req.file.buffer;
-
       const fileExtension = req.file.originalname.slice(
         req.file.originalname.indexOf('.'),
       );
@@ -140,7 +139,6 @@ router.post(
       filename = filename.split(' ').join('_');
 
       const uploadFilename = `${filename}_${uploadDateStr}.${fileExtension}`;
-
       const s3Response = await s3
         .upload({
           Bucket: process.env.S3_BUCKET_NAME,
