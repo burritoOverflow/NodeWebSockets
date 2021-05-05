@@ -113,6 +113,8 @@ router.post('/channel', async (req, res) => {
     const channelAdmin = _id;
 
     // create the new channel object
+    // populate likes and dislikes, otherwise 'inc' on these
+    //  only creates the attribute on init
     const channelName = req.body.name;
     const newChannelObj = {
       name: channelName,
@@ -182,10 +184,15 @@ router.post('/channel/:channel/addpost', async (req, res) => {
 
     // otherwise, add the post
     const postContents = req.body.postcontents;
+
+    // '$inc is an atomic operation within a single document.'
+    // this is the appropriate choice to make, opposed to the naive increment
     const post = new Post({
       contents: postContents,
       sender: user._id,
       channel: channel._id,
+      likes: 0,
+      dislikes: 0,
     });
 
     const savedPost = await post.save();
@@ -219,8 +226,10 @@ router.post('/channel/:channel/reaction', async (req, res) => {
     const { reaction, postid } = req.body;
     // we only need this to see if it's a valid channel
     const channelName = req.params.channel;
+    // ensure too that the post exists
+    // this scenario can arise when a post has been deleted but the UI doesn't
+    // reflect the change
     const postToUpdate = await Post.findById({ _id: postid });
-
     if (!channelsLastUpdate.has(channelName) || !postToUpdate) {
       return res.status(404).send({ error: 'Invalid post or channel' });
     }
@@ -228,13 +237,11 @@ router.post('/channel/:channel/reaction', async (req, res) => {
     // update the metric
     switch (reaction) {
       case 'like':
-        postToUpdate.likes += 1;
-        await postToUpdate.save();
-        return res.status(201).send({ updated: postToUpdate.likes });
+        await Post.findOneAndUpdate({ _id: postid }, { $inc: { likes: 1 } });
+        return res.status(201).send({ updated: ++postToUpdate.likes });
       case 'dislike':
-        postToUpdate.dislikes += 1;
-        await postToUpdate.save();
-        return res.status(201).send({ updated: postToUpdate.dislikes });
+        await Post.findOneAndUpdate({ _id: postid }, { $inc: { dislikes: 1 } });
+        return res.status(201).send({ updated: ++postToUpdate.dislikes });
       default:
         return res.status(400).send({ error: 'invalid reaction provided' });
     }

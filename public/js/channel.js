@@ -57,9 +57,7 @@ class ChannelPosts {
           // eg the admin deleted the post while it still exists on this client
           if (res) {
             console.log(res);
-            const likeCounter = likes.innerHTML.slice(3);
-            let counter = parseInt(likeCounter);
-            ++counter;
+            const counter = res.updated;
             likes.innerHTML = String.fromCodePoint(0x1f44d) + ' ' + counter;
 
             // toggle the liked class style on like
@@ -77,10 +75,9 @@ class ChannelPosts {
         dislikes.addEventListener('click', async () => {
           const res = await addReaction(post._id, 'dislike', chanName);
           if (res) {
-            const dislikeCounter = dislikes.innerHTML.slice(3);
-            let counter = parseInt(dislikeCounter);
-            ++counter;
-            dislikes.innerHTML = String.fromCodePoint(0x1f44d) + ' ' + counter;
+            console.log(res);
+            const { updated } = res;
+            dislikes.innerHTML = String.fromCodePoint(0x1f44d) + ' ' + updated;
 
             div.classList.add('disliked');
             postLi.classList.add('disliked-border');
