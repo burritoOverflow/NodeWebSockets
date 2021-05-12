@@ -515,9 +515,6 @@ io.on('connection', (socket) => {
   const tokenCookieValue = cookies.split(';')[0].split('=')[1];
   const usernameCookieValue = cookies.split(';')[1].split('=')[1];
 
-  // add the sid to the user
-  // addSocketIoIdToUser(socket, tokenCookieValue, usernameCookieValue);
-
   // listener for a client joining
   // eslint-disable-next-line consistent-return
   socket.on('join', ({ username, room }, callback) => {
@@ -694,18 +691,17 @@ io.on('connection', (socket) => {
     let room;
     try {
       room = socket.room;
-    } catch (error) {
-      // disconnect fired without user being added to the users arr
-      room = sioRoomMap.getSidRoomMapping(socket.id);
-      appendToLog('User not found in user array');
-      console.log(error);
-    } finally {
       removeUserOnDisconnect(
         socket,
         tokenCookieValue,
         usernameCookieValue,
         room,
       );
+    } catch (error) {
+      // disconnect fired without user being added to the users arr
+      room = sioRoomMap.getSidRoomMapping(socket.id);
+      appendToLog('User not found in user array');
+      console.log(error);
     }
 
     const user = allUsers.removeUserById(socket.id);
@@ -734,6 +730,7 @@ io.on('connection', (socket) => {
  * Check for required env vars
  * If any are missing, exit. This is a sanity check so issues
  * don't show up later when a service fails from a lack of configuration
+ * Validity is, of course, up to the user.
  */
 function envCheck() {
   const requiredEnvVars = [

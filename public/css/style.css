@@ -652,10 +652,29 @@ hr {
   background-color: black;
 }
 
+.filtered-messages {
+  background-color: var(--primaryColor) !important;
+  border-radius: 0px !important;
+  border: none !important;
+  margin-left: 22% !important;
+  margin-top: 2em !important;
+  transition-duration: 500ms !important;
+}
+
+.filtered-messages > .message-element-span {
+  background-color: whitesmoke !important;
+  border: 1px solid black;
+  margin-right: 2em;
+  text-align: center;
+}
+
+.filtered-messages > .username-span {
+  background-color: whitesmoke !important;
+}
+
 #fetch-older-messages:hover {
   background-color: white;
   color: black;
-  /* font-size: large; */
 }
 
 #fetch-older-messages:focus {
@@ -759,7 +778,6 @@ hr {
 }
 
 .message:hover {
-  /* border: 1px solid whitesmoke; */
   transform: translate(1px, -7px);
 }
 

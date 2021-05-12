@@ -330,12 +330,14 @@ function filterMsgSearch(e) {
   }
 
   const msgElements = document.querySelectorAll('.message');
-
   if (contents.trim() === '') {
     // restore display of all searched elements
     msgElements.forEach((msgEl) => {
       // eslint-disable-next-line no-param-reassign
       msgEl.style.display = 'block';
+      if (msgEl.classList.contains('filtered-messages')) {
+        msgEl.classList.remove('filtered-messages');
+      }
     });
     return;
   }
@@ -379,8 +381,14 @@ function filterMsgSearch(e) {
       usernameSpanContents.trim().includes(contents) ||
       msgContents.trim().includes(contents)
     ) {
+      // found
       msgElements[i].style.display = 'block';
+      msgElements[i].classList.add('filtered-messages');
     } else {
+      // not found
+      if (msgElements[i].classList.contains('filtered-messages')) {
+        msgElements[i].classList.remove('filtered-messages');
+      }
       msgElements[i].style.display = 'none';
     }
   }
