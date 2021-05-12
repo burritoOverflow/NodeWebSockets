@@ -796,6 +796,15 @@ hr {
   transition-duration: 1800ms;
 }
 
+.full-message-element {
+  overflow-y: scroll !important;
+  overflow-x: scroll !important;
+  width: 100% !important;
+  height: 100% !important;
+  padding: 0.3em !important;
+  border-radius: 0 !important;
+}
+
 .message-element-span:hover {
   border: 2px solid black;
 }

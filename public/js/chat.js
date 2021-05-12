@@ -506,6 +506,22 @@ function createLiMessageElement(message, showNotification) {
   const li = document.createElement('li');
   li.classList.add('message');
 
+  const addClickHandlerMsgel = (msgSpan) => {
+    msgSpan.onclick = function () {
+      const scrollClassEnabled = Boolean(msgSpan.dataset.scrollEnabled);
+      if (scrollClassEnabled) {
+        msgSpan.classList.remove('full-message-element');
+        msgSpan.dataset.scrollEnabled = '';
+      } else if (
+        msgSpan.scrollHeight > msgSpan.clientHeight ||
+        msgSpan.scrollWidth > msgSpan.clientWidth
+      ) {
+        msgSpan.classList.add('full-message-element');
+        msgSpan.dataset.scrollEnabled = 'on';
+      }
+    };
+  };
+
   const msgTokens = message.message.split(' ');
 
   let containsURL = false;
@@ -557,6 +573,7 @@ function createLiMessageElement(message, showNotification) {
   if (containsURL) {
     const msgSpan = document.createElement('span');
     msgSpan.classList.add('message-element-span');
+
     msgTokens.forEach((token, idx) => {
       if (urlIdxs.includes(idx)) {
         const anchorEl = document.createElement('a');
@@ -573,6 +590,7 @@ function createLiMessageElement(message, showNotification) {
       }
 
       li.appendChild(msgSpan);
+      addClickHandlerMsgel(msgSpan);
     });
   } else {
     // in the event a token string is not a URL, we'll
@@ -651,8 +669,8 @@ function createLiMessageElement(message, showNotification) {
       }
     });
 
-    // msgSpan.innerText = `${message.message}`;
     li.appendChild(msgSpan);
+    addClickHandlerMsgel(msgSpan);
   }
 
   // dynamically change the style on hover events

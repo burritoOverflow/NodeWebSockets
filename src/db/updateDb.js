@@ -241,12 +241,20 @@ async function removeUserOnDisconnect(
   usernameCookieValue,
   room,
 ) {
-  const userRemoveRoomSuccess = await removeUserFromRoom(socket.id, room);
-  const removeSidUserSuccess = await removeSocketIoIdFromUser(
-    socket,
-    tokenCookieValue,
-    usernameCookieValue,
-  );
+  let userRemoveRoomSuccess;
+  let removeSidUserSuccess;
+
+  try {
+    userRemoveRoomSuccess = await removeUserFromRoom(socket.id, room);
+    removeSidUserSuccess = await removeSocketIoIdFromUser(
+      socket,
+      tokenCookieValue,
+      usernameCookieValue,
+    );
+  } catch (err) {
+    appendToLog(`'removeUserOnDisconnect: failed with ${err}\n`);
+  }
+
   if (userRemoveRoomSuccess && removeSidUserSuccess) {
     appendToLog('removeUserOnDisconnect: removed successfully\n');
   }
