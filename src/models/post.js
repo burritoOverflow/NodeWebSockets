@@ -1,5 +1,8 @@
 const mongoose = require('mongoose');
 
+// Posts are the content in the channels.
+// The schema is the contents, the date, the channel it pertains to, and the reactions on the
+// individual post
 const PostSchema = new mongoose.Schema(
   {
     contents: {

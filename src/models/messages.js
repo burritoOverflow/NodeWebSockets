@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 
+// The Message schema is the message contents, the date the message was sent, the ID
+// of the sender, and the ID of the room the message was sent in
 const MessageSchema = new mongoose.Schema(
   {
     contents: {

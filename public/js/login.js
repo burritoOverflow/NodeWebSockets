@@ -45,6 +45,9 @@ function doLogin(loginObj) {
     });
 }
 
+/**
+ * Set the event listener for the form
+ */
 document.getElementById('login-form').addEventListener('submit', (event) => {
   event.preventDefault();
   const email = document.getElementById('email').value;

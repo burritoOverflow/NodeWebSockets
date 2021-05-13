@@ -31,6 +31,11 @@ class PrivateMessageMap {
     return this._pmMap.get(username);
   }
 
+  /**
+   * Convert the current state of the PM map to JSON
+   *
+   * @returns the representation of the PM map as JSON
+   */
   toJSON() {
     const retObj = {};
     // eslint-disable-next-line no-restricted-syntax

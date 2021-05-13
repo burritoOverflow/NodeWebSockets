@@ -36,8 +36,8 @@ class RoomChannelCount {
       .then((jsonResp) => {
         // empty object (no rooms occupied), nothing to do
         if (
-          Object.keys(jsonResp).length === 0
-          && jsonResp.constructor === Object
+          Object.keys(jsonResp).length === 0 &&
+          jsonResp.constructor === Object
         ) {
           return;
         }
@@ -224,7 +224,9 @@ async function getListOfChannelsAdmin(username) {
   const jsonContents = await channelList.json();
   return jsonContents;
 }
-
+/**
+ * Initialize the room state for the UI
+ */
 window.onload = async function initRooms() {
   // set the application state
   const rcCount = new RoomChannelCount();
@@ -381,7 +383,8 @@ window.onload = async function initRooms() {
           // elements not to hide--the user's channels
           if (channelElements[i].childNodes[0].innerText.includes('Visit')) {
             // elements are being actively hidden
-            channelElements[i].childNodes[0].innerText = channelElements[i].dataset.channelname;
+            channelElements[i].childNodes[0].innerText =
+              channelElements[i].dataset.channelname;
           } else {
             channelElements[
               i

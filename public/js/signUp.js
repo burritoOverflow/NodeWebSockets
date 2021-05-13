@@ -5,6 +5,9 @@ class ApplicationState {
   numHoverEvents;
   signUpForm;
 
+  /**
+   * remove all intervals set
+   */
   killAllIntervals() {
     // hack to kill all intervals and timers
     const highestTimeoutId = setTimeout(';');
@@ -13,6 +16,9 @@ class ApplicationState {
     }
   }
 
+  /**
+   * Handle the secret UI effect of the window down
+   */
   windowDownEffect() {
     // arrow function for sure; we need 'this'
     setInterval(() => {

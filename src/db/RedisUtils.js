@@ -28,6 +28,9 @@ class RedisUtils {
     });
   }
 
+  /**
+   * Add the subscription for the updates
+   */
   subscribeForUpdates() {
     this.client.subscribe('updates');
   }

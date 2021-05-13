@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+// Schema for the channels. Name, the ID of the admin, and the IDs of all posts in the channel.
 const ChannelSchema = new mongoose.Schema(
   {
     name: {

@@ -808,6 +808,7 @@ function scrollToEarliestMessage() {
   });
 }
 
+// Click handler for the send message button
 msgBtn.addEventListener('click', () => {
   // make sure a message is present
   const msgStr = msgInput.value.trim();

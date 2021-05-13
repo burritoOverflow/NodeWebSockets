@@ -201,6 +201,7 @@ class ChannelPosts {
   }
 
   /**
+   * Remove the post with the ID
    *
    * @param {string} postId  - remove from posts the post with the provided ID
    */
@@ -368,6 +369,14 @@ function findAbsolutePosition(htmlElement) {
   };
 }
 
+/**
+ * Draw an SVG line between the elements provided
+ *
+ * @param {*} x1
+ * @param {*} y1
+ * @param {*} x2
+ * @param {*} y2
+ */
 function drawLine(x1, y1, x2, y2) {
   const color = getComputedStyle(document.documentElement).getPropertyValue(
     '--primaryColor',
@@ -383,7 +392,12 @@ function drawLine(x1, y1, x2, y2) {
   svg.appendChild(line);
 }
 
-// pass first and second
+/**
+ * Connect the first and second elements
+ *
+ * @param {*} first
+ * @param {*} second
+ */
 function connectElements(first, second) {
   const firstPos = findAbsolutePosition(first);
   let x1 = firstPos.x - 5; // trim it a little so it doesn't show past the end
@@ -400,6 +414,9 @@ function connectElements(first, second) {
   drawLine(x1, y1, x2, y2);
 }
 
+/**
+ * Set up the lines for each post
+ */
 function addLinesToPosts() {
   // remove all previous
   const canvas = document.getElementById('canvas');
@@ -424,7 +441,8 @@ function resetChannelPosts() {
 }
 
 /**
- *
+ * Disply the state of the character counter on the element
+ * (Number of non space chars)
  */
 function updateCharCounter() {
   const maxChars = 200;
@@ -585,13 +603,7 @@ window.onload = async function init() {
   channelObj.displayPosts(document.getElementById('channel-posts'));
   scrollToBottomPosts();
 
-  //   window.onresize = addLinesToPosts;
   const elArr = [document.getElementById('title')];
-
-  //   const svg = document.getElementById('canvas');
-  //   svg.style.width = document.body.clientWidth;
-  //   svg.style.height = document.body.clientHeight;
-
   const channelInputEl = document.getElementById('channel-post-parent');
   const channelInputParent = document.getElementById('char-count-parent');
   const channelInputCounter = document.getElementById('char-counter');
